@@ -1,0 +1,13 @@
+/* Layout */
+body {background-color: #eee;}
+main {max-width: 942px; min-height: 640px; margin: 25px auto; padding: 20px; background-color: white; border: 1px solid #ddd; box-shadow: 10px 10px 20px 0px rgba(221,221,221,1);}
+
+
+/* Typography */
+body {font-family: 'Open Sans', sans-serif;}
+textarea, input, button, select {font-family: inherit; font-size: inherit;}
+
+/* Misc styles */
+ul li a.actions {text-decoration: none;}
+#outputfile {width: 100%;}
+.ultimateform textarea {font-family: monospace; padding: 7px;}

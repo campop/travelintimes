@@ -1,0 +1,49 @@
+# Apache httpd.conf extract providing URL routing and other directives
+
+#	Example usage in httpd.conf:
+#	
+#	# Control panel
+#	Include /path/to/historicplanner/controlpanel.apache.conf.extract.txt
+#	Use MacroHistoricPlannerControlPanel "/controlpanel" "/path/to/repo/htdocs" "/path/to/controlpanel/:/path/to/controlpanel/libraries/"
+
+
+<Macro MacroHistoricPlannerControlPanel $baseUrl $installationDirectory $includePath>
+	
+	# Require auth throughout
+	<Location $baseUrl/>
+#		Order deny,allow
+#		Deny from all
+#		AuthType Ucam-WebAuth
+#		AADescription "Historic planner control panel"
+#		AAForceInteract On
+#		Require valid-user
+	</Location>
+	
+	<Location $baseUrl>
+		php_value include_path "$includePath"
+	</Location>
+	
+	# Enable PHP parsing and add header/footer
+	<Location $baseUrl/>
+		AddType application/x-httpd-php .html
+		php_value auto_prepend_file header.html
+		php_value auto_append_file footer.html
+	</Location>
+	
+	# Front Controller Application support
+	Include $installationDirectory$baseUrl/libraries/frontControllerApplication.apache.conf
+	Use MacroFrontControllerApplication "$baseUrl/" "Historic planner control panel"
+	
+	# Application directives
+	RewriteRule ^$baseUrl/(tagtransform|routingprofiles|mapnikstylesheet|frontend|import)/$ $baseUrl/index.html?action=$1 [L]
+	RewriteRule ^$baseUrl/(tagtransform|routingprofiles|mapnikstylesheet|frontend|import)$ $baseUrl/$1/ [R]
+	RewriteRule ^$baseUrl/(tagtransform|mapnikstylesheet|frontend)/([0-9]{8}-[0-9]{6})\.html$ $baseUrl/index.html?action=$1&restore=$2 [L]
+	RewriteRule ^$baseUrl/(routingprofiles)/([^/]+)/$ $baseUrl/index.html?action=$1&profile=$2 [L]
+	RewriteRule ^$baseUrl/(routingprofiles)/([^/]+)$ $baseUrl/$1/$2/ [R]
+	RewriteRule ^$baseUrl/(routingprofiles)/([^/]+)/([0-9]{8}-[0-9]{6})\.html$ $baseUrl/index.html?action=$1&profile=$2&restore=$3 [L]
+	
+	# Assets
+	#!# Icon location needs to be configurable
+	Alias /images/icons $installationDirectory$baseUrl/images/icons
+	Alias /images/general/offsite.gif $installationDirectory$baseUrl/images/general/offsite.gif
+</Macro>

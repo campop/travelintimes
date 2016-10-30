@@ -1,0 +1,12 @@
+<?php
+
+# Define the application settings
+$settings = array (
+
+);
+
+# Run the application with the specified settings
+require_once ('historicPlannerControlPanel.php');
+new historicPlannerControlPanel ($settings);
+
+?>
