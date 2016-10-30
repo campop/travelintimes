@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<translations>
+ 
+  <translation>
+    <name>highway=primary</name>
+    <description>-</description>
+    <match type="way">
+      <tag k="Mode" v="highway" />
+      <tag k="Type" v="primary" />
+    </match>
+    <output>
+      <copy-all/>
+      <tag k="highway" v="primary" />
+      <tag k="name" v="Main road (unnamed) [highway=primary]" />
+    </output>
+  </translation>
+
+  <translation>
+    <name>highway=secondary</name>
+    <description>-</description>
+    <match type="way">
+      <tag k="Mode" v="highway" />
+      <tag k="Type" v="secondary" />
+    </match>
+    <output>
+      <copy-all/>
+      <tag k="highway" v="secondary" />
+      <tag k="name" v="Secondary road (unnamed) [highway=secondary]" />
+    </output>
+  </translation>
+
+  <translation>
+    <name>highway=tertiary</name>
+    <description>-</description>
+    <match type="way">
+      <tag k="Mode" v="highway" />
+      <tag k="Type" v="tertiary" />
+    </match>
+    <output>
+      <copy-all/>
+      <tag k="highway" v="tertiary" />
+      <tag k="name" v="Local street (unnamed) [highway=tertiary]" />
+    </output>
+  </translation>
+  
+  <translation>
+    <name>route=ferry</name>
+    <description>-</description>
+    <match type="way">
+      <tag k="Mode" v="route" />
+      <tag k="Type" v="ferry" />
+    </match>
+    <output>
+      <copy-all/>
+<!--
+      <tag k="route" v="ferry" />
+-->
+      <tag k="highway" v="unclassified" />
+      <tag k="name" v="Ferry (unnamed) [route=ferry]" />
+    </output>
+  </translation>
+  
+  <translation>
+    <name>waterway=canal</name>
+    <description>-</description>
+    <match type="way">
+      <tag k="Mode" v="waterway" />
+      <tag k="Type" v="canal" />
+    </match>
+    <output>
+      <copy-all/>
+<!--
+      <tag k="waterway" v="canal" />
+-->
+      <tag k="highway" v="residential" />
+      <tag k="name" v="Canal route (unnamed) [waterway=canal]" />
+    </output>
+  </translation>
+
+  <translation>
+    <name>waterway=river</name>
+    <description>-</description>
+    <match type="way">
+      <tag k="Mode" v="waterway" />
+      <tag k="Type" v="river" />
+    </match>
+    <output>
+      <copy-all/>
+<!--
+      <tag k="waterway" v="river" />
+-->
+      <tag k="highway" v="service" />
+      <tag k="name" v="River route (unnamed) [waterway=river]" />
+    </output>
+  </translation>
+  
+</translations>
