@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Map background-color="#00000000" srs="+proj=latlong +datum=WGS84">
+	<FontSet name="book-fonts">
+		<Font face-name="DejaVu Sans Book" />
+	</FontSet>
+	<Style name="everything">
+		<Rule>
+			<Filter>[highway] = 'primary'</Filter>
+			<LineSymbolizer stroke="pink" stroke-width="8" stroke-linejoin="round" stroke-linecap="round" />
+
+		</Rule>
+		<Rule>
+			<Filter>[highway] = 'secondary'</Filter>
+			<LineSymbolizer stroke="orange" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" />
+		</Rule>
+		<Rule>
+			<Filter>[highway] = 'tertiary'</Filter>
+			<LineSymbolizer stroke="yellow" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" />
+		</Rule>
+		<Rule>
+			<!--<Filter>[route] = 'ferry'</Filter>-->
+			<Filter>[highway] = 'unclassified'</Filter>
+			<LineSymbolizer stroke="lightblue" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" />
+
+		</Rule>
+		<Rule>
+			<!--<Filter>[waterway] = 'canal'</Filter>-->
+			<Filter>[highway] = 'residential'</Filter>
+			<LineSymbolizer stroke="blue" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" />
+		</Rule>
+		<Rule>
+			<!--<Filter>[waterway] = 'river'</Filter>-->
+			<Filter>[highway] = 'service'</Filter>
+			<LineSymbolizer stroke="aquamarine" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" />
+		</Rule>
+		<Rule>
+			<Filter>[highway] &lt;&gt;''</Filter>
+			<TextSymbolizer name="[name]" fontset-name="book-fonts" size="9" fill="#0000" halo-radius="1" placement="line" />
+		</Rule> 
+		<Rule>
+			<Filter>[route] &lt;&gt;''</Filter>
+			<TextSymbolizer name="[name]" fontset-name="book-fonts" size="9" fill="#0000" halo-radius="1" placement="line" />
+		</Rule> 
+
+		<!-- https://github.com/mapnik/mapnik/blob/master/test/unit/core/expressions_test.cpp#L124-L129 -->
+		<!-- https://github.com/mapnik/mapnik/wiki/Filter -->
+		<Rule>
+			<Filter>[highway]='crossing'</Filter>
+			<PointSymbolizer file="hospital.16.svg" />
+		</Rule>
+	</Style>
+	
+	
+    	<Layer name="everything" status="on" srs="+proj=latlong +datum=WGS84">
+		<StyleName>everything</StyleName>
+		<Datasource>
+			<Parameter name="type">osm</Parameter>
+			<Parameter name="file">converted/merged.osm</Parameter>
+		</Datasource>
+	</Layer>
+ </Map>
