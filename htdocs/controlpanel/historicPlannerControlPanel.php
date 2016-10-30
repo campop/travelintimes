@@ -410,7 +410,15 @@ class historicPlannerControlPanel extends frontControllerApplication
 		$exportFile = $exportFiles[$grouping];  // i.e. first value
 		
 		# Move the submitted file from the exports area to the location expected by the build system
-		copy ($exportFile, $this->repoRoot . '/data/' . 'Multimodal.zip');
+		$buildDirectory = $this->repoRoot . '/build-tmp/';
+		if (!is_writable ($buildDirectory)) {
+			$html .= "\n<p class=\"warning\">ERROR: The build directory {$buildDirectory} is not writable.</p>";
+			return false;
+		}
+		if (!copy ($exportFile, $buildDirectory . 'Multimodal.zip')) {
+			$html .= "\n<p class=\"warning\">ERROR: Could not copy {$exportFile} to {$buildDirectory} .</p>";
+			return false;
+		}
 		
 		# Move the relevant routing profile into place
 		$newProfile = $this->repoRoot . $this->profiles[$grouping];
