@@ -75,7 +75,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 	function main ()
 	{
 		# Determine the root of the system
-		$this->repoRoot = realpath ($this->applicationRoot . '/..');
+		$this->repoRoot = realpath ($this->applicationRoot . '/../..');
 		
 		# Define the profile locations
 		$profiles = array ();
