@@ -1780,7 +1780,8 @@ class frontControllerApplication
 	private function importUploadFilesForm ($expectedFiles)
 	{
 		# Define the directory
-		$this->exportsDirectory = $this->applicationRoot . '/exports/';
+//		$this->exportsDirectory = $this->applicationRoot . '/exports/';
+		$this->exportsDirectory = $this->repoRoot . '/exports/';
 		
 		# Start the HTML
 		$html = '';
