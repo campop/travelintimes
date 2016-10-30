@@ -427,10 +427,10 @@ class historicPlannerControlPanel extends frontControllerApplication
 		
 		# Run the script
 		chdir ($this->repoRoot . '/');
-		$script = './build.sh > import.log 2>&1';    // Also capture error; see: http://stackoverflow.com/a/3863805 and http://stackoverflow.com/a/6674348
+		$script = './build.sh > build.log 2>&1';    // Also capture error; see: http://stackoverflow.com/a/3863805 and http://stackoverflow.com/a/6674348
 		exec ($script, $output, $returnStatusValue);
 		// $output = implode ("\n", $output);
-		$output = file_get_contents ('import.log');
+		$output = file_get_contents ('build.log');
 		
 		# Link to reset
 		$html .= "\n<p><a href=\"{$this->baseUrl}/import/\">Reset page.</a></p>";
