@@ -421,9 +421,12 @@ class historicPlannerControlPanel extends frontControllerApplication
 		}
 		
 		# Move the relevant routing profile into place
-		$newProfile = $this->repoRoot . $this->profiles[$grouping];
-		$profileLocation = $this->repoRoot . '/profile.lua';
-		copy ($newProfile, $profileLocation);
+		$newProfile = $this->repoRoot . '/configuration/routingprofiles/' . $this->profiles[$grouping];
+		$profileLocation = $this->repoRoot . '/build/profile.lua';
+		if (!copy ($newProfile, $profileLocation)) {
+			$html .= "\n<p class=\"warning\">ERROR: Could not copy {$newProfile} to {$profileLocation} .</p>";
+			return false;
+		}
 		
 		# Run the script
 		chdir ($this->repoRoot . '/');
