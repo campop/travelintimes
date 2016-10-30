@@ -80,7 +80,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 		# Define the profile locations
 		$profiles = array ();
 		foreach ($this->settings['datasets'] as $profile => $label) {
-			$this->profiles[$profile] = "/profile-{$profile}.lua";
+			$this->profiles[$profile] = "profile-{$profile}.lua";
 		}
 		
 	}
@@ -118,7 +118,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 		$instructionsHtml .= "\n" . "<p>Changes will only take effect <strong>after</strong> doing an <a href=\"{$this->baseUrl}/import/\">import</a>.</p>";
 		
 		# Show the HTML, delegating to the file editor
-		echo $html = $this->definitionFileEditor ('/tagtransform.xml', $instructionsHtml, 'tagtransformValidation');
+		echo $html = $this->definitionFileEditor (__FUNCTION__, '/tagtransform.xml', $instructionsHtml, 'tagtransformValidation');
 	}
 	
 	
@@ -172,7 +172,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 		}
 		
 		# Show the HTML, delegating to the file editor
-		echo $this->definitionFileEditor ($this->profiles[$selectedProfile], $instructionsHtml, 'routingprofilesValidation');
+		echo $this->definitionFileEditor (__FUNCTION__, $this->profiles[$selectedProfile], $instructionsHtml, 'routingprofilesValidation');
 	}
 	
 	
@@ -193,7 +193,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 		$instructionsHtml .= "\n" . '<p>The definition should be applicable across all imported datasets.</p>';
 		
 		# Start the HTML, delegating to the file editor
-		$html = $this->definitionFileEditor ('/mapnikstylesheet.xml', $instructionsHtml, 'mapnikstylesheetValidation');
+		$html = $this->definitionFileEditor (__FUNCTION__, '/mapnikstylesheet.xml', $instructionsHtml, 'mapnikstylesheetValidation');
 		
 		# Show the current rendering
 		$randomValue = rand (1000, 9999);       // Random string for URL to defeat caching
@@ -225,7 +225,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 		$instructionsHtml .= "\n" . "<p>Changes will take effect immediately (as soon as the form confirms success).</p>";
 		
 		# Show the HTML, delegating to the file editor
-		echo $html = $this->definitionFileEditor ('/osrm-frontend.js', $instructionsHtml, 'frontendValidation', 'frontendRunAfter');
+		echo $html = $this->definitionFileEditor (__FUNCTION__, '/osrm-frontend.js', $instructionsHtml, 'frontendValidation', 'frontendRunAfter');
 	}
 	
 	
@@ -250,18 +250,19 @@ class historicPlannerControlPanel extends frontControllerApplication
 	
 	# Function to implement a file definition editor
 	#!# Move into frontControllerApplication as is a typical use-case
-	private function definitionFileEditor ($filePathInRepo, $instructionsHtml, $validationCallbackMethod, $runAfterMethod = false)
+	private function definitionFileEditor ($type, $filePathInRepo, $instructionsHtml, $validationCallbackMethod, $runAfterMethod = false)
 	{
 		# Start the HTML
 		$html  = '';
 		
 		# Load the current definition
 		$definitionFilename = $filePathInRepo;
-		$definitionFile = $this->repoRoot . $definitionFilename;
+		
+		$definitionFile = $this->repoRoot . '/configuration/' . $type . '/' . $definitionFilename;
 		$definition = file_get_contents ($definitionFile);
 		
 		# Get a list of archived files
-		$archivedFiles = $this->getArchivedFiles ($definitionFilename);
+		$archivedFiles = $this->getArchivedFiles ($definitionFilename, $type);
 		
 		# If an archived file is specified, pre-load that instead
 		if (isSet ($_GET['restore']) && isSet ($archivedFiles[$_GET['restore']])) {
@@ -359,11 +360,11 @@ class historicPlannerControlPanel extends frontControllerApplication
 	
 	
 	# Function to get a list of archived files, as a key-value pair, indexed by timestamp
-	private function getArchivedFiles ($definitionFilename)
+	private function getArchivedFiles ($definitionFilename, $type)
 	{
 		# Show list of restorable definitions
 		require_once ('directories.php');
-		$files = directories::flattenedFileListing ($this->repoRoot . '/archive', array ('txt'), true, false, false, $definitionFilename);
+		$files = directories::flattenedFileListing ($this->repoRoot . '/configuration/' . $type . '/archive/', array ('txt'), true, false, false, $definitionFilename);
 		$archivedFiles = array ();
 		foreach ($files as $file) {
 			if (preg_match ('/until-([0-9]{8}-[0-9]{6})/', $file, $matches)) {
