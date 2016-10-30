@@ -118,7 +118,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 		$instructionsHtml .= "\n" . "<p>Changes will only take effect <strong>after</strong> doing an <a href=\"{$this->baseUrl}/import/\">import</a>.</p>";
 		
 		# Show the HTML, delegating to the file editor
-		echo $html = $this->definitionFileEditor (__FUNCTION__, '/tagtransform.xml', $instructionsHtml, 'tagtransformValidation');
+		echo $html = $this->definitionFileEditor (__FUNCTION__, 'tagtransform.xml', $instructionsHtml, 'tagtransformValidation');
 	}
 	
 	
@@ -193,7 +193,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 		$instructionsHtml .= "\n" . '<p>The definition should be applicable across all imported datasets.</p>';
 		
 		# Start the HTML, delegating to the file editor
-		$html = $this->definitionFileEditor (__FUNCTION__, '/mapnikstylesheet.xml', $instructionsHtml, 'mapnikstylesheetValidation');
+		$html = $this->definitionFileEditor (__FUNCTION__, 'mapnikstylesheet.xml', $instructionsHtml, 'mapnikstylesheetValidation');
 		
 		# Show the current rendering
 		$randomValue = rand (1000, 9999);       // Random string for URL to defeat caching
@@ -225,7 +225,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 		$instructionsHtml .= "\n" . "<p>Changes will take effect immediately (as soon as the form confirms success).</p>";
 		
 		# Show the HTML, delegating to the file editor
-		echo $html = $this->definitionFileEditor (__FUNCTION__, '/osrm-frontend.js', $instructionsHtml, 'frontendValidation', 'frontendRunAfter');
+		echo $html = $this->definitionFileEditor (__FUNCTION__, 'osrm-frontend.js', $instructionsHtml, 'frontendValidation', 'frontendRunAfter');
 	}
 	
 	
@@ -310,7 +310,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 		if ($result = $form->process ($html)) {
 			
 			# Back up any current version
-			$definitionArchiveFile = $this->repoRoot . '/archive' . $definitionFilename;
+			$definitionArchiveFile = $this->repoRoot . '/configuration/' . $type . '/archive/' . $definitionFilename;
 			if (!copy ($definitionFile, $definitionArchiveFile . '.until-' . date ('Ymd-His') . ".replacedby-{$this->user}" . '.txt')) {
 				$html = "\n<p class=\"warning\">There was a problem archiving the old definition.</p>";
 				echo $html;
