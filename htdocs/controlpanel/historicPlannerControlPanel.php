@@ -319,7 +319,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 			
 			# Save the new version
 			if (!file_put_contents ($definitionFile, $result['definition'])) {
-				$html = "\n<p class=\"warning\">There was a problem saving the new definition.</p>";
+				$html = "\n<p class=\"warning\">There was a problem saving the new definition at {$definitionFile}.</p>";
 				echo $html;
 				return false;
 			}
