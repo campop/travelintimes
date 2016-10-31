@@ -21,6 +21,9 @@
 	
 	<Location $baseUrl>
 		php_value include_path "$includePath"
+		php_value memory_limit 128M
+		php_value upload_max_filesize 128M
+		php_value post_max_size 128M
 	</Location>
 	
 	# Enable PHP parsing and add header/footer
