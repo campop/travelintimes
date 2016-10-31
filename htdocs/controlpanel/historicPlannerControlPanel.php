@@ -241,7 +241,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 	private function frontendRunAfter (&$output)
 	{
 		# Run the command
-		$script = 'cd /opt/osrm-frontend-v2/ && make 2>&1 && cd -';
+		$script = 'cd /opt/osrm-frontend/ && make 2>&1 && cd -';
 		exec ($script, $output, $returnStatusValue);
 		$output = implode ("\n", $output);
 		return (!$returnStatusValue);
