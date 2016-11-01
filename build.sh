@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Usage:
+if [ "$1" == "-h" ]; then
+  echo "Usage: `basename $0` strategy datafile"
+  echo "E.g. ./build.sh multimodal1911 /opt/travelintimes/exports/multimodal191120161031.zip"
+  exit 0
+fi
+
 # Bomb out if something goes wrong
 set -e
 
