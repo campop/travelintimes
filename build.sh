@@ -2,8 +2,8 @@
 
 # Usage:
 if [ "$1" == "-h" ]; then
-  echo "Usage: `basename $0` strategy datafile"
-  echo "E.g. ./build.sh multimodal1911 /opt/travelintimes/exports/multimodal191120161031.zip"
+  echo "Usage: `basename $0` strategy datafile port"
+  echo "E.g. ./build.sh multimodal1911 /opt/travelintimes/exports/multimodal191120161031.zip 5000"
   exit 0
 fi
 
@@ -25,12 +25,13 @@ SCRIPTDIRECTORY=$DIR
 
 
 # Obtain the arguments - the routing strategy to use (e.g. multimodal1911) and the source data file
-if [ "$#" -ne 2 ]; then
-	echo "ERROR: You must supply two parameters: a strategy and a datafile"
+if [ "$#" -ne 3 ]; then
+	echo "ERROR: You must supply three parameters: a strategy, a datafile, and a port (e.g. 5000)"
 	exit 1
 fi
 strategy=$1
 datafile=$2
+port=$3
 
 # Create the working area, versioned by strategy then datetime (e.g. 20161101-113308)
 datetime=`date +'%Y%m%d-%H%M%S'`
@@ -132,9 +133,9 @@ cd -
 
 # Start the router process in the background, killing any previous instantiation if running
 # E.g. /opt/osrm-backend/build/osrm-routed converted/Transportations.osrm &
-if pgrep osrm-routed; then pkill osrm-routed; fi
-/opt/osrm-backend/build/osrm-routed "${file/.shp.osm/.osrm}" > "${SCRIPTDIRECTORY}/logs-osrm/osrm-${strategy}.log" &
-echo "Running /opt/osrm-backend/build/osrm-routed ${buildDirectory}/${file/.shp.osm/.osrm}"
+if pgrep -f "osrm-routed -p ${port}"; then pkill -f "osrm-routed -p ${port}"; fi
+/opt/osrm-backend/build/osrm-routed -p $port "${file/.shp.osm/.osrm}" > "${SCRIPTDIRECTORY}/logs-osrm/osrm-${strategy}.log" &
+echo "Running /opt/osrm-backend/build/osrm-routed -p $port ${buildDirectory}/${file/.shp.osm/.osrm}"
 
 # Generate mapnik image; uses merged.osm
 # From: https://github.com/openstreetmap/mapnik-stylesheets/blob/master/generate_image.py
