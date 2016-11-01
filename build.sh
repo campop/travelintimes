@@ -133,7 +133,7 @@ cd -
 # Start the router process in the background, killing any previous instantiation if running
 # E.g. /opt/osrm-backend/build/osrm-routed converted/Transportations.osrm &
 if pgrep osrm-routed; then pkill osrm-routed; fi
-/opt/osrm-backend/build/osrm-routed "${file/.shp.osm/.osrm}" > "${SCRIPTDIRECTORY}/osrm-${strategy}.log" &
+/opt/osrm-backend/build/osrm-routed "${file/.shp.osm/.osrm}" > "${SCRIPTDIRECTORY}/logs-osrm/osrm-${strategy}.log" &
 echo "Running /opt/osrm-backend/build/osrm-routed ${buildDirectory}/${file/.shp.osm/.osrm}"
 
 # Generate mapnik image; uses merged.osm
