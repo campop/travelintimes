@@ -409,28 +409,10 @@ class historicPlannerControlPanel extends frontControllerApplication
 		$grouping = key ($exportFiles);         // i.e. first key
 		$exportFile = $exportFiles[$grouping];  // i.e. first value
 		
-		# Move the submitted file from the exports area to the location expected by the build system
-		$buildDirectory = $this->repoRoot . '/build-tmp/';
-		if (!is_writable ($buildDirectory)) {
-			$html .= "\n<p class=\"warning\">ERROR: The build directory {$buildDirectory} is not writable.</p>";
-			return false;
-		}
-		if (!copy ($exportFile, $buildDirectory . 'Multimodal.zip')) {
-			$html .= "\n<p class=\"warning\">ERROR: Could not copy {$exportFile} to {$buildDirectory} .</p>";
-			return false;
-		}
-		
-		# Move the relevant routing profile into place
-		$newProfile = $this->repoRoot . '/configuration/routingprofiles/' . $this->profiles[$grouping];
-		$profileLocation = $this->repoRoot . '/build/profile.lua';
-		if (!copy ($newProfile, $profileLocation)) {
-			$html .= "\n<p class=\"warning\">ERROR: Could not copy {$newProfile} to {$profileLocation} .</p>";
-			return false;
-		}
-		
 		# Run the script
 		chdir ($this->repoRoot . '/');
-		$script = './build.sh > build.log 2>&1';    // Also capture error; see: http://stackoverflow.com/a/3863805 and http://stackoverflow.com/a/6674348
+		// E.g. /build.sh multimodal1911 exports/multimodal191120161101.zip
+		$script = "./build.sh $grouping $exportFile > build.log 2>&1";    // Also capture error; see: http://stackoverflow.com/a/3863805 and http://stackoverflow.com/a/6674348
 		exec ($script, $output, $returnStatusValue);
 		// $output = implode ("\n", $output);
 		$output = file_get_contents ('build.log');

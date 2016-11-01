@@ -141,7 +141,7 @@ echo "Running /opt/osrm-backend/build/osrm-routed ${buildDirectory}/${file/.shp.
 #bboxWsen="10.72265625 50.064191736 2.724609375 59.26588062825"
 imageFilename=network.png
 # https://github.com/mapnik/mapnik/wiki/XMLConfigReference
-mapnikFile=configuration/mapnikstylesheet/mapnikstylesheet.xml
+mapnikFile="${SCRIPTDIRECTORY}/configuration/mapnikstylesheet/mapnikstylesheet.xml"
 "${SCRIPTDIRECTORY}/generate_image.py" htdocs/controlpanel/${imageFilename} $mapnikFile $bboxWsen
 echo "Image now at http://www.travelintimes.org/controlpanel/${imageFilename}"
 
