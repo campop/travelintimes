@@ -122,18 +122,19 @@ file=merged.shp.osm
 
 # Build a routing graph
 ##rm /opt/osrm-backend/build/profile.lua
-ln -s /opt/travelintimes/configuration/routingprofiles/profile-multimodal1680.lua /opt/osrm-backend/build/profile.lua
+cp "/opt/travelintimes/configuration/routingprofiles/profile-${strategy}.lua" /opt/osrm-backend/profiles/latest-build-profile.lua
+##rm -f "${file/.shp.osm/.osrm}"*
+echo "Starting OSRM extraction and contraction using {$SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osm}..."
 cd /opt/osrm-backend/build/
-rm -f "${file/.shp.osm/.osrm}"*
-osrm-extract $scriptDirectory/converted/"${file/.shp.osm/.osm}"
-osrm-contract $scriptDirectory/converted/"${file/.shp.osm/.osrm}"
+./osrm-extract "${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osm}"
+./osrm-contract "${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osrm}"
 cd -
 
 # Start the router process in the background, killing any previous instantiation if running
 # E.g. /opt/osrm-backend/build/osrm-routed converted/Transportations.osrm &
 if pgrep osrm-routed; then pkill osrm-routed; fi
-/opt/osrm-backend/build/osrm-routed converted/"${file/.shp.osm/.osrm}" > $scriptDirectory/osrm.log &
-echo "Running /opt/osrm-backend/build/osrm-routed converted/${file/.shp.osm/.osrm}"
+/opt/osrm-backend/build/osrm-routed "${file/.shp.osm/.osrm}" > "${SCRIPTDIRECTORY}/osrm-${strategy}.log" &
+echo "Running /opt/osrm-backend/build/osrm-routed ${buildDirectory}/${file/.shp.osm/.osrm}"
 
 # Generate mapnik image; uses merged.osm
 # From: https://github.com/openstreetmap/mapnik-stylesheets/blob/master/generate_image.py
