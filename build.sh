@@ -10,6 +10,19 @@ fi
 # Bomb out if something goes wrong
 set -e
 
+# Get the script directory see: http://stackoverflow.com/a/246128/180733
+# The multi-line method of geting the script directory is needed to enable the script to be called from elsewhere.
+SOURCE="${BASH_SOURCE[0]}"
+DIR="$( dirname "$SOURCE" )"
+while [ -h "$SOURCE" ]
+do
+SOURCE="$(readlink "$SOURCE")"
+	[[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+	DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+SCRIPTDIRECTORY=$DIR
+
 
 # Obtain the arguments - the routing strategy to use (e.g. multimodal1911) and the source data file
 if [ "$#" -ne 2 ]; then
@@ -42,7 +55,6 @@ if [ -e *.gz ]; then
 	unzip -o *.gz
 fi
 if [ -e *.7z ]; then
-echo 1;
 	7za e *.7z
 fi
 ls -lAF
@@ -109,7 +121,6 @@ file=merged.shp.osm
 ##cd ../
 
 # Build a routing graph
-scriptDirectory=`pwd`
 ##rm /opt/osrm-backend/build/profile.lua
 ln -s /opt/travelintimes/configuration/routingprofiles/profile-multimodal1680.lua /opt/osrm-backend/build/profile.lua
 cd /opt/osrm-backend/build/
