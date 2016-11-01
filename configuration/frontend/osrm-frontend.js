@@ -42,11 +42,11 @@ module.exports = {
   },
   services: [{
     label: '1680 network',
-    path: 'http://historicplanner.cyclestreets.net:5000/viaroute'
+    path: 'http://www.travelintimes.org:5000/route/v1'
   },
   {
     label: '1830 network',
-    path: 'http://historicplanner.cyclestreets.net:5001/viaroute'
+    path: 'http://www.travelintimes.org:5001/route/v1'
   }],
   layer: [{
     'Local tiles': localtiles,
