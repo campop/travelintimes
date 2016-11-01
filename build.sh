@@ -19,14 +19,22 @@ fi
 strategy=$1
 datafile=$2
 
-# Clean the working area
-rm -rf converted/*.osm
-rm -rf converted/*.shp.osm
-rm -rf converted/*.osrm*
+# Create the working area, versioned by strategy then datetime (e.g. 20161101-113308)
+datetime=`date +'%Y%m%d-%H%M%S'`
+buildDirectory="./enginedata/${strategy}/${datetime}"
+mkdir -p $buildDirectory
 
+# Copy in the data file
+cp -p $datafile "${buildDirectory}/"
+
+# Copy in the current profile definition and tag transform definition
+cp -p "./configuration/routingprofiles/profile-${strategy}.lua" "${buildDirectory}/profile.lua"
+cp -p ./configuration/tagtransform/tagtransform.xml "${buildDirectory}/"
+
+# Do all work in the build directory
+cd $buildDirectory
 
 # Unpack the data; several formats supported
-cd build-tmp/
 if [ -e *.zip ]; then
 	unzip -o *.zip
 fi
@@ -74,35 +82,35 @@ for file in *.shp ; do
 	#rm "${file/.shp/.osm}"
 	#!# -f used to overwrite whatever was there before; ideally should be cleaning out the directory instead
 	python /opt/ogr2osm/ogr2osm.py -f --epsg=4326 --add-version --add-timestamp $file
-	mv "${file/.shp/.osm}" "../converted/${file/.shp/.shp.osm}"
+	mv "${file/.shp/.osm}" "${file/.shp/.shp.osm}"
 done
-cd ../
+##cd ../
 
 # Convert tags
 # See: http://wiki.openstreetmap.org/wiki/Osmosis/TagTransform
 # See: http://wiki.openstreetmap.org/wiki/Osmosis/Detailed_Usage_0.44
 # Avoid using highway=motorway as that will give an implied oneway=yes; see: http://wiki.openstreetmap.org/wiki/Key:highway
-cd converted/
+##cd converted/
 ###for file in *.shp.osm ; do
-file="${edgesShapefile}.osm"
-	rm -f "${file/.shp.osm/.osm}"
-	/opt/osmosis/bin/osmosis --read-xml file="${file}" --tag-transform file="../configuration/tagtransform/tagtransform.xml" --write-xml file="${file/.shp.osm/.osm}"
+	file="${edgesShapefile}.osm"
+##	rm -f "${file/.shp.osm/.osm}"
+	/opt/osmosis/bin/osmosis --read-xml file="./${file}" --tag-transform file="./tagtransform.xml" --write-xml file="${file/.shp.osm/.osm}"
 ###done
-cd ../
+##cd ../
 
 # Merge files
 # Note: --sort is needed after each --rx as noted here: https://www.mail-archive.com/osmosis-dev@openstreetmap.org/msg00319.html to avoid "org.openstreetmap.osmosis.core.OsmosisRuntimeException: Pipeline entities are not sorted, previous entity type=Node, id=-2, version=1 current entity type=Node, id=-3, version=1."
 #/opt/osmosis/bin/osmosis --rx Railway.osm --sort --rx InlandWways.osm --sort --merge --wx merged.osm
 # Alternative method: osmconvert Railway.osm InlandWways.osm -o=merged.osm
-cd converted/
+##cd converted/
 ###/opt/osmosis/bin/osmosis --rx *Edges.osm --sort --rx *Junctions.osm --sort --merge --wx merged.osm
 mv "${file/.shp.osm/.osm}" merged.osm
 file=merged.shp.osm
-cd ../
+##cd ../
 
 # Build a routing graph
 scriptDirectory=`pwd`
-rm /opt/osrm-backend/build/profile.lua
+##rm /opt/osrm-backend/build/profile.lua
 ln -s /opt/travelintimes/configuration/routingprofiles/profile-multimodal1680.lua /opt/osrm-backend/build/profile.lua
 cd /opt/osrm-backend/build/
 rm -f "${file/.shp.osm/.osrm}"*
