@@ -4,6 +4,14 @@
 set -e
 
 
+# Obtain the arguments - the routing strategy to use (e.g. multimodal1911) and the source data file
+if [ "$#" -ne 2 ]; then
+	echo "ERROR: You must supply two parameters: a strategy and a datafile"
+	exit 1
+fi
+strategy=$1
+datafile=$2
+
 # Clean the working area
 rm -rf converted/*.osm
 rm -rf converted/*.shp.osm
