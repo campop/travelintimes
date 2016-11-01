@@ -16,9 +16,9 @@ class historicPlannerControlPanel extends frontControllerApplication
 			
 			# Datasets
 			'datasets' => array (
-				'multimodal1680' => 'Multimodal 1680',
-				'multimodal1830' => 'Multimodal 1830',
-				'multimodal1911' => 'Multimodal 1911',
+				'multimodal1680' => 'Multimodal 1680',	// Port 5000
+				'multimodal1830' => 'Multimodal 1830',	// Port 5001
+				'multimodal1911' => 'Multimodal 1911',	// Port 5002
 			),
 		
 		);
@@ -409,10 +409,19 @@ class historicPlannerControlPanel extends frontControllerApplication
 		$grouping = key ($exportFiles);         // i.e. first key
 		$exportFile = $exportFiles[$grouping];  // i.e. first value
 		
+		# Determine the port the eventual routing engine should use
+		$port = 5000;
+		foreach ($this->settings['datasets'] as $dataset => $label) {
+			if ($grouping == $dataset) {
+				break;	// Port is now set, e.g. first dataset is 5000
+			}
+			$port++;
+		}
+		
 		# Run the script
 		chdir ($this->repoRoot . '/');
 		// E.g. /build.sh multimodal1911 exports/multimodal191120161101.zip
-		$script = "./build.sh $grouping $exportFile > build.log 2>&1";    // Also capture error; see: http://stackoverflow.com/a/3863805 and http://stackoverflow.com/a/6674348
+		$script = "./build.sh $grouping $exportFile $port > build.log 2>&1";    // Also capture error; see: http://stackoverflow.com/a/3863805 and http://stackoverflow.com/a/6674348
 		exec ($script, $output, $returnStatusValue);
 		// $output = implode ("\n", $output);
 		$output = file_get_contents ('build.log');
