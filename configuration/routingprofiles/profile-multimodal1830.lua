@@ -18,25 +18,25 @@ restriction_exception_tags = { "motorcar", "motor_vehicle", "vehicle" }
 suffix_list = { "N", "NE", "E", "SE", "S", "SW", "W", "NW", "North", "South", "West", "East" }
 
 speed_profile = {
-  ["motorway"] = 90,
-  ["motorway_link"] = 45,
-  ["trunk"] = 85,
-  ["trunk_link"] = 40,
-  ["primary"] = 65,
-  ["primary_link"] = 30,
-  ["secondary"] = 55,
-  ["secondary_link"] = 25,
-  ["tertiary"] = 40,
-  ["tertiary_link"] = 20,
-  ["unclassified"] = 25,
-  ["residential"] = 25,
-  ["living_street"] = 10,
-  ["service"] = 15,
+  ["motorway"] = 50,
+  ["motorway_link"] = 50,
+  ["trunk"] = 20,
+  ["trunk_link"] = 2,
+  ["primary"] = 8.5,
+  ["primary_link"] = 0.5,
+  ["secondary"] = 2,
+  ["secondary_link"] = 1.5,
+  ["tertiary"] = 15,
+  ["tertiary_link"] = 0.5,
+  ["unclassified"] = 2,
+  ["residential"] = 1.5,
+  ["living_street"] = 3,
+  ["service"] = 30,
 --  ["track"] = 5,
   ["ferry"] = 5,
   ["movable"] = 5,
   ["shuttle_train"] = 10,
-  ["default"] = 10
+  ["default"] = 2.5
 }
 
 -- service speeds
