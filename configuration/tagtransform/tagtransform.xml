@@ -1,5 +1,19 @@
 <?xml version="1.0"?>
 <translations>
+
+  <translation>
+    <name>highway=trunk</name>
+    <description>-</description>
+    <match type="way">
+      <tag k="Mode" v="highway" />
+      <tag k="Type" v="trunk" />
+    </match>
+    <output>
+      <copy-all/>
+      <tag k="highway" v="trunk" />
+      <tag k="name" v="Main road [highway=trunk]" />
+    </output>
+  </translation>
  
   <translation>
     <name>highway=primary</name>
@@ -11,7 +25,7 @@
     <output>
       <copy-all/>
       <tag k="highway" v="primary" />
-      <tag k="name" v="Main road (unnamed) [highway=primary]" />
+      <tag k="name" v="Main road [highway=primary]" />
     </output>
   </translation>
 
@@ -25,7 +39,7 @@
     <output>
       <copy-all/>
       <tag k="highway" v="secondary" />
-      <tag k="name" v="Secondary road (unnamed) [highway=secondary]" />
+      <tag k="name" v="Main road [highway=secondary]" />
     </output>
   </translation>
 
@@ -39,59 +53,134 @@
     <output>
       <copy-all/>
       <tag k="highway" v="tertiary" />
-      <tag k="name" v="Local street (unnamed) [highway=tertiary]" />
-    </output>
-  </translation>
-  
-  <translation>
-    <name>route=ferry</name>
-    <description>-</description>
-    <match type="way">
-      <tag k="Mode" v="route" />
-      <tag k="Type" v="ferry" />
-    </match>
-    <output>
-      <copy-all/>
-<!--
-      <tag k="route" v="ferry" />
--->
-      <tag k="highway" v="unclassified" />
-      <tag k="name" v="Ferry (unnamed) [route=ferry]" />
-    </output>
-  </translation>
-  
-  <translation>
-    <name>waterway=canal</name>
-    <description>-</description>
-    <match type="way">
-      <tag k="Mode" v="waterway" />
-      <tag k="Type" v="canal" />
-    </match>
-    <output>
-      <copy-all/>
-<!--
-      <tag k="waterway" v="canal" />
--->
-      <tag k="highway" v="residential" />
-      <tag k="name" v="Canal route (unnamed) [waterway=canal]" />
+      <tag k="name" v="Secondary road [highway=tertiary]" />
     </output>
   </translation>
 
   <translation>
-    <name>waterway=river</name>
+    <name>highway=unclassified</name>
     <description>-</description>
     <match type="way">
-      <tag k="Mode" v="waterway" />
-      <tag k="Type" v="river" />
+      <tag k="Mode" v="highway" />
+      <tag k="Type" v="unclassified" />
     </match>
     <output>
       <copy-all/>
-<!--
-      <tag k="waterway" v="river" />
--->
-      <tag k="highway" v="service" />
-      <tag k="name" v="River route (unnamed) [waterway=river]" />
+      <tag k="highway" v="unclassified" />
+      <tag k="name" v="Secondary road [highway=unclassified]" />
     </output>
   </translation>
-  
+
+  <translation>
+    <name>highway=residential</name>
+    <description>-</description>
+    <match type="way">
+      <tag k="Mode" v="highway" />
+      <tag k="Type" v="residential" />
+    </match>
+    <output>
+      <copy-all/>
+      <tag k="highway" v="residential" />
+      <tag k="name" v="Secondary road [highway=residential]" />
+    </output>
+  </translation>
+
+  <translation>
+    <name>highway=trunk_link</name>
+    <description>-</description>
+    <match type="way">
+      <tag k="Mode" v="highway" />
+      <tag k="Type" v="trunk_link" />
+    </match>
+    <output>
+      <copy-all/>
+      <tag k="highway" v="trunk_link" />
+      <tag k="name" v="Main coastal [highway=trunk_link]" />
+    </output>
+  </translation>
+
+  <translation>
+    <name>highway=primary_link</name>
+    <description>-</description>
+    <match type="way">
+      <tag k="Mode" v="highway" />
+      <tag k="Type" v="primary_link" />
+    </match>
+    <output>
+      <copy-all/>
+      <tag k="highway" v="primary_link" />
+      <tag k="name" v="Main coastal [highway=primary_link]" />
+    </output>
+  </translation>
+
+  <translation>
+    <name>highway=secondary_link</name>
+    <description>-</description>
+    <match type="way">
+      <tag k="Mode" v="highway" />
+      <tag k="Type" v="secondary_link" />
+    </match>
+    <output>
+      <copy-all/>
+      <tag k="highway" v="secondary_link" />
+      <tag k="name" v="Secondary coastal [highway=secondary_link]" />
+    </output>
+  </translation>
+
+  <translation>
+    <name>highway=tertiary_link</name>
+    <description>-</description>
+    <match type="way">
+      <tag k="Mode" v="highway" />
+      <tag k="Type" v="tertiary_link" />
+    </match>
+    <output>
+      <copy-all/>
+      <tag k="highway" v="tertiary_link" />
+      <tag k="name" v="Secondary coastal [highway=tertiary_link]" />
+    </output>
+  </translation>
+
+  <translation>
+    <name>highway=living_street</name>
+    <description>-</description>
+    <match type="way">
+      <tag k="Mode" v="highway" />
+      <tag k="Type" v="living_street" />
+    </match>
+    <output>
+      <copy-all/>
+      <tag k="highway" v="living_street" />
+      <tag k="name" v="Waterway [highway=living_street]" />
+    </output>
+  </translation>
+
+  <translation>
+    <name>highway=default</name>
+    <description>-</description>
+    <match type="way">
+      <tag k="Mode" v="highway" />
+      <tag k="Type" v="default" />
+    </match>
+    <output>
+      <copy-all/>
+      <tag k="highway" v="default" />
+      <tag k="name" v="Waterway [highway=default]" />
+    </output>
+  </translation>
+
+  <translation>
+    <name>highway=service</name>
+    <description>-</description>
+    <match type="way">
+      <tag k="Mode" v="highway" />
+      <tag k="Type" v="service" />
+    </match>
+    <output>
+      <copy-all/>
+      <tag k="highway" v="service" />
+      <tag k="name" v="Railway [highway=service]" />
+    </output>
+  </translation>
+    
 </translations>
