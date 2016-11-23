@@ -1,8 +1,17 @@
 var map = L.map('map');
 
+/*
 L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 	attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
+*/
+
+/* See: http://wiki.openstreetmap.org/wiki/National_Library_of_Scotland and note that {-y} must be specified as {y} with the tms flag */
+L.tileLayer('http://geo.nls.uk/mapdata2/bartholomew/great_britain/{z}/{x}/{y}.png', {
+  attribution: 'NLS - Bartholomew Half Inch, 1897-1907',
+  tms: true	/* http://leafletjs.com/reference.html#tilelayer-tms */
+}).addTo(map);
+
 
 
 
