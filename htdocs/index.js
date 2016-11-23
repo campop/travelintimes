@@ -4,6 +4,114 @@ L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 	attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
 
+
+
+// https://github.com/perliedman/leaflet-routing-machine/issues/236
+// http://www.liedman.net/leaflet-routing-machine/tutorials/interaction/
+
+// http://www.liedman.net/leaflet-routing-machine/tutorials/alternative-routers/
+// https://github.com/perliedman/leaflet-routing-machine/issues/200#issuecomment-175082024
+
+
+function button(label, container) {
+    var btn = L.DomUtil.create('button', '', container);
+    btn.setAttribute('type', 'button');
+    btn.innerHTML = label;
+    return btn;
+}
+
+
+var geoPlan = L.Routing.Plan.extend({
+
+
+        createGeocoders: function() {
+            var container = L.Routing.Plan.prototype.createGeocoders.call(this),
+
+                // Create buttons
+                button1911 = button('<font color="blue">1911</font>', container);
+                button1830 = button('<font color="green">1830</font>', container);
+                button1680 = button('<font color="#603">1680</font>', container);
+
+
+            L.DomEvent.on(button1680, 'click', function() {
+		//console.log(control.getRouter().options);
+                control.getRouter().options.serviceUrl = 'http://www.travelintimes.org:5000/route/v1';
+                control.getRouter().options.useHints = false;
+                control.route();
+                control.setWaypoints(control.getWaypoints());
+                //console.log("1680 route");
+                }, this);
+
+            L.DomEvent.on(button1830, 'click', function() {
+		//console.log(control.getRouter().options);
+                control.getRouter().options.serviceUrl = 'http://www.travelintimes.org:5001/route/v1';
+                control.getRouter().options.useHints = false;
+                control.route();
+                control.setWaypoints(control.getWaypoints());
+                //console.log("1830 route");
+                }, this);
+
+            L.DomEvent.on(button1911, 'click', function() {
+		//console.log(control.getRouter().options);
+                control.getRouter().options.serviceUrl = 'http://www.travelintimes.org:5002/route/v1';
+                control.getRouter().options.useHints = false;
+                control.route();
+                control.setWaypoints(control.getWaypoints());
+                //console.log("1911 route");
+                }, this);
+
+
+
+            return container;
+            }
+    });
+
+
+
+var plan = new geoPlan([
+        L.latLng(52.2, 0.2),
+        L.latLng(51.5, 0.1)
+    ], {
+        geocoder: L.Control.Geocoder.nominatim(),
+        routeWhileDragging: true
+});
+
+
+var control = L.Routing.control({
+	serviceUrl: 'http://www.travelintimes.org:5000/route/v1',
+        routeWhileDragging: true,
+        plan: plan
+}).addTo(map);
+
+
+
+/*
+var plan = new geoPlan(
+    [],
+    {
+	waypoints: [
+		L.latLng(57.74, 11.94),
+		L.latLng(57.6792, 11.949)
+	],
+        geocoder: L.Control.Geocoder.nominatim(),
+        routeWhileDragging: true,
+});
+*/
+
+/*
+control2 = L.Routing.control({
+
+        routeWhileDragging: true,
+//        router: L.Routing.graphHopper('key'),
+        plan: plan
+}).addTo(map);
+*/
+
+
+
+
+
+/*
 var control = L.Routing.control(L.extend(window.lrmConfig, {
 	waypoints: [
 		L.latLng(57.74, 11.94),
@@ -22,4 +130,6 @@ var control = L.Routing.control(L.extend(window.lrmConfig, {
 	}
 })).addTo(map);
 
-L.Routing.errorControl(control).addTo(map);
+
+L.Routing.errorControl(control2).addTo(map);
+*/
