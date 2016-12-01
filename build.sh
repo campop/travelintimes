@@ -121,6 +121,9 @@ mv "${file/.shp.osm/.osm}" merged.osm
 file=merged.shp.osm
 ##cd ../
 
+# Convert OSM file to using positive integers for node/way IDs
+sed -i -e 's/node id="-/node id="/' -e 's/way id="-/way id="/' -e 's/nd ref="-/nd ref="/' "${SCRIPTDIRECTORY}/${buildDirectory}/merged.osm"
+
 # Write the turn penalties file
 php "${SCRIPTDIRECTORY}/buildTurnsData.php" "${SCRIPTDIRECTORY}/${buildDirectory}"
 
