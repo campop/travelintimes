@@ -121,6 +121,9 @@ mv "${file/.shp.osm/.osm}" merged.osm
 file=merged.shp.osm
 ##cd ../
 
+# Write the turn penalties file
+php "${SCRIPTDIRECTORY}/buildTurnsData.php" "${SCRIPTDIRECTORY}/${buildDirectory}"
+
 # Build a routing graph
 ##rm /opt/osrm-backend/build/profile.lua
 cp "/opt/travelintimes/configuration/routingprofiles/profile-${strategy}.lua" /opt/osrm-backend/profiles/latest-build-profile.lua
