@@ -122,6 +122,7 @@ file=merged.shp.osm
 ##cd ../
 
 # Convert OSM file to using positive integers for node/way IDs
+# This is necessary as otherwise the osrm-contact phase will complain about invalid OSM IDs due to ulong_long expected: https://github.com/Project-OSRM/osrm-backend/blob/5a311012afd39d96700b2a039f867cccf3892c08/src/contractor/contractor.cpp#L326
 sed -i -e 's/node id="-/node id="/' -e 's/way id="-/way id="/' -e 's/nd ref="-/nd ref="/' "${SCRIPTDIRECTORY}/${buildDirectory}/merged.osm"
 
 # Write the turn penalties file
@@ -133,8 +134,9 @@ cp "/opt/travelintimes/configuration/routingprofiles/profile-${strategy}.lua" /o
 ##rm -f "${file/.shp.osm/.osrm}"*
 echo "Starting OSRM extraction and contraction using ${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osm}..."
 cd /opt/osrm-backend/build/
-./osrm-extract "${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osm}"
-./osrm-contract "${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osrm}"
+# Turn penalties system (using --generate-edge-lookup and then --turn-penalty-file) documented at: https://github.com/Project-OSRM/osrm-backend/wiki/Traffic#turn-penalty-data
+./osrm-extract "${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osm}" --generate-edge-lookup
+./osrm-contract "${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osrm}" --turn-penalty-file "${SCRIPTDIRECTORY}/${buildDirectory}/penalties.csv"
 cd -
 
 # Start the router process in the background, killing any previous instantiation if running
