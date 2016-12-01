@@ -65,8 +65,8 @@ class historicPlannerControlPanel extends frontControllerApplication
 				'url' => 'mapnikstylesheet/',
 			),
 			'frontend' => array (
-				'description' => 'Define the frontend configuration',
-				'tab' => 'Frontend',
+				'description' => 'Define the frontend GUI configuration',
+				'tab' => 'GUI',
 				'icon' => 'application_view_gallery',
 				'url' => 'frontend/',
 			),
