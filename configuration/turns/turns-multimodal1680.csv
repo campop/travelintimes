@@ -1,0 +1,6 @@
+residential,secondary,10000
+secondary,residential,2300
+residential,default,20000
+default,residential,19900
+secondary,default,2000
+default,secondary,2000
