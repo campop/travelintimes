@@ -130,7 +130,7 @@ php "${SCRIPTDIRECTORY}/buildTurnsData.php" "${SCRIPTDIRECTORY}/${buildDirectory
 
 # Build a routing graph
 ##rm /opt/osrm-backend/build/profile.lua
-cp "/opt/travelintimes/configuration/routingprofiles/profile-${strategy}.lua" /opt/osrm-backend/profiles/latest-build-profile.lua
+cp "${SCRIPTDIRECTORY}/configuration/routingprofiles/profile-${strategy}.lua" /opt/osrm-backend/profiles/latest-build-profile.lua
 ##rm -f "${file/.shp.osm/.osrm}"*
 echo "Starting OSRM extraction and contraction using ${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osm}..."
 cd /opt/osrm-backend/build/
