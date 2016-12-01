@@ -38,12 +38,12 @@
 	Use MacroFrontControllerApplication "$baseUrl/" "Historic planner control panel"
 	
 	# Application directives
-	RewriteRule ^$baseUrl/(tagtransform|routingprofiles|mapnikstylesheet|frontend|import)/$ $baseUrl/index.html?action=$1 [L]
-	RewriteRule ^$baseUrl/(tagtransform|routingprofiles|mapnikstylesheet|frontend|import)$ $baseUrl/$1/ [R]
+	RewriteRule ^$baseUrl/(tagtransform|routingprofiles|turns|mapnikstylesheet|frontend|import)/$ $baseUrl/index.html?action=$1 [L]
+	RewriteRule ^$baseUrl/(tagtransform|routingprofiles|turns|mapnikstylesheet|frontend|import)$ $baseUrl/$1/ [R]
 	RewriteRule ^$baseUrl/(tagtransform|mapnikstylesheet|frontend)/([0-9]{8}-[0-9]{6})\.html$ $baseUrl/index.html?action=$1&restore=$2 [L]
-	RewriteRule ^$baseUrl/(routingprofiles)/([^/]+)/$ $baseUrl/index.html?action=$1&profile=$2 [L]
-	RewriteRule ^$baseUrl/(routingprofiles)/([^/]+)$ $baseUrl/$1/$2/ [R]
-	RewriteRule ^$baseUrl/(routingprofiles)/([^/]+)/([0-9]{8}-[0-9]{6})\.html$ $baseUrl/index.html?action=$1&profile=$2&restore=$3 [L]
+	RewriteRule ^$baseUrl/(routingprofiles|turns)/([^/]+)/$ $baseUrl/index.html?action=$1&profile=$2 [L]
+	RewriteRule ^$baseUrl/(routingprofiles|turns)/([^/]+)$ $baseUrl/$1/$2/ [R]
+	RewriteRule ^$baseUrl/(routingprofiles|turns)/([^/]+)/([0-9]{8}-[0-9]{6})\.html$ $baseUrl/index.html?action=$1&profile=$2&restore=$3 [L]
 	
 	# Assets
 	#!# Icon location needs to be configurable

@@ -52,6 +52,12 @@ class historicPlannerControlPanel extends frontControllerApplication
 				'icon' => 'chart_curve',
 				'url' => 'routingprofiles/',
 			),
+			'turns' => array (
+				'description' => 'Define the journey planner turns definitions',
+				'tab' => 'Turns',
+				'icon' => 'arrow_branch',
+				'url' => 'turns/',
+			),
 			'mapnikstylesheet' => array (
 				'description' => 'Define the rendering profile',
 				'tab' => 'Rendering profile',
@@ -77,10 +83,10 @@ class historicPlannerControlPanel extends frontControllerApplication
 		# Determine the root of the system
 		$this->repoRoot = realpath ($this->applicationRoot . '/../..');
 		
-		# Define the profile locations
-		$profiles = array ();
+		# Define the profile and turns locations
 		foreach ($this->settings['datasets'] as $profile => $label) {
 			$this->profiles[$profile] = "profile-{$profile}.lua";
+			$this->turns[$profile] = "turns-{$profile}.csv";
 		}
 		
 	}
@@ -178,6 +184,57 @@ class historicPlannerControlPanel extends frontControllerApplication
 	
 	# Define the tag transform validation
 	private function routingprofilesValidation ($string, &$errors)
+	{
+		#!# todo
+		return true;
+	}
+	
+	
+	# Function to edit the turns definitions
+	public function turns ()
+	{
+		# Start the HTML
+		$html = '';
+		
+		# Define the instruction text
+		$instructionsHtml  = "\n" . '<p>Here you can define the turns definitions.</p>';
+		$instructionsHtml .= "\n" . "<p>Changes will only take effect <strong>after</strong> doing an <a href=\"{$this->baseUrl}/import/\">import</a>.</p>";
+		
+		# Select the requested profile, if any
+		$selectedProfile = '';	// I.e. false; empty string used so it is picked up by tab highlighting
+		if (isSet ($_GET['profile'])) {
+			if (!array_key_exists ($_GET['profile'], $this->turns)) {
+				echo $this->page404 ();
+				return false;
+			}
+			$selectedProfile = $_GET['profile'];
+		}
+		
+		# Show tabs
+		$list = array ();
+		foreach ($this->settings['datasets'] as $profile => $label) {
+			$list[$profile] = "<a href=\"{$this->baseUrl}/{$this->actions[$this->action]['url']}{$profile}/\">{$label}</a>";
+		}
+		$home = "<a href=\"{$this->baseUrl}/{$this->actions[$this->action]['url']}\"><img src=\"/images/icons/house.png\" class=\"icon\" /></a>";
+		$tabs = array_merge (array ('' => $home), $list);
+		$instructionsHtml .= application::htmlUl ($tabs, 0, 'tabs', true, false, false, false, $selectedProfile);
+		
+		# If no profile selected, show selection list
+		if (!$selectedProfile) {
+			$html .= $instructionsHtml;
+			$html .= "\n<p>Please select a turns definition to edit:</p>";
+			$html .= application::htmlUl ($list, 0, 'boxylist');
+			echo $html;
+			return;
+		}
+		
+		# Show the HTML, delegating to the file editor
+		echo $this->definitionFileEditor (__FUNCTION__, $this->turns[$selectedProfile], $instructionsHtml, 'turnsValidation');
+	}
+	
+	
+	# Define the validation
+	private function turnsValidation ($string, &$errors)
 	{
 		#!# todo
 		return true;
@@ -309,7 +366,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 		# Process the form
 		if ($result = $form->process ($html)) {
 			
-			# Back up any current version
+			# Back up the current version
 			$definitionArchiveFile = $this->repoRoot . '/configuration/' . $type . '/archive/' . $definitionFilename;
 			if (!copy ($definitionFile, $definitionArchiveFile . '.until-' . date ('Ymd-His') . ".replacedby-{$this->user}" . '.txt')) {
 				$html = "\n<p class=\"warning\">There was a problem archiving the old definition.</p>";
