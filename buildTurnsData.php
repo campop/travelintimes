@@ -13,23 +13,14 @@ if (!isSet ($argv[1])) {
 	exit;
 }
 
-$turnPenaltiesDefinition = '
-residential,secondary,10000
-secondary,residential,2300
-residential,default,20000
-default,residential,19900
-secondary,default,2000
-default,secondary,2000
-';
-
 # Run the class
-new createTurnPenalties ($argv[1], $turnPenaltiesDefinition);
+new createTurnPenalties ($argv[1], $argv[2]);
 
 # Class definition
 class createTurnPenalties
 {
 	# Constructor
-	public function __construct ($directory, $turnPenaltiesDefinition)
+	public function __construct ($directory, $turnPenaltiesDefinitionFile)
 	{
 		# Determine the input and output files
 		$inputFile = $directory . '/merged.osm';
@@ -41,8 +32,14 @@ class createTurnPenalties
 			return false;
 		}
 		
+		# Ensure the turn penalties definition file is readable
+		if (!is_readable ($turnPenaltiesDefinitionFile)) {
+			echo 'ERROR: ' . "The turn penalties definition file {$turnPenaltiesDefinitionFile} does not exist or is not readable." . "\n";
+			return false;
+		}
+		
 		# Parse the turn penalties definition
-		$turnPenaltyTypes = $this->parseTurnPenaltiesDefinition ($turnPenaltiesDefinition);
+		$turnPenaltyTypes = $this->parseTurnPenaltiesDefinition ($turnPenaltiesDefinitionFile);
 		
 		# Parse the input file and create the output file
 		if (!$combinations = $this->main ($inputFile, $outputFile, $turnPenaltyTypes, $error)) {
@@ -59,8 +56,20 @@ class createTurnPenalties
 	
 	
 	# Function to parse the turn penalties definition
-	private function parseTurnPenaltiesDefinition ($string)
+	/* Example file would contain CSV like:
+		residential,secondary,10000
+		secondary,residential,2300
+		residential,default,20000
+		default,residential,19900
+		secondary,default,2000
+		default,secondary,2000
+	*/
+	
+	private function parseTurnPenaltiesDefinition ($filename)
 	{
+		# Get the file
+		$string = file_get_contents ($filename);
+		
 		# Trim block and convert to lines
 		$lines = explode ("\n", str_replace ("\r\n", "\n", trim ($string)));
 		

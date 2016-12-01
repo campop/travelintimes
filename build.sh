@@ -126,7 +126,7 @@ file=merged.shp.osm
 sed -i -e 's/node id="-/node id="/' -e 's/way id="-/way id="/' -e 's/nd ref="-/nd ref="/' "${SCRIPTDIRECTORY}/${buildDirectory}/merged.osm"
 
 # Write the turn penalties file
-php "${SCRIPTDIRECTORY}/buildTurnsData.php" "${SCRIPTDIRECTORY}/${buildDirectory}"
+php "${SCRIPTDIRECTORY}/buildTurnsData.php" "${SCRIPTDIRECTORY}/${buildDirectory}" "${SCRIPTDIRECTORY}/configuration/turns/turns-${strategy}.csv"
 
 # Build a routing graph
 ##rm /opt/osrm-backend/build/profile.lua
