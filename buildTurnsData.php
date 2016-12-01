@@ -154,13 +154,43 @@ class createTurnPenalties
 			$highwayType = (string) $way->xpath('./tag[@k="highway"]/@v')[0];	// See: http://stackoverflow.com/a/4045822
 			
 			# Get each node ID on this way
+			$wayNodes = array ();
 			foreach ($way->xpath('./nd') as $node) {
-				$nodeId = (string) $node['ref'];
+				$wayNodes[] = (string) $node['ref'];
+			}
+			
+			# Register each node
+			$lastNodeIndex = count ($wayNodes) - 1;	// e.g. array of 10 nodes would have [9] as the last
+			foreach ($wayNodes as $index => $nodeId) {
+				
+				# Determine the adjacent node for the way (as the OSRM turns implementation is from-node,via-node,to-node)
+				# See: https://github.com/Project-OSRM/osrm-backend/wiki/Traffic
+				# See: https://github.com/Project-OSRM/osrm-backend/commit/68d672b5ac52ee451e97d3bb39d25703b06d89ab
+				switch ($index) {
+					
+					# Start of way
+					case 0:
+						$adjacentNode = $wayNodes[1];
+						break;
+					
+					# End of way
+					case $lastNodeIndex:
+						$penultimateNodeIndex = $lastNodeIndex - 1;
+						$adjacentNode = $wayNodes[$penultimateNodeIndex];
+						break;
+					
+					# In middle of way
+					default:
+						// #!# TODO - not clear how to determine this yet
+						continue 2;	// Skip this node
+						break;
+				}
 				
 				# Register the node, saving the way ID and highway type
-				$nodes[$nodeId][$wayId] = $highwayType;
+				$nodes[$nodeId][$adjacentNode] = $highwayType;
 			}
 		}
+		//print_r ($nodes);
 		
 		# Remove non-junction nodes, i.e. nodes that have only have one way listed
 		foreach ($nodes as $nodeId => $ways) {
