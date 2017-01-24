@@ -145,6 +145,11 @@ if pgrep -f "osrm-routed -p ${port}"; then pkill -f "osrm-routed -p ${port}"; fi
 /opt/osrm-backend/build/osrm-routed -p $port "${file/.shp.osm/.osrm}" > "${SCRIPTDIRECTORY}/logs-osrm/osrm-${strategy}.log" &
 echo "Running /opt/osrm-backend/build/osrm-routed -p $port ${buildDirectory}/${file/.shp.osm/.osrm}"
 
+
+exit
+
+
+
 # Generate mapnik image; uses merged.osm
 # From: https://github.com/openstreetmap/mapnik-stylesheets/blob/master/generate_image.py
 #bboxWsen="10.72265625 50.064191736 2.724609375 59.26588062825"
@@ -153,9 +158,6 @@ imageFilename=network.png
 mapnikFile="${SCRIPTDIRECTORY}/configuration/mapnikstylesheet/mapnikstylesheet.xml"
 "${SCRIPTDIRECTORY}/generate_image.py" htdocs/controlpanel/${imageFilename} $mapnikFile $bboxWsen
 echo "Image now at http://www.travelintimes.org/controlpanel/${imageFilename}"
-
-
-exit
 
 
 
