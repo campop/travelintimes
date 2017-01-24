@@ -127,6 +127,7 @@ sed -i -e 's/node id="-/node id="/' -e 's/way id="-/way id="/' -e 's/nd ref="-/n
 
 # Write the turn penalties file
 php "${SCRIPTDIRECTORY}/buildTurnsData.php" "${SCRIPTDIRECTORY}/${buildDirectory}" "${SCRIPTDIRECTORY}/configuration/turns/turns-${strategy}.csv"
+echo "Turns file written to ${SCRIPTDIRECTORY}/${buildDirectory}/penalties.csv"
 
 # Build a routing graph
 ##rm /opt/osrm-backend/build/profile.lua
