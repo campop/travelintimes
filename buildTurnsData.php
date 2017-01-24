@@ -164,6 +164,18 @@ class createTurnPenalties
 </osm>
 		*/
 		
+		# Create a list of nodes present in the ways, for each instance, so that tha list of junctions (i.e. those that appear more than once) can be created
+		$allNodes = array ();
+		foreach ($osm->xpath('/osm/way') as $way) {
+			foreach ($way->xpath('./nd') as $node) {
+				$allNodes[] = (string) $node['ref'];
+			}
+		}
+		
+		# Filter the nodes to junctions
+		$checkKeysUniqueComparison = create_function ('$value', 'if ($value > 1) return true;');
+		$junctionNodes = array_keys (array_filter (array_count_values ($allNodes), $checkKeysUniqueComparison));
+		
 		# Create an indexed array of ways at each node
 		$nodes = array ();
 		foreach ($osm->xpath('/osm/way') as $way) {
@@ -184,7 +196,11 @@ class createTurnPenalties
 			$lastNodeIndex = count ($wayNodes) - 1;	// e.g. array of 10 nodes would have [9] as the last
 			foreach ($wayNodes as $index => $nodeId) {
 				
+				# Skip if not a junction node
+				if (!in_array ($nodeId, $junctionNodes)) {continue;}
+				
 				# Determine the adjacent node for the way (as the OSRM turns implementation is from-node,via-node,to-node)
+				# For each, register the node, saving the node IDs and highway type
 				# See: https://github.com/Project-OSRM/osrm-backend/wiki/Traffic
 				# See: https://github.com/Project-OSRM/osrm-backend/commit/68d672b5ac52ee451e97d3bb39d25703b06d89ab
 				switch ($index) {
@@ -192,33 +208,34 @@ class createTurnPenalties
 					# Start of way
 					case 0:
 						$adjacentNode = $wayNodes[1];
+						$nodes[$nodeId][$adjacentNode] = $highwayType;	// Register
 						break;
 					
 					# End of way
 					case $lastNodeIndex:
 						$penultimateNodeIndex = $lastNodeIndex - 1;
 						$adjacentNode = $wayNodes[$penultimateNodeIndex];
+						$nodes[$nodeId][$adjacentNode] = $highwayType;	// Register
 						break;
 					
 					# In middle of way
 					default:
-						// #!# TODO - not clear how to determine this yet
-						continue 2;	// Skip this node
+						
+						# Register the previous node
+						$previousNodeIndex = $index - 1;
+						$adjacentPreviousNode = $wayNodes[$previousNodeIndex];
+						$nodes[$nodeId][$adjacentPreviousNode] = $highwayType;	// Register
+						
+						# Also, register the next node
+						$nextNodeIndex = $index + 1;
+						$adjacentNextNode = $wayNodes[$nextNodeIndex];
+						$nodes[$nodeId][$adjacentNextNode] = $highwayType;	// Register
+						
 						break;
 				}
-				
-				# Register the node, saving the way ID and highway type
-				$nodes[$nodeId][$adjacentNode] = $highwayType;
 			}
 		}
 		//print_r ($nodes);
-		
-		# Remove non-junction nodes, i.e. nodes that have only have one way listed
-		foreach ($nodes as $nodeId => $ways) {
-			if (count ($ways) == 1) {
-				unset ($nodes[$nodeId]);
-			}
-		}
 		
 		# Remove junctions where all ways are of the same type, i.e. no transfer cost would be incurred
 		foreach ($nodes as $nodeId => $ways) {
