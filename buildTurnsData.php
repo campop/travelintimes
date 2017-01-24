@@ -14,17 +14,23 @@ if (!isSet ($argv[1])) {
 }
 
 # Run the class
-new createTurnPenalties ($argv[1], $argv[2]);
+$createTurnPenalties = new createTurnPenalties ($argv[1], $argv[2]);
+$result = $createTurnPenalties->main ();
+if (!$result) {exit (1);}	// Signal failure to shell
+
 
 # Class definition
 class createTurnPenalties
 {
+	# Class properties
+	private $setupOk;
+	
 	# Constructor
 	public function __construct ($directory, $turnPenaltiesDefinitionFile)
 	{
 		# Determine the input and output files
-		$inputFile = $directory . '/merged.osm';
-		$outputFile = $directory . '/penalties.csv';
+		$this->inputFile = $directory . '/merged.osm';
+		$this->outputFile = $directory . '/penalties.csv';
 		
 		# Ensure the directory is writable
 		if (!is_writable ($directory)) {
@@ -37,12 +43,24 @@ class createTurnPenalties
 			echo 'ERROR: ' . "The turn penalties definition file {$turnPenaltiesDefinitionFile} does not exist or is not readable." . "\n";
 			return false;
 		}
+		$this->turnPenaltiesDefinitionFile = $turnPenaltiesDefinitionFile;
+		
+		# Confirm setup is OK
+		$this->setupOk = true;
+	}
+	
+	
+	# Main entry point
+	public function main ()
+	{
+		# Ensure setup is OK, or end
+		if (!$this->setupOk) {return false;}
 		
 		# Parse the turn penalties definition
-		$turnPenaltyTypes = $this->parseTurnPenaltiesDefinition ($turnPenaltiesDefinitionFile);
+		$turnPenaltyTypes = $this->parseTurnPenaltiesDefinition ($this->turnPenaltiesDefinitionFile);
 		
 		# Parse the input file and create the output file
-		if (!$combinations = $this->main ($inputFile, $outputFile, $turnPenaltyTypes, $error)) {
+		if (!$combinations = $this->process ($this->inputFile, $this->outputFile, $turnPenaltyTypes, $error)) {
 			echo 'ERROR: ' . $error . "\n";
 			return false;
 		}
@@ -52,6 +70,9 @@ class createTurnPenalties
 		
 		# Write the file
 		file_put_contents ($outputFile, $csv);
+		
+		# Return success
+		return true;
 	}
 	
 	
@@ -86,8 +107,8 @@ class createTurnPenalties
 	}
 	
 	
-	# Main function
-	private function main ($inputFile, $outputFile, $turnPenaltyTypes, &$error = '')
+	# Processor function
+	private function process ($inputFile, $outputFile, $turnPenaltyTypes, &$error = '')
 	{
 		# Ensure the file exists and is readable
 		if (!is_readable ($inputFile)) {
