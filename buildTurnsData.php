@@ -69,7 +69,7 @@ class createTurnPenalties
 		$csv = $this->convertToCsv ($combinations);
 		
 		# Write the file
-		file_put_contents ($outputFile, $csv);
+		file_put_contents ($this->outputFile, $csv);
 		
 		# Return success
 		return true;
@@ -231,6 +231,7 @@ class createTurnPenalties
 		
 		# Create all combinations for each node
 		$combinations = array ();
+		$missingCombinations = array ();
 		foreach ($nodes as $nodeId => $ways) {
 			foreach ($ways as $fromId => $fromType) {
 				foreach ($ways as $toId => $toType) {
@@ -244,8 +245,8 @@ class createTurnPenalties
 					# Look up the penalty for this combination
 					$combinationId = $fromType . ',' . $toType;
 					if (!isSet ($turnPenaltyTypes[$combinationId])) {
-						$error = "The turn penalty definition list does not include a definition for {$fromType} -> {$toType}";
-						return false;
+						$missingCombinations[] = "{$fromType} -> {$toType}";
+						continue;
 					}
 					
 					# Add this combination; we assume a directional graph, i.e. residential -> rail could be different to rail -> residential
@@ -258,6 +259,13 @@ class createTurnPenalties
 				}
 			}
 
+		}
+		
+		# Report missing combinations, as an error
+		if ($missingCombinations) {
+			$error  = "The turn penalty definition list does not include a definition for:";
+			$error .= "\n\t" . implode ("\n\t", array_unique ($missingCombinations));
+			return false;
 		}
 		
 		# Return the combinations list
