@@ -109,6 +109,9 @@ var travelintimes = (function ($) {
 			
 			// Add hash support
 			new L.Hash (_map, baseLayersById);
+			
+			// Add geolocation control
+			L.control.locate().addTo(_map);
 		},
 		
 		
