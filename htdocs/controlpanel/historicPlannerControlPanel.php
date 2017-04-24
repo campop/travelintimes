@@ -15,11 +15,13 @@ class historicPlannerControlPanel extends frontControllerApplication
 			'importsSectionsMode' => true,
 			
 			# Datasets
+			'startPort' => 5000,
 			'datasets' => array (
 				'multimodal1680' => 'Multimodal 1680',	// Port 5000
 				'multimodal1830' => 'Multimodal 1830',	// Port 5001
 				'multimodal1911' => 'Multimodal 1911',	// Port 5002
 			),
+			'builds' => NULL,	// Array of last known good builds
 		
 		);
 		
@@ -60,7 +62,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 			),
 			'mapnikstylesheet' => array (
 				'description' => 'Define the rendering profile',
-				'tab' => 'Rendering profile',
+				'tab' => 'Rendering',
 				'icon' => 'map',
 				'url' => 'mapnikstylesheet/',
 			),
@@ -69,6 +71,12 @@ class historicPlannerControlPanel extends frontControllerApplication
 				'tab' => 'GUI',
 				'icon' => 'application_view_gallery',
 				'url' => 'frontend/',
+			),
+			'engine' => array (
+				'tab' => 'Start/stop',
+				'icon' => 'control_play_blue',
+				'url' => 'engine/',
+				'description' => 'Start/stop the routing process',
 			),
 		);
 		
@@ -438,6 +446,72 @@ class historicPlannerControlPanel extends frontControllerApplication
 	}
 	
 	
+	# Function to start/stop the engine process
+	public function engine ()
+	{
+		# Start the HTML
+		$html  = '';
+		
+		# Obtain confirmation from the user
+		$message = '<strong>Are you sure you want to (re)start the engine?</strong>';
+		$confirmation = 'Yes, (re)start';
+		if ($this->areYouSure ($message, $confirmation, $html)) {
+			
+			# Reset the HTML
+			$html = '';
+			
+			# Restart the engine, for each profile
+			$port = $this->settings['startPort'] - 1;	// Minus one, as will be immediately incremented to the first
+			foreach ($this->settings['datasets'] as $profile => $label) {
+				$port++;	// E.g. 5000, 5001, 5002
+				
+				# State the engine profile
+				$html .= "\n<p><em>Engine profile {$profile}:</em></p>";
+				
+				# Kill any existing process
+				$command = "pgrep -f 'osrm-routed -p ${port}'";
+				exec ($command, $pids);		// See: http://stackoverflow.com/a/3111553
+				if ($pids) {
+					$command = "pkill -f 'osrm-routed -p ${port}'";
+					exec ($command, $output = array (), $returnStatusValue);
+					#!# Return status does not seem to be handled properly
+					/*
+					if ($returnStatusValue) {
+						$html .= "\n" . '<p class="error">Problem shutting down existing engine process:</p>';
+						$html .= "\n" . application::dumpData ($output, false, $return = true);
+						continue;
+					}
+					*/
+				}
+				
+				# Execute the command for this profile
+				$commandBase = '/opt/osrm-backend/build/osrm-routed -p %port /opt/travelintimes/enginedata/%profile/%build/merged.osrm > /opt/travelintimes/logs-osrm/osrm-%profile.log &';
+				$replacements = array (
+					'%port' => $port,
+					'%profile' => $profile,
+					'%build' => $this->settings['builds'][$profile],
+				);
+				$command = strtr ($commandBase, $replacements);
+				exec ($command, $output = array (), $returnStatusValue);
+				#!# Return status does not seem to be handled properly
+				/*
+				if ($returnStatusValue) {
+					$html .= "\n" . '<p class="error">Problem starting the engine:</p>';
+					$html .= "\n" . application::dumpData ($output, false, $return = true);
+					continue;
+				}
+				*/
+				
+				# Confirm success
+				$html .= "<p>{$this->tick} The engine was (re)started.</p>";
+			}
+		}
+		
+		# Show the HTML
+		echo $html;
+	}
+	
+	
 	# Function to import the file, clearing any existing import
 	public function import ()
 	{
@@ -467,7 +541,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 		$exportFile = $exportFiles[$grouping];  // i.e. first value
 		
 		# Determine the port the eventual routing engine should use
-		$port = 5000;
+		$port = $this->settings['startPort'];
 		foreach ($this->settings['datasets'] as $dataset => $label) {
 			if ($grouping == $dataset) {
 				break;	// Port is now set, e.g. first dataset is 5000
