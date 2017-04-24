@@ -1,7 +1,21 @@
 /* Layout */
 html, body {width: 100%; height: 100%; margin: 0; padding: 0;}
+#header {height: 68px; background-color: #f7f7f7; border-bottom: 2px solid #eee; padding: 15px 10px;}
 
-#mapcontainer {width: 100%; height: 100%; position: relative;}
+/* Typography */
+body .leaflet-container {}
+
+/* Header */
+#header {font-family: 'Josefin Sans', sans-serif;}
+#header img {width: 200px; height: 68px; margin-right: 20px; float: right;}
+#header h1 {font-family:'Roboto Condensed', sans-serif; font-size: 55px; color: #333; margin: 0; padding: 0;}
+#header h1 a {text-decoration: none; color: #333;}
+#header h4 {position: absolute; font-size: 20px; left: 350px; top: 0px; font-style: italic; font-weight: normal;}
+#header ul {position: absolute; right: 300px; top: 0; list-style: none;}
+#header ul li {float: left; padding-top: 30px; padding-right: 20px;}
+#header ul li a {color: #777; text-decoration: none; border-bottom: 4px solid #777; padding-bottom: 5px;}
+
+#mapcontainer {width: 100%; height: calc(100% - 100px); position: relative;}
 
 #map {width: 100%; height: 100%;}
 
