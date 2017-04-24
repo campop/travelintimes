@@ -48,10 +48,12 @@ var travelintimes = (function ($) {
 		geocoderApiKey: 'YOUR_API_KEY',		// Obtain at https://www.cyclestreets.net/api/apply/
 		autocompleteBbox: '-6.6577,49.9370,1.7797,57.6924',
 		
-		// Datasets
+		// Datasets, and the port they run on
 		datasets: {
-		},
-		
+			1680: 5000,
+			1830: 5001,
+			1911: 5002
+		}
 	};
 	
 	
@@ -188,37 +190,19 @@ var travelintimes = (function ($) {
 					
 					var container = L.Routing.Plan.prototype.createGeocoders.call(this);
 					
-					// Create buttons
-					var button1680 = button('1680', container);
-					var button1830 = button('1830', container);
-					var button1911 = button('1911', container);
-					
-					L.DomEvent.on(button1680, 'click', function() {
-						//console.log(control.getRouter().options);
-						control.getRouter().options.serviceUrl = 'http://www.travelintimes.org:5000/route/v1';
-						control.getRouter().options.useHints = false;
-						control.route();
-						control.setWaypoints(control.getWaypoints());
-						//console.log("1680 route");
-					}, this);
-					
-					L.DomEvent.on(button1830, 'click', function() {
-						///console.log(control.getRouter().options);
-						control.getRouter().options.serviceUrl = 'http://www.travelintimes.org:5001/route/v1';
-						control.getRouter().options.useHints = false;
-						control.route();
-						control.setWaypoints(control.getWaypoints());
-						//console.log("1830 route");
-					}, this);
-					
-					L.DomEvent.on(button1911, 'click', function() {
-						//console.log(control.getRouter().options);
-						control.getRouter().options.serviceUrl = 'http://www.travelintimes.org:5002/route/v1';
-						control.getRouter().options.useHints = false;
-						control.route();
-						control.setWaypoints(control.getWaypoints());
-						//console.log("1911 route");
-					}, this);
+					// Add each route, with a button
+					var thisButton;
+					$.each (_settings['datasets'], function (year, port) {
+						thisButton = button(year, container);
+						L.DomEvent.on(thisButton, 'click', function() {
+							//console.log(control.getRouter().options);
+							control.getRouter().options.serviceUrl = 'http://www.travelintimes.org:' + port + '/route/v1';
+							control.getRouter().options.useHints = false;
+							control.route();
+							control.setWaypoints(control.getWaypoints());
+							//console.log(year + ' route');
+						}, this);
+					});
 					
 					return container;
 				}
