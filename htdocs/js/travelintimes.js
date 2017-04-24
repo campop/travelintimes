@@ -104,9 +104,6 @@ var travelintimes = (function ($) {
 				layers: tileLayers[0]	// Documentation suggests tileLayers is all that is needed, but that shows all together
 			});
 			
-			// Add the base (background) layer switcher
-			L.control.layers(baseLayers, null).addTo(_map);
-			
 			// Add geocoder control
 			travelintimes.geocoder ();
 			
@@ -115,6 +112,9 @@ var travelintimes = (function ($) {
 			
 			// Add geolocation control
 			L.control.locate().addTo(_map);
+			
+			// Add the base (background) layer switcher
+			L.control.layers(baseLayers, null, {position: 'bottomleft'}).addTo(_map);
 		},
 		
 		
