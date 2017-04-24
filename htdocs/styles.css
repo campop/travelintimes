@@ -31,6 +31,12 @@ body .ui-front {z-index: 1000;}
 .ui-autocomplete li a span {color: gray; font-size: 0.81em;}
 .ui-autocomplete li a.ui-state-active {cursor: pointer; background-color: #f7f7f7;}
 
+/* About text */
+#about {display: none;}
+#aboutbox {max-height: 400px; overflow-y: scroll;}
+.vex.vex-theme-plain.wider .vex-content {width: 90%; padding-right: 35px;}
+#aboutbox a {display: none;}
+
 /* Routing */
 .leaflet-top.leaflet-right {height: 100%; background-color:rgba(237, 242, 255, 0.85); padding-left: 10px;}
 .leaflet-touch .leaflet-top.leaflet-right .leaflet-control-layers, .leaflet-touch .leaflet-top.leaflet-right .leaflet-routing-container.leaflet-bar {border: 0; background-color: transparent;}
