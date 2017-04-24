@@ -1,0 +1,3 @@
+var config = {
+	geocoderApiKey: 'YOUR_API_KEY',		// Obtain at https://www.cyclestreets.net/api/apply/
+}

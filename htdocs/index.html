@@ -4,16 +4,67 @@
     <meta charset="utf-8" />
     <title>Travel in times - Historic journey planner, from CAMPOP</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+<!--
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
+-->
     <link rel="stylesheet" href="/css/leaflet-routing-machine.css" />
-    <link rel="stylesheet" href="index.css" />
+
+
+	<link rel="stylesheet" href="styles.css" />
+
+
+	
+	<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" type="text/css">
+	
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+	<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+	
+	<script type="text/javascript" src="js/lib/geocoder/geocoder.js"></script>
+	
+	<script type="text/javascript" src="js/lib/leaflet-fullHash/leaflet-fullHash.js"></script>
+	
+	<script src="/js/lib/js-cookie/js.cookie.js"></script>
+	
+	<!-- Vex dialogs; see: http://github.hubspot.com/vex/ -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/vex-js/3.0.0/js/vex.combined.min.js"></script>
+	<script>vex.defaultOptions.className = 'vex-theme-plain'</script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vex-js/3.0.0/css/vex.min.css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vex-js/3.0.0/css/vex-theme-plain.min.css" />
+	
+	<script type="text/javascript" src=".config.js"></script>
+	<script type="text/javascript" src="js/travelintimes.js"></script>
+	<script type="text/javascript">
+		$(function() {
+			travelintimes.initialise (config);
+		});
+	</script>
+			
 </head>
 <body>
+
+<!--
     <div id="map" class="map"></div>
     <script src="https://unpkg.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
     <script src="/dist/leaflet-routing-machine.js"></script>
     <script src="/examples/Control.Geocoder.js"></script>
     <script src="config.js"></script>
     <script src="index.js"></script>
+-->
+
+
+			<div id="mapcontainer">
+				
+				<div id="geocoder">
+					<input type="text" name="location" autocomplete="off" placeholder="Search locations and move map" tabindex="1" />
+				</div>
+				
+				<div id="map"></div>
+				
+			</div>
+
+
 </body>
 </html>
