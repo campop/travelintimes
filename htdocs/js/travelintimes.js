@@ -74,8 +74,9 @@ var travelintimes = (function ($) {
 			// Show first-run welcome message if the user is new to the site
 			travelintimes.welcomeFirstRun ();
 			
-			// Add about page handler
+			// Add page handlers
 			travelintimes.about ();
+			travelintimes.acknowledgements ();
 			
 			// Add the data to the map as switchable layers
 			travelintimes.journeyplanner ();
@@ -173,6 +174,13 @@ var travelintimes = (function ($) {
 				vex.dialog.alert ({unsafeMessage: html, showCloseButton: true, className: 'vex vex-theme-plain wider'});
 				e.preventDefault ();
 			});
+		},
+		
+		
+		// Acknowlegements page
+		acknowledgements: function ()
+		{
+			return travelintimes.pageHandler ('acknowledgements');
 		},
 		
 		
