@@ -157,12 +157,20 @@ var travelintimes = (function ($) {
 		},
 		
 		
+		// About page
 		about: function ()
 		{
-			$('#menu li.about').click (function (e) {
-				var aboutHtml = $('#about').html();
-				aboutHtml = '<div id="aboutbox">' + aboutHtml + '</div>';
-				vex.dialog.alert ({unsafeMessage: aboutHtml, showCloseButton: true, className: 'vex vex-theme-plain wider'});
+			return travelintimes.pageHandler ('about');
+		},
+		
+		
+		// Page handler
+		pageHandler: function (name)
+		{
+			$('#menu li.' + name).click (function (e) {
+				var html = $('#' + name).html();
+				html = '<div id="' + name + 'box">' + html + '</div>';
+				vex.dialog.alert ({unsafeMessage: html, showCloseButton: true, className: 'vex vex-theme-plain wider'});
 				e.preventDefault ();
 			});
 		},
