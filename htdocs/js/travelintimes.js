@@ -77,6 +77,7 @@ var travelintimes = (function ($) {
 			// Add page handlers
 			travelintimes.about ();
 			travelintimes.acknowledgements ();
+			travelintimes.travellerstales ();
 			
 			// Add the data to the map as switchable layers
 			travelintimes.journeyplanner ();
@@ -168,6 +169,20 @@ var travelintimes = (function ($) {
 		},
 		
 		
+		// Acknowlegements page
+		acknowledgements: function ()
+		{
+			return travelintimes.pageHandler ('acknowledgements');
+		},
+		
+		
+		// Travellers' tales page
+		travellerstales: function ()
+		{
+			return travelintimes.pageHandler ('travellerstales');
+		},
+		
+		
 		// Page handler
 		pageHandler: function (name)
 		{
@@ -177,13 +192,6 @@ var travelintimes = (function ($) {
 				vex.dialog.alert ({unsafeMessage: html, showCloseButton: true, className: 'vex vex-theme-plain wider'});
 				e.preventDefault ();
 			});
-		},
-		
-		
-		// Acknowlegements page
-		acknowledgements: function ()
-		{
-			return travelintimes.pageHandler ('acknowledgements');
 		},
 		
 		
