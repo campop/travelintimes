@@ -107,6 +107,9 @@ var travelintimes = (function ($) {
 				layers: tileLayers[0]	// Documentation suggests tileLayers is all that is needed, but that shows all together
 			});
 			
+			// Add scale
+			L.control.scale({maxWidth: 300}).addTo(_map);
+			
 			// Add geocoder control
 			travelintimes.geocoder ();
 			
