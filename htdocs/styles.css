@@ -32,10 +32,10 @@ body .ui-front {z-index: 1000;}
 .ui-autocomplete li a.ui-state-active {cursor: pointer; background-color: #f7f7f7;}
 
 /* About text */
-#about, #acknowledgements {display: none;}
-#aboutbox, #acknowlegementsbox {max-height: 400px; overflow-y: scroll;}
+#about, #acknowledgements, #travellerstales {display: none;}
+#aboutbox, #acknowlegementsbox, #travellerstalesbox {max-height: 400px; overflow-y: scroll;}
 .vex.vex-theme-plain.wider .vex-content {width: 90%; padding-right: 35px;}
-#aboutbox a, #acknowledgementsbox a {display: none;}
+#aboutbox a, #acknowledgementsbox a, #travellerstales a {display: none;}
 
 /* Table style */
 table.lines {border-collapse: collapse;}
