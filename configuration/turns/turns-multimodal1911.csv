@@ -1,1 +1,5 @@
 residential,secondary,2
+primary,unclassified,2
+unclassified,primary,2
+trunk_link,secondary_link,2
+secondary_link,trunk_link,2
