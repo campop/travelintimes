@@ -60,6 +60,7 @@ class createTurnPenalties
 		$turnPenaltyTypes = $this->parseTurnPenaltiesDefinition ($this->turnPenaltiesDefinitionFile);
 		
 		# Parse the input file and create the output file
+		#!# This currently assumes that turns are always wanted - an intended lack of matches will cause the build to terminate
 		if (!$combinations = $this->process ($this->inputFile, $this->outputFile, $turnPenaltyTypes, $error)) {
 			echo 'ERROR: ' . $error . "\n";
 			return false;

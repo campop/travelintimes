@@ -126,6 +126,7 @@ file=merged.shp.osm
 sed -i -e 's/node id="-/node id="/' -e 's/way id="-/way id="/' -e 's/nd ref="-/nd ref="/' "${SCRIPTDIRECTORY}/${buildDirectory}/merged.osm"
 
 # Write the turn penalties file
+#!# This currently assumes that turns are always wanted - an intended lack of matches will cause the build to terminate
 php "${SCRIPTDIRECTORY}/buildTurnsData.php" "${SCRIPTDIRECTORY}/${buildDirectory}" "${SCRIPTDIRECTORY}/configuration/turns/turns-${strategy}.csv"
 echo "Turns file written to ${SCRIPTDIRECTORY}/${buildDirectory}/penalties.csv"
 
