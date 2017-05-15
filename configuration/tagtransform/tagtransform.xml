@@ -7,11 +7,13 @@
     <match type="way">
       <tag k="Mode" v="highway" />
       <tag k="Type" v="trunk" />
+      <tag k="Name" v="(.*)" match_id="name"/>
     </match>
     <output>
       <copy-all/>
       <tag k="highway" v="trunk" />
-      <tag k="name" v="Main road [highway=trunk]" />
+      <!--<tag k="name" v="Main road [highway=trunk]" />-->
+      <tag k="name" from_match="name" v="{1}"/>
     </output>
   </translation>
  
@@ -21,11 +23,13 @@
     <match type="way">
       <tag k="Mode" v="highway" />
       <tag k="Type" v="primary" />
+      <tag k="Name" v="(.*)" match_id="name"/>
     </match>
     <output>
       <copy-all/>
       <tag k="highway" v="primary" />
-      <tag k="name" v="Main road [highway=primary]" />
+      <!--<tag k="name" v="Main road [highway=primary]" />-->
+      <tag k="name" from_match="name" v="{1}"/>
     </output>
   </translation>
 
@@ -35,11 +39,13 @@
     <match type="way">
       <tag k="Mode" v="highway" />
       <tag k="Type" v="secondary" />
+      <tag k="Name" v="(.*)" match_id="name"/>
     </match>
     <output>
       <copy-all/>
       <tag k="highway" v="secondary" />
-      <tag k="name" v="Main road [highway=secondary]" />
+      <!--<tag k="name" v="Main road [highway=secondary]" />-->
+      <tag k="name" from_match="name" v="{1}"/>
     </output>
   </translation>
 
@@ -49,11 +55,13 @@
     <match type="way">
       <tag k="Mode" v="highway" />
       <tag k="Type" v="tertiary" />
+      <tag k="Name" v="(.*)" match_id="name"/>
     </match>
     <output>
       <copy-all/>
       <tag k="highway" v="tertiary" />
-      <tag k="name" v="Secondary road [highway=tertiary]" />
+      <!--<tag k="name" v="Secondary road [highway=tertiary]" />-->
+      <tag k="name" from_match="name" v="{1}"/>
     </output>
   </translation>
 
@@ -63,11 +71,13 @@
     <match type="way">
       <tag k="Mode" v="highway" />
       <tag k="Type" v="unclassified" />
+      <tag k="Name" v="(.*)" match_id="name"/>
     </match>
     <output>
       <copy-all/>
       <tag k="highway" v="unclassified" />
-      <tag k="name" v="Secondary road [highway=unclassified]" />
+      <!--<tag k="name" v="Secondary road [highway=unclassified]" />-->
+      <tag k="name" from_match="name" v="{1}"/>
     </output>
   </translation>
 
@@ -77,11 +87,13 @@
     <match type="way">
       <tag k="Mode" v="highway" />
       <tag k="Type" v="residential" />
+      <tag k="Name" v="(.*)" match_id="name"/>
     </match>
     <output>
       <copy-all/>
       <tag k="highway" v="residential" />
-      <tag k="name" v="Secondary road [highway=residential]" />
+      <!--<tag k="name" v="Secondary road [highway=residential]" />-->
+      <tag k="name" from_match="name" v="{1}"/>
     </output>
   </translation>
 
@@ -91,11 +103,13 @@
     <match type="way">
       <tag k="Mode" v="highway" />
       <tag k="Type" v="trunk_link" />
+      <tag k="Name" v="(.*)" match_id="name"/>
     </match>
     <output>
       <copy-all/>
       <tag k="highway" v="trunk_link" />
-      <tag k="name" v="Main coastal [highway=trunk_link]" />
+      <!--<tag k="name" v="Main coastal [highway=trunk_link]" />-->
+      <tag k="name" from_match="name" v="{1}"/>
     </output>
   </translation>
 
@@ -105,11 +119,13 @@
     <match type="way">
       <tag k="Mode" v="highway" />
       <tag k="Type" v="primary_link" />
+      <tag k="Name" v="(.*)" match_id="name"/>
     </match>
     <output>
       <copy-all/>
       <tag k="highway" v="primary_link" />
-      <tag k="name" v="Main coastal [highway=primary_link]" />
+      <!--<tag k="name" v="Main coastal [highway=primary_link]" />-->
+      <tag k="name" from_match="name" v="{1}"/>
     </output>
   </translation>
 
@@ -119,11 +135,13 @@
     <match type="way">
       <tag k="Mode" v="highway" />
       <tag k="Type" v="secondary_link" />
+      <tag k="Name" v="(.*)" match_id="name"/>
     </match>
     <output>
       <copy-all/>
       <tag k="highway" v="secondary_link" />
-      <tag k="name" v="Secondary coastal [highway=secondary_link]" />
+      <!--<tag k="name" v="Secondary coastal [highway=secondary_link]" />-->
+      <tag k="name" from_match="name" v="{1}"/>
     </output>
   </translation>
 
@@ -133,11 +151,13 @@
     <match type="way">
       <tag k="Mode" v="highway" />
       <tag k="Type" v="tertiary_link" />
+      <tag k="Name" v="(.*)" match_id="name"/>
     </match>
     <output>
       <copy-all/>
       <tag k="highway" v="tertiary_link" />
-      <tag k="name" v="Secondary coastal [highway=tertiary_link]" />
+      <!--<tag k="name" v="Secondary coastal [highway=tertiary_link]" />-->
+      <tag k="name" from_match="name" v="{1}"/>
     </output>
   </translation>
 
@@ -147,11 +167,13 @@
     <match type="way">
       <tag k="Mode" v="highway" />
       <tag k="Type" v="living_street" />
+      <tag k="Name" v="(.*)" match_id="name"/>
     </match>
     <output>
       <copy-all/>
       <tag k="highway" v="living_street" />
-      <tag k="name" v="Waterway [highway=living_street]" />
+      <!--<tag k="name" v="Waterway [highway=living_street]" />-->
+      <tag k="name" from_match="name" v="{1}"/>
     </output>
   </translation>
 
@@ -161,11 +183,13 @@
     <match type="way">
       <tag k="Mode" v="highway" />
       <tag k="Type" v="default" />
+      <tag k="Name" v="(.*)" match_id="name"/>
     </match>
     <output>
       <copy-all/>
       <tag k="highway" v="default" />
-      <tag k="name" v="Waterway [highway=default]" />
+      <!--<tag k="name" v="Waterway [highway=default]" />-->
+      <tag k="name" from_match="name" v="{1}"/>
     </output>
   </translation>
 
@@ -175,11 +199,13 @@
     <match type="way">
       <tag k="Mode" v="highway" />
       <tag k="Type" v="service" />
+      <tag k="Name" v="(.*)" match_id="name"/>
     </match>
     <output>
       <copy-all/>
       <tag k="highway" v="service" />
-      <tag k="name" v="Railway [highway=service]" />
+      <!--<tag k="name" v="Railway [highway=service]" />-->
+      <tag k="name" from_match="name" v="{1}"/>
     </output>
   </translation>
     
