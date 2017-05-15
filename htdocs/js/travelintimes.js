@@ -49,11 +49,11 @@ var travelintimes = (function ($) {
 		autocompleteBbox: '-6.6577,49.9370,1.7797,57.6924',
 		
 		// Datasets, and the port they run on
-		datasets: {
-			1680: 5000,
-			1830: 5001,
-			1911: 5002
-		}
+		datasets: [
+			{year: 1680, port: 5000},
+			{year: 1830, port: 5001},
+			{year: 1911, port: 5002}
+		]
 	};
 	
 	
@@ -208,15 +208,15 @@ var travelintimes = (function ($) {
 					
 					// Add each route, with a button
 					var thisButton;
-					$.each (_settings['datasets'], function (year, port) {
-						thisButton = button(year, container);
+					$.each (_settings['datasets'], function (index, dataset) {
+						thisButton = button(dataset.year, container);
 						L.DomEvent.on(thisButton, 'click', function() {
 							//console.log(control.getRouter().options);
-							control.getRouter().options.serviceUrl = 'http://www.travelintimes.org:' + port + '/route/v1';
+							control.getRouter().options.serviceUrl = 'http://www.travelintimes.org:' + dataset.port + '/route/v1';
 							control.getRouter().options.useHints = false;
 							control.route();
 							control.setWaypoints(control.getWaypoints());
-							//console.log(year + ' route');
+							//console.log(dataset.year + ' route');
 						}, this);
 					});
 					
