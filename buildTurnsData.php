@@ -207,6 +207,7 @@ class createTurnPenalties
 					
 					# Start of way
 					case 0:
+						#!# 20170514 dataset gives "PHP Notice:  Undefined offset: 1 in /opt/travelintimes/buildTurnsData.php on line 211" for $nodeId=21416 whose $wayNodes array contains just that node only
 						$adjacentNode = $wayNodes[1];
 						$nodes[$nodeId][$adjacentNode] = $highwayType;	// Register
 						break;

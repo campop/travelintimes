@@ -537,13 +537,13 @@ class historicPlannerControlPanel extends frontControllerApplication
 		
 		# Determine the grouping and the filename
 		reset ($exportFiles);
-		$grouping = key ($exportFiles);         // i.e. first key
+		$grouping = key ($exportFiles);         // i.e. first key, e.g. multimodal1911
 		$exportFile = $exportFiles[$grouping];  // i.e. first value
 		
 		# Determine the port the eventual routing engine should use
 		$port = $this->settings['startPort'];
 		foreach ($this->settings['datasets'] as $dataset => $label) {
-			if ($grouping == $dataset) {
+			if ($dataset == $grouping) {
 				break;	// Port is now set, e.g. first dataset is 5000
 			}
 			$port++;
@@ -552,10 +552,11 @@ class historicPlannerControlPanel extends frontControllerApplication
 		# Run the script
 		chdir ($this->repoRoot . '/');
 		// E.g. /build.sh multimodal1911 exports/multimodal191120161101.zip
-		$script = "./build.sh $grouping $exportFile $port > build.log 2>&1";    // Also capture error; see: http://stackoverflow.com/a/3863805 and http://stackoverflow.com/a/6674348
+		$logFilename = "enginedata/build-{$grouping}.log";
+		$script = "./build.sh $grouping $exportFile $port > {$logFilename} 2>&1";    // Also capture error; see: http://stackoverflow.com/a/3863805 and http://stackoverflow.com/a/6674348
 		exec ($script, $output, $returnStatusValue);
 		// $output = implode ("\n", $output);
-		$output = file_get_contents ('build.log');
+		$output = file_get_contents ($logFilename);
 		
 		# Link to reset
 		$html .= "\n<p><a href=\"{$this->baseUrl}/import/\">Reset page.</a></p>";
