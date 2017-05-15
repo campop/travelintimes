@@ -217,6 +217,13 @@ var travelintimes = (function ($) {
 							control.route();
 							control.setWaypoints(control.getWaypoints());
 							//console.log(dataset.year + ' route');
+							
+							// Highlight the current button, clearing existing selection first (if any)
+							$.each (_settings['datasets'], function (indexButton, datasetButton) {
+								$('.leaflet-routing-geocoders button.' + datasetButton.year).removeClass ('selected');
+							});
+							$('.leaflet-routing-geocoders button.' + dataset.year).addClass ('selected');
+							
 						}, this);
 					});
 					
@@ -237,6 +244,8 @@ var travelintimes = (function ($) {
 				routeWhileDragging: true,
 				plan: plan
 			}).addTo(_map);
+			
+			$('.leaflet-routing-geocoders button.year.' + _settings['datasets'][0]['year']).addClass ('selected');
 		}
 	}
 	
