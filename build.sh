@@ -143,7 +143,7 @@ cd -
 # Start the router process in the background, killing any previous instantiation if running
 # E.g. /opt/osrm-backend/build/osrm-routed converted/Transportations.osrm &
 if pgrep -f "osrm-routed -p ${port}"; then pkill -f "osrm-routed -p ${port}"; fi
-/opt/osrm-backend/build/osrm-routed -p $port "${file/.shp.osm/.osrm}" > "${SCRIPTDIRECTORY}/logs-osrm/osrm-${strategy}.log" &
+/opt/osrm-backend/build/osrm-routed -p $port "${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osrm}" > "${SCRIPTDIRECTORY}/logs-osrm/osrm-${strategy}.log" &
 echo "Running /opt/osrm-backend/build/osrm-routed -p $port ${buildDirectory}/${file/.shp.osm/.osrm}"
 
 
