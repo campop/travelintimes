@@ -1,15 +1,1 @@
-residential,secondary,10000
-secondary,residential,2300
-residential,default,20000
-default,residential,19900
-secondary,default,2000
-default,secondary,2000
-primary,unclassified,4000
-residential,tertiary_link,6500
-tertiary_link,residential,4599
-tertiary_link,default,5600
-default,tertiary_link,5660
-tertiary_link,primary_link,1000
-primary_link,tertiary_link,2000
-tertiary_link,secondary,1000
-secondary,tertiary_link,1010
+residential,secondary,0
