@@ -259,7 +259,7 @@ class createTurnPenalties
 					# Skip if the origin highway type is the same as the target type, e.g. residential -> residential
 					if ($fromType == $toType) {continue;}
 					
-					# Look up the penalty for this combination
+					# Look up the penalty for this combination, registering missing combinations (which will receive zero penalty)
 					$combinationId = $fromType . ',' . $toType;
 					if (!isSet ($turnPenaltyTypes[$combinationId])) {
 						$missingCombinations[] = "{$fromType} -> {$toType}";
@@ -280,9 +280,8 @@ class createTurnPenalties
 		
 		# Report missing combinations, as an error
 		if ($missingCombinations) {
-			$error  = "The turn penalty definition list does not include a definition for:";
+			$error  = "WARNING: The turn penalty definition list does not include a definition for the following, so zero-value entries have been added:";
 			$error .= "\n\t" . implode ("\n\t", array_unique ($missingCombinations));
-			return false;
 		}
 		
 		# Return the combinations list
