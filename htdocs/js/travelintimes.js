@@ -239,6 +239,7 @@ var travelintimes = (function ($) {
 		{
 			$(triggerElement).click (function (e) {
 				html = '<div id="' + name + 'box">' + html + '</div>';
+				vex.dialog.buttons.YES.text = 'Close';
 				vex.dialog.alert ({unsafeMessage: html, showCloseButton: true, className: 'vex vex-theme-plain wider'});
 				e.preventDefault ();
 			});
