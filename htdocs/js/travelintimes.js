@@ -165,29 +165,39 @@ var travelintimes = (function ($) {
 		// About page
 		about: function ()
 		{
-			return travelintimes.pageHandler ('about');
+			return travelintimes.pageHandler ('#menu li.about', 'about');
 		},
 		
 		
 		// Acknowlegements page
 		acknowledgements: function ()
 		{
-			return travelintimes.pageHandler ('acknowledgements');
+			return travelintimes.pageHandler ('#menu li.acknowledgements', 'acknowledgements');
 		},
 		
 		
 		// Travellers' tales page
 		travellerstales: function ()
 		{
-			return travelintimes.pageHandler ('travellerstales');
+			return travelintimes.pageHandler ('#menu li.travellerstales', 'travellerstales');
 		},
 		
 		
 		// Page handler
-		pageHandler: function (name)
+		pageHandler: function (triggerElement, name)
 		{
-			$('#menu li.' + name).click (function (e) {
-				var html = $('#' + name).html();
+			// Obtain the HTML
+			var html = $('#' + name).html();
+			
+			// Create the dialog box
+			travelintimes.dialogBox (triggerElement, name, html);
+		},
+		
+		
+		// Dialog box
+		dialogBox: function (triggerElement, name, html)
+		{
+			$(triggerElement).click (function (e) {
 				html = '<div id="' + name + 'box">' + html + '</div>';
 				vex.dialog.alert ({unsafeMessage: html, showCloseButton: true, className: 'vex vex-theme-plain wider'});
 				e.preventDefault ();
