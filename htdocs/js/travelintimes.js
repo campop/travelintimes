@@ -89,8 +89,9 @@ var travelintimes = (function ($) {
 		{
 			// Add the tile layers
 			var tileLayers = [];		// Background tile layers
-			var baseLayers = {};		// Labels
+			var baseLayers = {};		// Labels, by name
 			var baseLayersById = {};	// Layers, by id
+			var mapKeys = {};		// Map keys, by name
 			var layer;
 			var name;
 			$.each (_settings.tileUrls, function (tileLayerId, tileLayerAttributes) {
@@ -99,6 +100,7 @@ var travelintimes = (function ($) {
 				name = tileLayerAttributes[2];
 				baseLayers[name] = layer;
 				baseLayersById[tileLayerId] = layer;
+				mapKeys[name] = tileLayerAttributes[1]['key'] || null;
 			});
 			
 			// Create the map
@@ -107,6 +109,9 @@ var travelintimes = (function ($) {
 				zoom: _settings.defaultZoom,
 				layers: tileLayers[0]	// Documentation suggests tileLayers is all that is needed, but that shows all together
 			});
+			
+			// Map key control
+			travelintimes.mapKey (mapKeys, tileLayers[0]);
 			
 			// Add scale
 			L.control.scale({maxWidth: 300}).addTo(_map);
@@ -122,6 +127,41 @@ var travelintimes = (function ($) {
 			
 			// Add the base (background) layer switcher
 			L.control.layers(baseLayers, null, {position: 'bottomleft'}).addTo(_map);
+		},
+		
+		
+		// Map key
+		mapKey: function (mapKeys, defaultLayer)
+		{
+			// Add map key div
+			$('#mapcontainer').append('<div id="mapkeylink"><p><a href="#">Map key</a></p></div>');
+			
+			// Default key
+			var mapKey = defaultLayer.options.key;
+			travelintimes.mapKeyControl (mapKey);
+			
+			// Detect changes
+			_map.on('baselayerchange', function(e) {
+				var selectedBasemap = e.name;
+				mapKey = mapKeys[selectedBasemap];
+				travelintimes.mapKeyControl (mapKey);
+			});
+		},
+		
+		
+		// Map key control
+		mapKeyControl: function (mapKey)
+		{
+			// Show or hide
+			if (mapKey) {
+				$('#mapkeylink').show();
+				$('#mapkeylink p a').attr('href', mapKey);
+				$('#mapkeylink p a').off();	// Remove any existing handler
+				var html = '<img src="' + mapKey + '" />';
+				travelintimes.dialogBox ('#mapkeylink p a', 'mapkey', html);
+			} else {
+				$('#mapkeylink').hide();
+			}
 		},
 		
 		

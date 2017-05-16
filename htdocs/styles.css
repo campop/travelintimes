@@ -15,9 +15,13 @@ body .leaflet-container {}
 #header ul li {float: left; padding-top: 30px; padding-right: 20px;}
 #header ul li a {color: #777; text-decoration: none; border-bottom: 4px solid #777; padding-bottom: 5px;}
 
+/* Map */
 #mapcontainer {width: 100%; height: calc(100% - 100px); position: relative;}
-
 #map {width: 100%; height: 100%;}
+#mapkeylink {position: absolute; right: 350px; bottom: 10px; z-index: 500;}
+#mapkeylink p {text-align: right; margin: 0; padding: 0; font-family: arial;}
+#mapkeylink p a {color: black; text-decoration: none; padding: 4px 10px; background-color: white; opacity: 0.8;}
+#mapkeybox img {width: 100%;}
 
 /* Geocoder */
 #geocoder {position: absolute; top: 10px; left: 55px; z-index: 500;}
