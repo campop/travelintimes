@@ -23,7 +23,7 @@ var travelintimes = (function ($) {
 		tileUrls: {
 			'os6inch': [
 				'http://geo.nls.uk/maps/os/1inch_2nd_ed/{z}/{x}/{-y}.png',	// E.g. http://geo.nls.uk/maps/os/1inch_2nd_ed/12/2046/2745.png
-				{maxZoom: 15, attribution: '&copy; <a href="http://maps.nls.uk/copyright.html">National Library of Scotland</a>'},
+				{maxZoom: 15, attribution: '&copy; <a href="http://maps.nls.uk/copyright.html">National Library of Scotland</a>', key: '/images/mapkeys/os6inch.jpg'},
 				'NLS - OS 6-inch County Series 1888-1913'
 			],
 			'bartholomew': [
