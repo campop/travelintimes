@@ -304,9 +304,10 @@ var travelintimes = (function ($) {
 				}
 			}
 			
-			var plan = new geoPlan([
-				L.latLng(52.2, 0.2),
-				L.latLng(51.5, 0.1)
+			var plan = new geoPlan(
+				[
+//					L.latLng(52.2, 0.2),
+//					L.latLng(51.5, 0.1)
 				], {
 				geocoder: L.Control.Geocoder.nominatim({
 					// See: https://github.com/perliedman/leaflet-control-geocoder#lcontrolgeocodernominatim
