@@ -50,6 +50,7 @@ var travelintimes = (function ($) {
 		
 		// LRM Geocoder
 		lrmGeocoderServiceUrl: '//nominatim.openstreetmap.org/',
+		lrmGeocoderAutocomplete: false,		// NB: Do not enable on nominatim.openstreetmap.org - this is against the Usage policy for that server
 		
 		// Datasets, and the port they run on
 		datasets: [
@@ -295,6 +296,13 @@ var travelintimes = (function ($) {
 					return container;
 				}
 			});
+			
+			// Patch the Geocoder to add autocomplete if required
+			if (_settings.lrmGeocoderAutocomplete) {
+				L.Control.Geocoder.Nominatim.prototype.suggest = function(query, cb, context) {
+					return L.Control.Geocoder.Nominatim.prototype.geocode(query, cb, context);
+				}
+			}
 			
 			var plan = new geoPlan([
 				L.latLng(52.2, 0.2),
