@@ -327,6 +327,9 @@ var travelintimes = (function ($) {
 			}).addTo(_map);
 			
 			$('.leaflet-routing-geocoders button.year.' + _settings['datasets'][0]['year']).addClass ('selected');
+			
+			// Set focus to search start box
+			$('.leaflet-routing-geocoder:first-child input').focus();
 		}
 	}
 	
