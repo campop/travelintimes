@@ -7,9 +7,10 @@ body .leaflet-container {}
 
 /* Header */
 #header {font-family: 'Josefin Sans', sans-serif;}
-#header img {width: 200px; height: 68px; margin-right: 20px; float: right;}
+#header img#logo {width: 200px; height: 68px; margin-right: 20px; float: right;}
 #header h1 {font-family:'Roboto Condensed', sans-serif; font-size: 55px; color: #333; margin: 0; padding: 0;}
 #header h1 a {text-decoration: none; color: #333;}
+#header img#beta {position: absolute; left: 340px; top: 15px; width: 40px; height: 40px;}
 #header h4 {position: absolute; font-size: 20px; left: 180px; top: 45px; font-style: italic; font-weight: normal;}
 #header ul {position: absolute; right: 300px; top: 0; list-style: none;}
 #header ul li {float: left; padding-top: 30px; padding-right: 20px;}
