@@ -309,7 +309,13 @@ var travelintimes = (function ($) {
 				L.latLng(51.5, 0.1)
 				], {
 				geocoder: L.Control.Geocoder.nominatim({
-					serviceUrl: _settings.lrmGeocoderServiceUrl
+					// See: https://github.com/perliedman/leaflet-control-geocoder#lcontrolgeocodernominatim
+					serviceUrl: _settings.lrmGeocoderServiceUrl,
+					geocodingQueryParams: {
+						// See: http://wiki.openstreetmap.org/wiki/Nominatim#Parameters
+						viewboxlbrt: _settings.autocompleteBbox,
+						bounded: 1
+					}
 				}),
 				routeWhileDragging: true
 			});
