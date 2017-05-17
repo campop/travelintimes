@@ -48,6 +48,9 @@ var travelintimes = (function ($) {
 		geocoderApiKey: 'YOUR_API_KEY',		// Obtain at https://www.cyclestreets.net/api/apply/
 		autocompleteBbox: '-6.6577,49.9370,1.7797,57.6924',
 		
+		// LRM Geocoder
+		lrmGeocoderServiceUrl: '//nominatim.openstreetmap.org/',
+		
 		// Datasets, and the port they run on
 		datasets: [
 			{year: 1680, port: 5000},
@@ -297,7 +300,9 @@ var travelintimes = (function ($) {
 				L.latLng(52.2, 0.2),
 				L.latLng(51.5, 0.1)
 				], {
-				geocoder: L.Control.Geocoder.nominatim(),
+				geocoder: L.Control.Geocoder.nominatim({
+					serviceUrl: _settings.lrmGeocoderServiceUrl
+				}),
 				routeWhileDragging: true
 			});
 			
