@@ -563,7 +563,8 @@ function way_function (way, result)
 
   -- scale speeds to get better avg driving times
   if result.forward_speed > 0 then
-    local scaled_speed = result.forward_speed*speed_reduction + 11
+    local scaled_speed = result.forward_speed*speed_reduction
+-- + 11
     local penalized_speed = math.huge
     if service and service ~= "" and service_speeds[service] then
       penalized_speed = service_speeds[service]
@@ -574,7 +575,8 @@ function way_function (way, result)
   end
 
   if result.backward_speed > 0 then
-    local scaled_speed = result.backward_speed*speed_reduction + 11
+    local scaled_speed = result.backward_speed*speed_reduction
+-- + 11
     local penalized_speed = math.huge
     if service and service ~= "" and service_speeds[service]then
       penalized_speed = service_speeds[service]
