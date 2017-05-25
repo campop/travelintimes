@@ -17,26 +17,27 @@ restriction_exception_tags = { "motorcar", "motor_vehicle", "vehicle" }
 -- A list of suffixes to suppress in name change instructions
 suffix_list = { "N", "NE", "E", "SE", "S", "SW", "W", "NW", "North", "South", "West", "East" }
 
+-- In km/h...
 speed_profile = {
-  ["motorway"] = 50,
-  ["motorway_link"] = 50,
-  ["trunk"] = 20,
-  ["trunk_link"] = 2,
-  ["primary"] = 8.5,
-  ["primary_link"] = 0.5,
-  ["secondary"] = 2,
-  ["secondary_link"] = 1.5,
-  ["tertiary"] = 15,
-  ["tertiary_link"] = 0.5,
-  ["unclassified"] = 2,
-  ["residential"] = 1.5,
-  ["living_street"] = 3,
-  ["service"] = 30,
---  ["track"] = 5,
-  ["ferry"] = 5,
-  ["movable"] = 5,
-  ["shuttle_train"] = 10,
-  ["default"] = 2.5
+  ["motorway"] = 80.5,
+  ["motorway_link"] = 80.5,
+  ["trunk"] = 32.2,
+  ["trunk_link"] = 3.2,
+  ["primary"] = 13.7,
+  ["primary_link"] = 0.8,
+  ["secondary"] = 3.2,
+  ["secondary_link"] = 2.4,
+  ["tertiary"] = 24.1,
+  ["tertiary_link"] = 0.8,
+  ["unclassified"] = 3.2,
+  ["residential"] = 2.4,
+  ["living_street"] = 4.8,
+  ["service"] = 64.4,
+--  ["track"] = 8.0,
+  ["ferry"] = 8.0,
+  ["movable"] = 8.0,
+  ["shuttle_train"] = 16.1,
+  ["default"] = 4.0
 }
 
 -- service speeds
@@ -561,30 +562,28 @@ function way_function (way, result)
 
   local is_bidirectional = result.forward_mode ~= mode.inaccessible and result.backward_mode ~= mode.inaccessible
 
-  -- scale speeds to get better avg driving times
-  if result.forward_speed > 0 then
-    local scaled_speed = result.forward_speed*speed_reduction
--- + 11
-    local penalized_speed = math.huge
-    if service and service ~= "" and service_speeds[service] then
-      penalized_speed = service_speeds[service]
-    elseif width <= 3 or (lanes <= 1 and is_bidirectional) then
-      penalized_speed = result.forward_speed / 2
-    end
-    result.forward_speed = math.min(penalized_speed, scaled_speed)
-  end
+--  -- scale speeds to get better avg driving times
+--  if result.forward_speed > 0 then
+--    local scaled_speed = result.forward_speed*speed_reduction + 11
+--    local penalized_speed = math.huge
+--    if service and service ~= "" and service_speeds[service] then
+--      penalized_speed = service_speeds[service]
+--    elseif width <= 3 or (lanes <= 1 and is_bidirectional) then
+--      penalized_speed = result.forward_speed / 2
+--    end
+--    result.forward_speed = math.min(penalized_speed, scaled_speed)
+--  end
 
-  if result.backward_speed > 0 then
-    local scaled_speed = result.backward_speed*speed_reduction
--- + 11
-    local penalized_speed = math.huge
-    if service and service ~= "" and service_speeds[service]then
-      penalized_speed = service_speeds[service]
-    elseif width <= 3 or (lanes <= 1 and is_bidirectional) then
-      penalized_speed = result.backward_speed / 2
-    end
-    result.backward_speed = math.min(penalized_speed, scaled_speed)
-  end
+--  if result.backward_speed > 0 then
+--    local scaled_speed = result.backward_speed*speed_reduction + 11
+--    local penalized_speed = math.huge
+--    if service and service ~= "" and service_speeds[service]then
+--      penalized_speed = service_speeds[service]
+--    elseif width <= 3 or (lanes <= 1 and is_bidirectional) then
+--      penalized_speed = result.backward_speed / 2
+--    end
+--    result.backward_speed = math.min(penalized_speed, scaled_speed)
+--  end
 
   -- only allow this road as start point if it not a ferry
   result.is_startpoint = result.forward_mode == mode.driving or result.backward_mode == mode.driving
