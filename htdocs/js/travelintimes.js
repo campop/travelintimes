@@ -305,9 +305,10 @@ var travelintimes = (function ($) {
 			}
 			
 			var plan = new geoPlan(
+				// #!# Need to convert this into a setting
 				[
-//					L.latLng(52.2, 0.2),
-//					L.latLng(51.5, 0.1)
+					L.latLng(52.20200, 0.10835),	// Faculty of History, Cambridge
+					L.latLng(51.50795, -0.07842)	// Tower of London
 				], {
 				geocoder: L.Control.Geocoder.nominatim({
 					// See: https://github.com/perliedman/leaflet-control-geocoder#lcontrolgeocodernominatim
