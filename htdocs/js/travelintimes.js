@@ -19,25 +19,25 @@ var travelintimes = (function ($) {
 		defaultLongitude: -2,
 		defaultZoom: 7,
 		
-		// Tileservers; historical map sources are listed at: http://wiki.openstreetmap.org/wiki/National_Library_of_Scotland
+		// Tileservers; historical map sources are listed at: https://wiki.openstreetmap.org/wiki/National_Library_of_Scotland
 		tileUrls: {
 			'os6inch': [
-				'http://geo.nls.uk/maps/os/1inch_2nd_ed/{z}/{x}/{-y}.png',	// E.g. http://geo.nls.uk/maps/os/1inch_2nd_ed/12/2046/2745.png
-				{maxZoom: 15, attribution: '&copy; <a href="http://maps.nls.uk/copyright.html">National Library of Scotland</a>', key: '/images/mapkeys/os6inch.jpg'},
+				'https://geo.nls.uk/maps/os/1inch_2nd_ed/{z}/{x}/{-y}.png',	// E.g. https://geo.nls.uk/maps/os/1inch_2nd_ed/12/2046/2745.png
+				{maxZoom: 15, attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>', key: '/images/mapkeys/os6inch.jpg'},
 				'NLS - OS 6-inch County Series 1888-1913'
 			],
 			'bartholomew': [
-				'http://geo.nls.uk/mapdata2/bartholomew/great_britain/{z}/{x}/{-y}.png',	// E.g. http://geo.nls.uk/mapdata2/bartholomew/great_britain/12/2046/2745.png
-				{maxZoom: 15, attribution: '&copy; <a href="http://maps.nls.uk/copyright.html">National Library of Scotland</a>'},
+				'https://geo.nls.uk/mapdata2/bartholomew/great_britain/{z}/{x}/{-y}.png',	// E.g. https://geo.nls.uk/mapdata2/bartholomew/great_britain/12/2046/2745.png
+				{maxZoom: 15, attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>'},
 				'NLS - Bartholomew Half Inch, 1897-1907'
 			],
 			'mapnik': [
-				'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',	// E.g. http://a.tile.openstreetmap.org/16/32752/21788.png
+				'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',	// E.g. https://a.tile.openstreetmap.org/16/32752/21788.png
 				{maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'},
 				'OpenStreetMap style (modern)'
 			],
 			'osopendata': [
-				'https://{s}.os.openstreetmap.org/sv/{z}/{x}/{y}.png',	// E.g. http://a.os.openstreetmap.org/sv/18/128676/81699.png
+				'https://{s}.os.openstreetmap.org/sv/{z}/{x}/{y}.png',	// E.g. https://a.os.openstreetmap.org/sv/18/128676/81699.png
 				{maxZoom: 19, attribution: 'Contains Ordnance Survey data &copy; Crown copyright and database right 2010'},
 				'OS Open Data (modern)'
 			]
@@ -314,7 +314,7 @@ var travelintimes = (function ($) {
 					// See: https://github.com/perliedman/leaflet-control-geocoder#lcontrolgeocodernominatim
 					serviceUrl: _settings.lrmGeocoderServiceUrl,
 					geocodingQueryParams: {
-						// See: http://wiki.openstreetmap.org/wiki/Nominatim#Parameters
+						// See: https://wiki.openstreetmap.org/wiki/Nominatim#Parameters
 						viewboxlbrt: _settings.autocompleteBbox,
 						bounded: 1
 					}
