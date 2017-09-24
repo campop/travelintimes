@@ -120,6 +120,9 @@ var travelintimes = (function ($) {
 				travelintimes.setMapBackgroundColour (baseLayers[e.name].options);
 			});
 			
+			// Create the location overlay pane
+			travelintimes.createPane ();
+			
 			// Map key control
 			travelintimes.mapKey (mapKeys, tileLayers[0]);
 			
@@ -146,6 +149,26 @@ var travelintimes = (function ($) {
 			// Set, using jQuery, if specified, or clear
 			var backgroundColour = (tileLayerOptions.backgroundColour ? tileLayerOptions.backgroundColour : '');
 			$('.leaflet-container').css ('background-color', backgroundColour);
+		},
+		
+		
+		// Function to create a location overlay pane; see: http://leafletjs.com/examples/map-panes/
+		createPane: function ()
+		{
+			// Create a pane
+			_map.createPane('labels');
+			_map.getPane('labels').style.zIndex = 650;
+			_map.getPane('labels').style.pointerEvents = 'none';
+			
+			// Create a labels layer; see: https://carto.com/location-data-services/basemaps/
+//			var locationLabels = L.tileLayer('http://tiles.oobrien.com/shine_labels_cdrc/{z}/{x}/{y}.png', {
+			var locationLabels = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_only_labels/{z}/{x}/{y}.png', {
+				attribution: '&copy; OpenStreetMap, &copy; CartoDB',
+				pane: 'labels'
+			})
+			
+			// Add to the map
+			locationLabels.addTo(_map);
 		},
 		
 		
