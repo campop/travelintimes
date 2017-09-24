@@ -23,12 +23,12 @@ var travelintimes = (function ($) {
 		tileUrls: {
 			'os6inch': [
 				'https://geo.nls.uk/maps/os/1inch_2nd_ed/{z}/{x}/{-y}.png',	// E.g. https://geo.nls.uk/maps/os/1inch_2nd_ed/12/2046/2745.png
-				{maxZoom: 15, attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>', key: '/images/mapkeys/os6inch.jpg'},
+				{maxZoom: 15, attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>', backgroundColour: '#f0f1e4', key: '/images/mapkeys/os6inch.jpg'},
 				'NLS - OS 6-inch County Series 1888-1913'
 			],
 			'bartholomew': [
 				'https://geo.nls.uk/mapdata2/bartholomew/great_britain/{z}/{x}/{-y}.png',	// E.g. https://geo.nls.uk/mapdata2/bartholomew/great_britain/12/2046/2745.png
-				{maxZoom: 15, attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>'},
+				{maxZoom: 15, attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>', backgroundColour: '#a2c3ba'},
 				'NLS - Bartholomew Half Inch, 1897-1907'
 			],
 			'mapnik': [
@@ -114,6 +114,12 @@ var travelintimes = (function ($) {
 				layers: tileLayers[0]	// Documentation suggests tileLayers is all that is needed, but that shows all together
 			});
 			
+			// Set a class corresponding to the map tile layer, so that the background can be styled with CSS
+			travelintimes.setMapBackgroundColour (tileLayers[0].options);
+			_map.on('baselayerchange', function(e) {
+				travelintimes.setMapBackgroundColour (baseLayers[e.name].options);
+			});
+			
 			// Map key control
 			travelintimes.mapKey (mapKeys, tileLayers[0]);
 			
@@ -131,6 +137,15 @@ var travelintimes = (function ($) {
 			
 			// Add the base (background) layer switcher
 			L.control.layers(baseLayers, null, {position: 'bottomleft'}).addTo(_map);
+		},
+		
+		
+		// Function to set the map background colour for a layer
+		setMapBackgroundColour: function (tileLayerOptions)
+		{
+			// Set, using jQuery, if specified, or clear
+			var backgroundColour = (tileLayerOptions.backgroundColour ? tileLayerOptions.backgroundColour : '');
+			$('.leaflet-container').css ('background-color', backgroundColour);
 		},
 		
 		
