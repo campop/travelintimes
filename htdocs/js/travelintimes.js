@@ -136,7 +136,10 @@ var travelintimes = (function ($) {
 			new L.Hash (_map, baseLayersById);
 			
 			// Add geolocation control
-			L.control.locate().addTo(_map);
+			_map.addControl(L.control.locate({
+				icon: 'fa fa-location-arrow',
+				locateOptions: {maxZoom: 14}
+			}));
 			
 			// Add the base (background) layer switcher
 			L.control.layers(baseLayers, null, {position: 'bottomleft'}).addTo(_map);
