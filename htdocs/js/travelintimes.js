@@ -278,7 +278,7 @@ var travelintimes = (function ($) {
 						thisButton = button(dataset.year, container);
 						L.DomEvent.on(thisButton, 'click', function() {
 							//console.log(control.getRouter().options);
-							control.getRouter().options.serviceUrl = 'http://www.travelintimes.org:' + dataset.port + '/route/v1';
+							control.getRouter().options.serviceUrl = '/routing/' + dataset.port + '/route/v1';
 							control.getRouter().options.useHints = false;
 							control.route();
 							control.setWaypoints(control.getWaypoints());
@@ -323,7 +323,7 @@ var travelintimes = (function ($) {
 			});
 			
 			var control = L.Routing.control({
-				serviceUrl: 'http://www.travelintimes.org:5000/route/v1',
+				serviceUrl: '/routing/5000/route/v1',
 				routeWhileDragging: true,
 				plan: plan
 			}).addTo(_map);
