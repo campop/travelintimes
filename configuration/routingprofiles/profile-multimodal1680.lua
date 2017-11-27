@@ -19,25 +19,25 @@ suffix_list = { "N", "NE", "E", "SE", "S", "SW", "W", "NW", "North", "South", "W
 
 -- In km/h...
 speed_profile = {
-  ["motorway"] = 80.5,
-  ["motorway_link"] = 80.5,
-  ["trunk"] = 32.2,
-  ["trunk_link"] = 3.2,
-  ["primary"] = 13.7,
-  ["primary_link"] = 0.8,
-  ["secondary"] = 3.2,
-  ["secondary_link"] = 2.4,
-  ["tertiary"] = 24.1,
-  ["tertiary_link"] = 0.8,
-  ["unclassified"] = 3.2,
-  ["residential"] = 2.4,
-  ["living_street"] = 4.8,
-  ["service"] = 64.4,
+--  ["motorway"] = 80.5,
+--  ["motorway_link"] = 80.5,
+--  ["trunk"] = 32.2,
+--  ["trunk_link"] = 3.2,
+  ["primary"] = 2.0,
+  ["primary_link"] = 0.6,
+  ["secondary"] = 1.5,
+  ["secondary_link"] = 0.4,
+  ["tertiary"] = 1.5,
+  ["tertiary_link"] = 0.5,
+  ["unclassified"] = 1.0,
+  ["residential"] = 1.0,
+--  ["living_street"] = 4.8,
+--  ["service"] = 64.4,
 --  ["track"] = 8.0,
-  ["ferry"] = 8.0,
-  ["movable"] = 8.0,
-  ["shuttle_train"] = 16.1,
-  ["default"] = 4.0
+--  ["ferry"] = 8.0,
+--  ["movable"] = 8.0,
+--  ["shuttle_train"] = 16.1,
+  ["default"] = 2.0
 }
 
 -- service speeds
