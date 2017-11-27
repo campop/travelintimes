@@ -37,6 +37,7 @@ var geoPlan = L.Routing.Plan.extend({
             var container = L.Routing.Plan.prototype.createGeocoders.call(this),
 
                 // Create buttons
+                button2017 = button('<font color="blue">2017</font>', container);
                 button1911 = button('<font color="blue">1911</font>', container);
                 button1830 = button('<font color="green">1830</font>', container);
                 button1680 = button('<font color="#603">1680</font>', container);
@@ -67,6 +68,16 @@ var geoPlan = L.Routing.Plan.extend({
                 control.route();
                 control.setWaypoints(control.getWaypoints());
                 //console.log("1911 route");
+                }, this);
+
+            L.DomEvent.on(button2017, 'click', function() {
+		//console.log(control.getRouter().options);
+		// https://github.com/openstreetmap/openstreetmap-website/blob/master/config/example.application.yml#L101
+                control.getRouter().options.serviceUrl = 'https://router.project-osrm.org/route/v1';
+                control.getRouter().options.useHints = false;
+                control.route();
+                control.setWaypoints(control.getWaypoints());
+                //console.log("2017 route");
                 }, this);
 
 

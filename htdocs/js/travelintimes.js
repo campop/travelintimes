@@ -56,7 +56,8 @@ var travelintimes = (function ($) {
 		datasets: [
 			{year: 1680, port: 5000},
 			{year: 1830, port: 5001},
-			{year: 1911, port: 5002}
+			{year: 1911, port: 5002},
+			{year: new Date().getFullYear(), url: 'https://router.project-osrm.org/route/v1'}
 		]
 	};
 	
@@ -319,7 +320,11 @@ var travelintimes = (function ($) {
 						thisButton = button(dataset.year, container);
 						L.DomEvent.on(thisButton, 'click', function() {
 							//console.log(control.getRouter().options);
-							control.getRouter().options.serviceUrl = '/routing/' + dataset.port + '/route/v1';
+							if (dataset.port) {
+								control.getRouter().options.serviceUrl = '/routing/' + dataset.port + '/route/v1';
+							} else if (dataset.url) {
+								control.getRouter().options.serviceUrl = dataset.url;
+							}
 							control.getRouter().options.useHints = false;
 							control.route();
 							control.setWaypoints(control.getWaypoints());
