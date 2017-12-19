@@ -21,15 +21,15 @@ var travelintimes = (function ($) {
 		
 		// Tileservers; historical map sources are listed at: https://wiki.openstreetmap.org/wiki/National_Library_of_Scotland
 		tileUrls: {
-			'os6inch': [
-				'https://geo.nls.uk/maps/os/1inch_2nd_ed/{z}/{x}/{-y}.png',	// E.g. https://geo.nls.uk/maps/os/1inch_2nd_ed/12/2046/2745.png
-				{maxZoom: 15, attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>', backgroundColour: '#f0f1e4', key: '/images/mapkeys/os6inch.jpg'},
-				'NLS - OS 6-inch County Series 1888-1913'
-			],
 			'bartholomew': [
 				'https://geo.nls.uk/mapdata2/bartholomew/great_britain/{z}/{x}/{-y}.png',	// E.g. https://geo.nls.uk/mapdata2/bartholomew/great_britain/12/2046/2745.png
 				{maxZoom: 15, attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>', backgroundColour: '#a2c3ba'},
 				'NLS - Bartholomew Half Inch, 1897-1907'
+			],
+			'os6inch': [
+				'https://geo.nls.uk/maps/os/1inch_2nd_ed/{z}/{x}/{-y}.png',	// E.g. https://geo.nls.uk/maps/os/1inch_2nd_ed/12/2046/2745.png
+				{maxZoom: 15, attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>', backgroundColour: '#f0f1e4', key: '/images/mapkeys/os6inch.jpg'},
+				'NLS - OS 6-inch County Series 1888-1913'
 			],
 			'mapnik': [
 				'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',	// E.g. https://a.tile.openstreetmap.org/16/32752/21788.png
