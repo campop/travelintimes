@@ -38,7 +38,7 @@ body .ui-front {z-index: 1000;}
 
 /* About text */
 #about, #videos, #travellerstales, #acknowledgements {display: none;}
-#aboutbox, #videos, #travellerstalesbox, #acknowlegementsbox {max-height: 500px; overflow-y: scroll;}
+#aboutbox, #videosbox, #travellerstalesbox, #acknowlegementsbox {max-height: 500px; overflow-y: scroll;}
 .vex.vex-theme-plain.wider .vex-content {width: 90%; padding-right: 35px;}
 #aboutbox a, #videos a, #travellerstales a, #acknowledgementsbox a {display: none;}
 
