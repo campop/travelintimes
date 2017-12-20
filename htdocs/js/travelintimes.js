@@ -81,8 +81,8 @@ var travelintimes = (function ($) {
 			
 			// Add page handlers
 			travelintimes.about ();
-			travelintimes.acknowledgements ();
 			travelintimes.travellerstales ();
+			travelintimes.acknowledgements ();
 			
 			// Add the data to the map as switchable layers
 			travelintimes.journeyplanner ();
@@ -255,17 +255,17 @@ var travelintimes = (function ($) {
 		},
 		
 		
-		// Acknowlegements page
-		acknowledgements: function ()
-		{
-			return travelintimes.pageHandler ('#menu li.acknowledgements', 'acknowledgements');
-		},
-		
-		
 		// Travellers' tales page
 		travellerstales: function ()
 		{
 			return travelintimes.pageHandler ('#menu li.travellerstales', 'travellerstales');
+		},
+		
+		
+		// Acknowlegements page
+		acknowledgements: function ()
+		{
+			return travelintimes.pageHandler ('#menu li.acknowledgements', 'acknowledgements');
 		},
 		
 		
