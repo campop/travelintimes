@@ -17,7 +17,7 @@ body .leaflet-container {}
 #header ul li a {color: #777; text-decoration: none; border-bottom: 4px solid #777; padding-bottom: 5px;}
 
 /* Map */
-#mapcontainer {width: 100%; height: calc(100% - 100px); position: relative;}
+#mapcontainer {width: 100%; height: calc(100% - 122px); position: relative;}
 #map {width: 100%; height: 100%;}
 #mapkeylink {position: absolute; right: 350px; bottom: 10px; z-index: 500;}
 #mapkeylink p {text-align: right; margin: 0; padding: 0; font-family: arial;}
