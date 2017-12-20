@@ -140,7 +140,7 @@ var travelintimes = (function ($) {
 			// Add geolocation control
 			_map.addControl(L.control.locate({
 				icon: 'fa fa-location-arrow',
-				locateOptions: {maxZoom: 14}
+				locateOptions: {maxZoom: 13}
 			}));
 			
 			// Add the base (background) layer switcher
@@ -220,7 +220,7 @@ var travelintimes = (function ($) {
 				sourceUrl: _settings.geocoderApiBaseUrl + '?key=' + _settings.geocoderApiKey + '&bounded=1&bbox=' + _settings.autocompleteBbox,
 				select: function (event, ui) {
 					var bbox = ui.item.feature.properties.bbox.split(',');
-					_map.fitBounds([ [bbox[1], bbox[0]], [bbox[3], bbox[2]] ]);
+					_map.fitBounds([ [bbox[1], bbox[0]], [bbox[3], bbox[2]] ], {maxZoom: 13});
 					event.preventDefault();
 				}
 			});
