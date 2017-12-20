@@ -81,6 +81,7 @@ var travelintimes = (function ($) {
 			
 			// Add page handlers
 			travelintimes.about ();
+			travelintimes.videos ();
 			travelintimes.travellerstales ();
 			travelintimes.acknowledgements ();
 			
@@ -252,6 +253,13 @@ var travelintimes = (function ($) {
 		about: function ()
 		{
 			return travelintimes.pageHandler ('#menu li.about', 'about');
+		},
+		
+		
+		// About page
+		videos: function ()
+		{
+			return travelintimes.pageHandler ('#menu li.videos', 'videos');
 		},
 		
 		
