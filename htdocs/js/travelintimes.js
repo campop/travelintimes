@@ -27,7 +27,7 @@ var travelintimes = (function ($) {
 				'NLS - Bartholomew Half Inch, 1897-1907'
 			],
 			'os6inch': [
-				'https://geo.nls.uk/maps/os/1inch_2nd_ed/{z}/{x}/{-y}.png',	// E.g. https://geo.nls.uk/maps/os/1inch_2nd_ed/12/2046/2745.png
+				'https://geo.nls.uk/maps/os/1inch_2nd_ed/{z}/{x}/{y}.png',	// E.g. https://geo.nls.uk/maps/os/1inch_2nd_ed/15/16395/10793.png
 				{maxZoom: 15, attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>', backgroundColour: '#f0f1e4', key: '/images/mapkeys/os6inch.jpg'},
 				'NLS - OS 6-inch County Series 1888-1913'
 			],
