@@ -147,6 +147,27 @@ if pgrep -f "osrm-routed -p ${port}"; then pkill -f "osrm-routed -p ${port}"; fi
 /opt/osrm-backend/build/osrm-routed -p $port "${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osrm}" > "${SCRIPTDIRECTORY}/logs-osrm/osrm-${strategy}.log" &
 echo "Running /opt/osrm-backend/build/osrm-routed -p $port ${buildDirectory}/${file/.shp.osm/.osrm}"
 
+# Generate a GeoJSON file of the network
+osmtogeojson "${SCRIPTDIRECTORY}/${buildDirectory}/merged.osm" > "${SCRIPTDIRECTORY}/${buildDirectory}/merged.geojson"
+# Filter unwanted features using ndjson-cat; see: https://github.com/mbostock/ndjson-cli and https://medium.com/@mbostock/command-line-cartography-part-2-c3a82c5c0f3
+#   Reformat file to newline-delimited JSON; see: http://www.roblabs.com/ndjson/
+ndjson-cat "${SCRIPTDIRECTORY}/${buildDirectory}/merged.geojson" | ndjson-split 'd.features' > "${SCRIPTDIRECTORY}/${buildDirectory}/merged.ndjson"
+#   Filter unwanted properties file
+ndjson-filter 'delete d.id, true' < "${SCRIPTDIRECTORY}/${buildDirectory}/merged.ndjson" \
+	| ndjson-filter 'delete d.properties.id, true' \
+	| ndjson-filter 'delete d.properties.timestamp, true' \
+	| ndjson-filter 'delete d.properties.version, true' \
+	| ndjson-filter 'delete d.properties.Shape_Leng, true' \
+	| ndjson-filter 'delete d.properties.Type, true' \
+	| ndjson-filter 'delete d.properties.Mode, true' \
+	| ndjson-filter 'delete d.properties.Name, true' \
+	> "${SCRIPTDIRECTORY}/${buildDirectory}/filtered.ndjson"
+#   Convert back to GeoJSON
+ndjson-reduce < "${SCRIPTDIRECTORY}/${buildDirectory}/filtered.ndjson" | ndjson-map '{type: "FeatureCollection", features: d}' > "${SCRIPTDIRECTORY}/${buildDirectory}/${filtered}.geojson"
+geojson-precision -p 4 "${SCRIPTDIRECTORY}/${buildDirectory}/${filtered}.geojson" "${SCRIPTDIRECTORY}/${buildDirectory}/${filtered}-p4.geojson"
+cp -p "${SCRIPTDIRECTORY}/${buildDirectory}/${filtered}-p4.geojson" "/opt/travelintimes/htdocs/${strategy}.geojson"
+
+
 
 exit
 
