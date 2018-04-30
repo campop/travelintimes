@@ -22,7 +22,7 @@ var travelintimes = (function ($) {
 		// Tileservers; historical map sources are listed at: https://wiki.openstreetmap.org/wiki/National_Library_of_Scotland
 		tileUrls: {
 			'bartholomew': [
-				'https://geo.nls.uk/mapdata2/bartholomew/great_britain/{z}/{x}/{-y}.png',	// E.g. https://geo.nls.uk/mapdata2/bartholomew/great_britain/12/2046/2745.png
+				'https://geo.nls.uk/mapdata2/bartholomew/great_britain/{z}/{x}/{y}.png',	// E.g. https://geo.nls.uk/mapdata2/bartholomew/great_britain/12/2021/1353.png
 				{maxZoom: 15, attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>', backgroundColour: '#a2c3ba'},
 				'NLS - Bartholomew Half Inch, 1897-1907'
 			],
