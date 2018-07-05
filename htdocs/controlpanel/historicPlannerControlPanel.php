@@ -553,7 +553,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 		chdir ($this->repoRoot . '/');
 		// E.g. /build.sh multimodal1911 exports/multimodal191120161101.zip
 		$logFilename = "enginedata/build-{$grouping}.log";
-		$script = "./build.sh $grouping $exportFile $port > {$logFilename} 2>&1";    // Also capture error; see: http://stackoverflow.com/a/3863805 and http://stackoverflow.com/a/6674348
+		$script = "./build.sh {$this->repoRoot}/../ $grouping $exportFile $port > {$logFilename} 2>&1";    // Also capture error; see: http://stackoverflow.com/a/3863805 and http://stackoverflow.com/a/6674348
 		exec ($script, $output, $returnStatusValue);
 		// $output = implode ("\n", $output);
 		$output = file_get_contents ($logFilename);

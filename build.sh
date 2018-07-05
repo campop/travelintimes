@@ -2,8 +2,8 @@
 
 # Usage:
 if [ "$1" == "-h" ]; then
-  echo "Usage: `basename $0` strategy datafile port"
-  echo "E.g. ./build.sh multimodal1911 /opt/travelintimes/exports/multimodal191120161031.zip 5000"
+  echo "Usage: `basename $0` softwareroot strategy datafile port"
+  echo "E.g. ./build.sh /opt multimodal1911 /opt/travelintimes/exports/multimodal191120161031.zip 5000"
   exit 0
 fi
 
@@ -25,13 +25,14 @@ SCRIPTDIRECTORY=$DIR
 
 
 # Obtain the arguments - the routing strategy to use (e.g. multimodal1911) and the source data file
-if [ "$#" -ne 3 ]; then
-	echo "ERROR: You must supply three parameters: a strategy, a datafile, and a port (e.g. 5000)"
+if [ "$#" -ne 4 ]; then
+	echo "ERROR: You must supply four parameters: a path to the software a strategy, a datafile, and a port (e.g. 5000)"
 	exit 1
 fi
-strategy=$1
-datafile=$2
-port=$3
+softwareRoot=$1
+strategy=$2
+datafile=$3
+port=$4
 
 # Create the working area, versioned by strategy then datetime (e.g. 20161101-113308)
 datetime=`date +'%Y%m%d-%H%M%S'`
@@ -91,10 +92,10 @@ echo "BBOX is: ${bboxWsen}"
 # See reference to undocumented options at: https://sourceforge.net/p/vectormap2garmin/wiki/ogr2osm/
 # File is saved as converted/<basename>.shp.osm
 for file in *.shp ; do
-#	python /opt/ogr2osm/ogr2osm.py --epsg=4326 --proj4="'${proj4}'" --add-version --add-timestamp $file
+#	python $softwareRoot/ogr2osm/ogr2osm.py --epsg=4326 --proj4="'${proj4}'" --add-version --add-timestamp $file
 	#rm "${file/.shp/.osm}"
 	#!# -f used to overwrite whatever was there before; ideally should be cleaning out the directory instead
-	python /opt/ogr2osm/ogr2osm.py -f --epsg=4326 --add-version --add-timestamp $file
+	python $softwareRoot/ogr2osm/ogr2osm.py -f --epsg=4326 --add-version --add-timestamp $file
 	mv "${file/.shp/.osm}" "${file/.shp/.shp.osm}"
 done
 ##cd ../
@@ -107,16 +108,16 @@ done
 ###for file in *.shp.osm ; do
 	file="${edgesShapefile}.osm"
 ##	rm -f "${file/.shp.osm/.osm}"
-	/opt/osmosis/bin/osmosis --read-xml file="./${file}" --tag-transform file="./tagtransform.xml" --write-xml file="${file/.shp.osm/.osm}"
+	$softwareRoot/osmosis/bin/osmosis --read-xml file="./${file}" --tag-transform file="./tagtransform.xml" --write-xml file="${file/.shp.osm/.osm}"
 ###done
 ##cd ../
 
 # Merge files
 # Note: --sort is needed after each --rx as noted here: https://www.mail-archive.com/osmosis-dev@openstreetmap.org/msg00319.html to avoid "org.openstreetmap.osmosis.core.OsmosisRuntimeException: Pipeline entities are not sorted, previous entity type=Node, id=-2, version=1 current entity type=Node, id=-3, version=1."
-#/opt/osmosis/bin/osmosis --rx Railway.osm --sort --rx InlandWways.osm --sort --merge --wx merged.osm
+#$softwareRoot/osmosis/bin/osmosis --rx Railway.osm --sort --rx InlandWways.osm --sort --merge --wx merged.osm
 # Alternative method: osmconvert Railway.osm InlandWways.osm -o=merged.osm
 ##cd converted/
-###/opt/osmosis/bin/osmosis --rx *Edges.osm --sort --rx *Junctions.osm --sort --merge --wx merged.osm
+###$softwareRoot/osmosis/bin/osmosis --rx *Edges.osm --sort --rx *Junctions.osm --sort --merge --wx merged.osm
 mv "${file/.shp.osm/.osm}" merged.osm
 file=merged.shp.osm
 ##cd ../
@@ -131,21 +132,21 @@ php "${SCRIPTDIRECTORY}/buildTurnsData.php" "${SCRIPTDIRECTORY}/${buildDirectory
 echo "Turns file written to ${SCRIPTDIRECTORY}/${buildDirectory}/penalties.csv"
 
 # Build a routing graph
-##rm /opt/osrm-backend/build/profile.lua
-cp "${SCRIPTDIRECTORY}/configuration/routingprofiles/profile-${strategy}.lua" /opt/osrm-backend/profiles/latest-build-profile.lua
+##rm $softwareRoot/osrm-backend/build/profile.lua
+cp "${SCRIPTDIRECTORY}/configuration/routingprofiles/profile-${strategy}.lua" $softwareRoot/osrm-backend/profiles/latest-build-profile.lua
 ##rm -f "${file/.shp.osm/.osrm}"*
 echo "Starting OSRM extraction and contraction using ${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osm}..."
-cd /opt/osrm-backend/build/
+cd $softwareRoot/osrm-backend/build/
 # Turn penalties system (using --generate-edge-lookup and then --turn-penalty-file) documented at: https://github.com/Project-OSRM/osrm-backend/wiki/Traffic#turn-penalty-data
 ./osrm-extract "${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osm}" --generate-edge-lookup
 ./osrm-contract "${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osrm}" --turn-penalty-file "${SCRIPTDIRECTORY}/${buildDirectory}/penalties.csv"
 cd -
 
 # Start the router process in the background, killing any previous instantiation if running
-# E.g. /opt/osrm-backend/build/osrm-routed converted/Transportations.osrm &
+# E.g. $softwareRoot/osrm-backend/build/osrm-routed converted/Transportations.osrm &
 if pgrep -f "osrm-routed -p ${port}"; then pkill -f "osrm-routed -p ${port}"; fi
-/opt/osrm-backend/build/osrm-routed -p $port "${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osrm}" > "${SCRIPTDIRECTORY}/logs-osrm/osrm-${strategy}.log" &
-echo "Running /opt/osrm-backend/build/osrm-routed -p $port ${buildDirectory}/${file/.shp.osm/.osrm}"
+$softwareRoot/osrm-backend/build/osrm-routed -p $port "${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osrm}" > "${SCRIPTDIRECTORY}/logs-osrm/osrm-${strategy}.log" &
+echo "Running $softwareRoot/osrm-backend/build/osrm-routed -p $port ${buildDirectory}/${file/.shp.osm/.osrm}"
 
 # Generate a GeoJSON file of the network
 osmtogeojson "${SCRIPTDIRECTORY}/${buildDirectory}/merged.osm" > "${SCRIPTDIRECTORY}/${buildDirectory}/merged.geojson"
@@ -165,7 +166,7 @@ ndjson-filter 'delete d.id, true' < "${SCRIPTDIRECTORY}/${buildDirectory}/merged
 #   Convert back to GeoJSON
 ndjson-reduce < "${SCRIPTDIRECTORY}/${buildDirectory}/filtered.ndjson" | ndjson-map '{type: "FeatureCollection", features: d}' > "${SCRIPTDIRECTORY}/${buildDirectory}/${filtered}.geojson"
 geojson-precision -p 4 "${SCRIPTDIRECTORY}/${buildDirectory}/${filtered}.geojson" "${SCRIPTDIRECTORY}/${buildDirectory}/${filtered}-p4.geojson"
-cp -p "${SCRIPTDIRECTORY}/${buildDirectory}/${filtered}-p4.geojson" "/opt/travelintimes/htdocs/${strategy}.geojson"
+cp -p "${SCRIPTDIRECTORY}/${buildDirectory}/${filtered}-p4.geojson" "$softwareRoot/travelintimes/htdocs/${strategy}.geojson"
 
 
 
