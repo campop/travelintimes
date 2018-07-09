@@ -164,8 +164,7 @@ ndjson-filter 'delete d.id, true' < "${SCRIPTDIRECTORY}/${buildDirectory}/merged
 #   Convert back to GeoJSON
 ndjson-reduce < "${SCRIPTDIRECTORY}/${buildDirectory}/filtered.ndjson" | ndjson-map '{type: "FeatureCollection", features: d}' > "${SCRIPTDIRECTORY}/${buildDirectory}/${filtered}.geojson"
 geojson-precision -p 4 "${SCRIPTDIRECTORY}/${buildDirectory}/${filtered}.geojson" "${SCRIPTDIRECTORY}/${buildDirectory}/${filtered}-p4.geojson"
-cp -p "${SCRIPTDIRECTORY}/${buildDirectory}/${filtered}-p4.geojson" "$softwareRoot/travelintimes/htdocs/geojson/${strategy}.geojson"
-
+cp -p "${SCRIPTDIRECTORY}/${buildDirectory}/${filtered}-p4.geojson" "${softwareRoot}/travelintimes/htdocs/geojson/${strategy}.geojson"
 
 
 exit
@@ -178,8 +177,8 @@ exit
 imageFilename=network.png
 # https://github.com/mapnik/mapnik/wiki/XMLConfigReference
 mapnikFile="${SCRIPTDIRECTORY}/configuration/mapnikstylesheet/mapnikstylesheet.xml"
-"${SCRIPTDIRECTORY}/generate_image.py" htdocs/controlpanel/${imageFilename} $mapnikFile $bboxWsen
-echo "Image now at http://www.travelintimes.org/controlpanel/${imageFilename}"
+"${SCRIPTDIRECTORY}/generate_image.py" "${softwareRoot}/travelintimes/htdocs/geojson/${imageFilename}" $mapnikFile $bboxWsen
+echo "Image now at http://www.travelintimes.org/geojson/${imageFilename}"
 
 
 
