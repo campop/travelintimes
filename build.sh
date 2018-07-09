@@ -42,9 +42,9 @@ mkdir -p $buildDirectory
 # Copy in the data file
 cp -p $datafile "${buildDirectory}/"
 
-# Copy in the current profile definition and tag transform definition
-cp -p "./configuration/routingprofiles/profile-${strategy}.lua" "${buildDirectory}/profile.lua"
-cp -p ./configuration/tagtransform/tagtransform.xml "${buildDirectory}/"
+# Save a copy of the current profile definition and tag transform definition to the build directory, as an archive
+cp -p "${SCRIPTDIRECTORY}/configuration/routingprofiles/profile-${strategy}.lua" "${buildDirectory}/profile.lua"
+cp -p "${SCRIPTDIRECTORY}/configuration/tagtransform/tagtransform.xml" "${buildDirectory}/"
 
 # Do all work in the build directory
 cd $buildDirectory
@@ -131,14 +131,12 @@ sed -i -e 's/node id="-/node id="/' -e 's/way id="-/way id="/' -e 's/nd ref="-/n
 php "${SCRIPTDIRECTORY}/buildTurnsData.php" "${SCRIPTDIRECTORY}/${buildDirectory}" "${SCRIPTDIRECTORY}/configuration/turns/turns-${strategy}.csv"
 echo "Turns file written to ${SCRIPTDIRECTORY}/${buildDirectory}/penalties.csv"
 
-# Build a routing graph
-##rm $softwareRoot/osrm-backend/build/profile.lua
-cp "${SCRIPTDIRECTORY}/configuration/routingprofiles/profile-${strategy}.lua" $softwareRoot/osrm-backend/profiles/latest-build-profile.lua
-##rm -f "${file/.shp.osm/.osrm}"*
+# Build a routing graph; the routing profile needs to be the OSRM profiles directory, as that contains lib/access.lua and other dependencies listed in the profile
+cp "${SCRIPTDIRECTORY}/configuration/routingprofiles/profile-${strategy}.lua" "$softwareRoot/osrm-backend/profiles/latest-build-profile.lua"
 echo "Starting OSRM extraction and contraction using ${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osm}..."
 cd $softwareRoot/osrm-backend/build/
 # Turn penalties system (using --generate-edge-lookup and then --turn-penalty-file) documented at: https://github.com/Project-OSRM/osrm-backend/wiki/Traffic#turn-penalty-data
-./osrm-extract "${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osm}" --generate-edge-lookup
+./osrm-extract "${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osm}" -p "$softwareRoot/osrm-backend/profiles/latest-build-profile.lua" --generate-edge-lookup
 ./osrm-contract "${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osrm}" --turn-penalty-file "${SCRIPTDIRECTORY}/${buildDirectory}/penalties.csv"
 cd -
 
