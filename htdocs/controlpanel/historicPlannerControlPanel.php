@@ -91,6 +91,9 @@ class historicPlannerControlPanel extends frontControllerApplication
 		# Determine the root of the system
 		$this->repoRoot = realpath ($this->applicationRoot . '/../..');
 		
+		# Determine the location of the local software
+		$this->softwareRoot = $this->repoRoot . '/' . '../';
+		
 		# Define the profile and turns locations
 		foreach ($this->settings['datasets'] as $profile => $label) {
 			$this->profiles[$profile] = "profile-{$profile}.lua";
@@ -306,7 +309,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 	private function frontendRunAfter (&$output)
 	{
 		# Run the command
-		$script = 'cd /opt/osrm-frontend/ && make 2>&1 && cd -';
+		$script = "cd {$this->softwareRoot}/osrm-frontend/ && make 2>&1 && cd -";
 		exec ($script, $output, $returnStatusValue);
 		$output = implode ("\n", $output);
 		return (!$returnStatusValue);
@@ -485,7 +488,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 				}
 				
 				# Execute the command for this profile
-				$commandBase = '/opt/osrm-backend/build/osrm-routed -p %port /opt/travelintimes/enginedata/%profile/%build/merged.osrm > /opt/travelintimes/logs-osrm/osrm-%profile.log &';
+				$commandBase = "{$this->softwareRoot}/osrm-backend/build/osrm-routed -p %port {$this->softwareRoot}/travelintimes/enginedata/%profile/%build/merged.osrm > {$this->softwareRoot}/travelintimes/logs-osrm/osrm-%profile.log &";
 				$replacements = array (
 					'%port' => $port,
 					'%profile' => $profile,
@@ -553,7 +556,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 		chdir ($this->repoRoot . '/');
 		// E.g. /build.sh multimodal1911 exports/multimodal191120161101.zip
 		$logFilename = "enginedata/build-{$grouping}.log";
-		$script = "./build.sh {$this->repoRoot}/../ $grouping $exportFile $port > {$logFilename} 2>&1";    // Also capture error; see: http://stackoverflow.com/a/3863805 and http://stackoverflow.com/a/6674348
+		$script = "./build.sh {$this->softwareRoot} $grouping $exportFile $port > {$logFilename} 2>&1";    // Also capture error; see: http://stackoverflow.com/a/3863805 and http://stackoverflow.com/a/6674348
 		exec ($script, $output, $returnStatusValue);
 		// $output = implode ("\n", $output);
 		$output = file_get_contents ($logFilename);
