@@ -21,7 +21,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 				'multimodal1830' => 'Multimodal 1830',	// Port 5001
 				'multimodal1911' => 'Multimodal 1911',	// Port 5002
 			),
-			'builds' => array (),	// Array of last known good builds
+			'builds' => NULL /* supplied as array */,	// Array of last known good builds, needed for restarting the engine
 		
 		);
 		
