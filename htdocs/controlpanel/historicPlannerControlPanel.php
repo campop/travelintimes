@@ -496,6 +496,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 				);
 				$command = strtr ($commandBase, $replacements);
 				exec ($command, $output = array (), $returnStatusValue);
+				// var_dump ($command);
 				#!# Return status does not seem to be handled properly
 				/*
 				if ($returnStatusValue) {
