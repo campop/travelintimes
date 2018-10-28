@@ -16,9 +16,9 @@ function setup()
     properties = {
       max_speed_for_map_matching      = 180/3.6, -- 180kmph -> m/s
       -- For routing based on duration, but weighted for preferring certain roads
-      weight_name                     = 'routability',
+--      weight_name                     = 'routability',
       -- For shortest duration without penalties for accessibility
-      -- weight_name                     = 'duration',
+      weight_name                     = 'duration',
       -- For shortest distance without penalties for accessibility
       -- weight_name                     = 'distance',
       process_call_tagless_node      = false,
@@ -30,7 +30,7 @@ function setup()
     },
 
     default_mode              = mode.driving,
-    default_speed             = 10,
+--    default_speed             = 10,
     oneway_handling           = true,
     side_road_multiplier      = 0.8,
     turn_penalty              = 7.5,
@@ -404,20 +404,20 @@ function process_way(profile, way, result, relations)
     WayHandlers.destinations,
 
     -- check whether we're using a special transport mode
-    WayHandlers.ferries,
-    WayHandlers.movables,
+--    WayHandlers.ferries,
+--    WayHandlers.movables,
 
     -- handle service road restrictions
-    WayHandlers.service,
+--    WayHandlers.service,
 
     -- handle hov
     WayHandlers.hov,
 
     -- compute speed taking into account way type, maxspeed tags, etc.
     WayHandlers.speed,
-    WayHandlers.surface,
-    WayHandlers.maxspeed,
-    WayHandlers.penalties,
+--    WayHandlers.surface,
+--    WayHandlers.maxspeed,
+--    WayHandlers.penalties,
 
     -- compute class labels
     WayHandlers.classes,
