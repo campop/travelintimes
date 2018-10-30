@@ -222,7 +222,7 @@ class directories
 		<ul class="filelistnotes">' . "
 			<li>To <strong>open</strong> a file or directory, left-click (PC) or click (Mac) on its name.</li>
 			<li>To <strong>save</strong> a file, right-click (PC) or control-click (Mac) on its name and select 'Save Target As...'.</li>
-			<li>For docx/xlsx/pptx documents, you may need the free <a href=\"http://www.google.com/search?q=Microsoft+Office+Compatibility+Pack\" target=\"_blank\">Office Compatibility Pack</a> if you have an older version of MS Office</li>
+			<li>For docx/xlsx/pptx documents, you may need the free <a href=\"https://www.google.com/search?q=Microsoft+Office+Compatibility+Pack\" target=\"_blank\">Office Compatibility Pack</a> if you have an older version of MS Office</li>
 		</ul>";
 		
 		# Show photo thumbnails if required
@@ -276,6 +276,8 @@ class directories
 					if ($skipUnreadableFiles) {
 						#!# Fails if directory has no trailing slash
 						if (!is_readable ($directory . $file)) {
+							#!# Need to have a reporting option
+							// echo $directory . $file . "\n";
 							continue;
 						}
 					}
@@ -460,7 +462,7 @@ class directories
 	
 	# Wrapper function to create a formatted listing
 	#!# Need to add inheritableExtensions support e.g. .html.old
-	public static function listingWrapper ($iconsDirectory, $iconsServerPath, $hiddenFiles, $caseSensitiveMatching, $titleFile = '.title.txt', $directoriesOnly = false, $heading = 'h1', $includeGallery = false)
+	public static function listingWrapper ($iconsDirectory, $iconsServerPath, $hiddenFiles, $caseSensitiveMatching, $titleFile = '.title.txt', $directoriesOnly = false, $heading = 'h1', $includeGallery = false, $trailingSlashVisible = true)
 	{
 		# Get the contents of the title file
 		$titleFile = $_SERVER['DOCUMENT_ROOT'] . $_SERVER['REQUEST_URI'] . $titleFile;
@@ -474,7 +476,7 @@ class directories
 		$html .= "\n\n" . '<p><a href="../"><em>&lt; Go back</em></a></p>';
 		
 		# Show the directory listing
-		$html .= self::listing ($iconsDirectory, $iconsServerPath, $hiddenFiles, $caseSensitiveMatching, true, true, false, array (), 'name', $directoriesOnly, $includeGallery);
+		$html .= self::listing ($iconsDirectory, $iconsServerPath, $hiddenFiles, $caseSensitiveMatching, $trailingSlashVisible, true, false, array (), 'name', $directoriesOnly, $includeGallery);
 		
 		# Return the HTML
 		return $html;

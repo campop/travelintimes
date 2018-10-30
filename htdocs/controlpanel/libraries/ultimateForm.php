@@ -53,7 +53,7 @@
  * @package ultimateForm
  * @license	https://opensource.org/licenses/gpl-license.php GNU Public License
  * @author	{@link http://www.geog.cam.ac.uk/contacts/webmaster.html Martin Lucas-Smith}, University of Cambridge
- * @copyright Copyright  2003-16, Martin Lucas-Smith, University of Cambridge
+ * @copyright Copyright  2003-17, Martin Lucas-Smith, University of Cambridge
  * @version See $version below
  */
 class form
@@ -111,7 +111,7 @@ class form
 	var $displayTypes = array ('tables', 'css', 'paragraphs', 'templatefile');
 	
 	# Constants
-	var $version = '1.24.0';
+	var $version = '1.25.0';
 	var $timestamp;
 	var $minimumPhpVersion = 5;	// md5_file requires 4.2+; file_get_contents and is 4.3+; function process (&$html = NULL) requires 5.0
 	var $escapeCharacter = "'";		// Character used for escaping of output	#!# Currently ignored in derived code
@@ -168,7 +168,7 @@ class form
 		'opening'							=> false,							# Optional starting datetime as an SQL string
 		'closing'							=> false,							# Optional closing datetime as an SQL string
 		'validUsers'						=> false,							# Optional valid user(s) - if this is set, a user will be required. To set, specify string/array of valid user(s), or '*' to require any user
-		'user'								=> false,							# Explicitly-supplied username (if none specified, will check for REMOTE_USER being set
+		'user'								=> false,							# Explicitly-supplied username (if none specified, will check for REMOTE_USER being set)
 		'userKey'							=> false,							# Whether to log the username, as the key
 		'loggedUserUnique'					=> false,							# Run in user-uniqueness mode, making the key of any CSV the username and checking for resubmissions
 		'timestamping'						=> false,							# Add a timestamp to any CSV entry
@@ -217,6 +217,7 @@ class form
 		'errorsCssClass'					=> 'error',							# CSS class for div of errors box
 		'uploadThumbnailWidth'				=> 300,								# Default upload thumbnail box width
 		'uploadThumbnailHeight'				=> 300,								# Default upload thumbnail box height
+		'redirectGet'						=> false,							# On successful submission, redirect, simplifying with non-empty values as GET parameters
 	);
 	
 	
@@ -226,8 +227,7 @@ class form
 	 * Constructor
 	 * @param array $arguments Settings
 	 */
-	#!# Change this to the PHP5 __construct syntax
-	function form ($suppliedArguments = array ())
+	function __construct ($suppliedArguments = array ())
 	{
 		# Load the application support library which itself requires the pureContent framework file, pureContent.php; this will clean up $_SERVER
 		require_once ('application.php');
@@ -752,6 +752,7 @@ class form
 			'cols'					=> $this->settings['cols'],		# Number of columns (optional; defaults to 30)
 			'rows'					=> $this->settings['rows'],		# Number of rows (optional; defaults to 5)
 			'wrap'					=> false,	# Value for non-standard 'wrap' attribute
+			'placeholder'			=> '',		# HTML5 placeholder text
 			'autofocus'				=> false,	# HTML5 autofocus (true/false)
 			'default'				=> '',		# Default value (optional)
 			'regexp'				=> '',		# Case-sensitive regular expression(s) against which all lines of the submission must validate
@@ -929,7 +930,7 @@ class form
 			if ($arguments['maxlength']) {
 				$widgetHtml .= '<div' . $this->nameIdHtml ($arguments['name'], false, false, false, $idOnly = true, '__info') . ' class="charactersremaininginfo"></div>';
 			}
-			$widgetHtml .= '<textarea' . $this->nameIdHtml ($arguments['name']) . " cols=\"{$arguments['cols']}\" rows=\"{$arguments['rows']}\"" . ($arguments['maxlength'] ? " maxlength=\"{$arguments['maxlength']}\"" : '') . ($arguments['wrap'] ? " wrap=\"{$arguments['wrap']}\"" : '') . ($arguments['autofocus'] ? ' autofocus="autofocus"' : '') . $widget->tabindexHtml () . '>' . htmlspecialchars ($this->form[$arguments['name']]) . '</textarea>';
+			$widgetHtml .= '<textarea' . $this->nameIdHtml ($arguments['name']) . " cols=\"{$arguments['cols']}\" rows=\"{$arguments['rows']}\"" . ($arguments['maxlength'] ? " maxlength=\"{$arguments['maxlength']}\"" : '') . ($arguments['wrap'] ? " wrap=\"{$arguments['wrap']}\"" : '') . ($arguments['autofocus'] ? ' autofocus="autofocus"' : '') . ($arguments['placeholder'] != '' ? " placeholder=\"{$arguments['placeholder']}\"" : '') . $widget->tabindexHtml () . '>' . htmlspecialchars ($this->form[$arguments['name']]) . '</textarea>';
 		} else {
 			if ($arguments['displayedValue']) {
 				$widgetHtml  = ($arguments['entities'] ? htmlspecialchars ($arguments['displayedValue']) : $arguments['displayedValue']);
@@ -960,6 +961,9 @@ class form
 				case 'lines':
 					# For the raw components version, split by the newline
 					$data['rawcomponents'] = explode ("\n", $this->form[$arguments['name']]);
+					foreach ($data['rawcomponents'] as $index => $line) {
+						$data['rawcomponents'][$index] = trim ($line);
+					}
 					break;
 					
 				default:
@@ -989,8 +993,9 @@ class form
 	}
 	
 	
+	
 	/**
-	 * Create a rich text editor field based on CKEditor
+	 * Create a richtext editor field based on CKEditor
 	 * @param array $arguments Supplied arguments - see template
 	 */
 	# Note: make sure php_value file_uploads is on in the upload location!
@@ -1009,6 +1014,7 @@ class form
 			'regexp'				=> '',		# Case-sensitive regular expression against which the submission must validate
 			'regexpi'				=> '',		# Case-insensitive regular expression against which the submission must validate
 			'disallow'				=> false,		# Regular expression against which the submission must not validate
+			'maxlength'				=> false,	# Maximum number of characters allowed, after HTML markup stripped
 			'current'				=> false,	# List of current values which the submitted value must not match
 			'discard'				=> false,	# Whether to process the input but then discard it in the results
 			'autofocus'				=> false,	# HTML5 autofocus (true/false)
@@ -1067,6 +1073,12 @@ class form
 		
 		# Perform uniqueness check
 		$widget->uniquenessCheck ();
+		
+		# Enable maxlength checking
+		$widget->checkMaxLength ($stripHtml = true);
+		if (is_numeric ($arguments['maxlength'])) {
+			$restrictions[] = 'Maximum ' . number_format ($arguments['maxlength']) . ' characters';
+		}
 		
 		$elementValue = $widget->getValue ();
 		
@@ -1169,6 +1181,15 @@ class form
 							['Bold','Italic'],
 							['BulletedList','NumberedList'],
 							['Link','Unlink'],
+							['About']
+						]
+					",
+					
+					# Basic, without links
+					'BasicNoLinks' => "
+						[
+							['Bold','Italic'],
+							['BulletedList','NumberedList'],
 							['About']
 						]
 					",
@@ -1416,13 +1437,21 @@ class form
 			$data['presented'] = $elementValue;
 		}
 		
+		# Set restrictions
+		if (isSet ($restrictions)) {$restrictions = implode (";\n", $restrictions);}
+		
+		# Send header to avoid ERR_BLOCKED_BY_XSS_AUDITOR warnings / blank screens; requires output buffering
+		if (ini_get ('output_buffering')) {
+			header ('X-XSS-Protection: 0');
+		}
+		
 		# Add the widget to the master array for eventual processing
 		$this->elements[$arguments['name']] = array (
 			'type' => __FUNCTION__,
 			'html' => $arguments['prepend'] . $widgetHtml . $arguments['append'],
 			'title' => $arguments['title'],
 			'description' => $arguments['description'],
-			'restriction' => (isSet ($restriction) && $arguments['editable'] ? $restriction : false),
+			'restriction' => (isSet ($restrictions) && $arguments['editable'] ? $restrictions : false),
 			'problems' => $widget->getElementProblems (isSet ($elementProblems) ? $elementProblems : false),
 			'required' => $arguments['required'],
 			'requiredButEmpty' => $requiredButEmpty,
@@ -1646,6 +1675,7 @@ class form
 		$arguments = $widget->getArguments ();
 		
 		# If pre-splitting is required, split
+		#!# Needs to normalise spaces between items, e.g. "|a|b |c|d" doesn't get cleaned up
 		if ($arguments['defaultPresplit']) {
 			if (is_string ($arguments['default']) && strlen ($arguments['default'])) {
 				$splittableString = true;
@@ -1939,7 +1969,7 @@ class form
 			#!# Need to double-check that $arguments['default'] isn't being changed above this point [$arguments['default'] is deliberately used here because of the $identifier system above]
 			$presentableDefaults = array ();
 			foreach ($arguments['default'] as $argument) {
-				if (isSet ($arguments['values'][$argument])) {
+				if (array_key_exists ($argument, $arguments['values'])) {	// This is used rather than isSet ($arguments['values'][$argument]) because the visible value might be unset (hence NULL), resulting in the key not ending up in the eventual data
 					$presentableDefaults[$argument] = ($arguments['entities'] ? htmlspecialchars ($arguments['values'][$argument]) : $arguments['values'][$argument]);
 				}
 			}
@@ -1975,6 +2005,7 @@ class form
 			}
 			
 			# Loop through each defined element name
+			#!# Needs to normalise spaces between items, e.g. "|a|b |c|d" doesn't get cleaned up
 			$chosenValues = array ();
 			$chosenVisible = array ();
 			foreach ($arguments['values'] as $value => $visible) {
@@ -2410,7 +2441,9 @@ class form
 					}
 				}
 				if ($splittableString) {
-					$arguments['default'] = explode ($arguments['separator'], $arguments['default']);
+					$separator = str_replace ("\r\n", "\n", $arguments['separator']);
+					$default   = str_replace ("\r\n", "\n", $arguments['default']);
+					$arguments['default'] = explode ($separator, $default);
 				}
 			}
 		}
@@ -2432,7 +2465,7 @@ class form
 		
 		# Check that the array of values is not empty
 		if (empty ($arguments['values'])) {
-			$this->formSetupErrors['checkboxesNoValues'] = 'No values have been set for the set of checkboxes.';
+			$this->formSetupErrors['checkboxesNoValues'] = 'No values have been set for the set of checkboxes for the <em>' . htmlspecialchars ($arguments['name']) . '</em> field.';
 			return false;
 		}
 		
@@ -2493,7 +2526,7 @@ class form
 					$elementValue[$value] = '';
 				}
 				
-//				# Construct the element ID, which must be unique	
+//				# Construct the element ID, which must be unique
 				$elementId = $this->cleanId ($this->settings['name'] ? "{$this->settings['name']}[{$arguments['name']}_{$value}]" : "{$arguments['name']}_{$value}");
 				
 				# Determine whether to disable this checkbox
@@ -2649,6 +2682,7 @@ class form
 	 * @param array $arguments Supplied arguments - see template
 	 */
 	#!# Need to add HTML5 equivalents
+	#!# Need to add support for 'current'
 	function datetime ($suppliedArguments)
 	{
 		# Specify available arguments as defaults or as NULL (to represent a required argument)
@@ -3819,7 +3853,6 @@ class form
 		
 		# Compile the options; they are listed at https://raw.github.com/chadisfaction/jQuery-Tokenizing-Autocomplete-Plugin/master/src/jquery.tokeninput.js ; note that the final item in a list must not have a comma at the end
 		$functionOptions = array ();
-		$functionOptions[] = "searchingText: 'Searching &hellip;'";
 		if ($singleLine) {
 			$functionOptions[] = 'classes: {
 						tokenList: "token-input-list-facebook",
@@ -5186,6 +5219,24 @@ class form
 			$data = $groupedData;
 		}
 		
+		# If required, redirect to a URL containing only the non-empty
+		if ($this->settings['redirectGet']) {
+			if ($_POST) {	// Check avoids redirect loop scenario
+				
+				# Filter to include only those where the user has specified a value, to keep the URL as short as possible
+				$nonemptyValues = array ();
+				foreach ($data as $key => $value) {
+					if (strlen ($value)) {
+						$nonemptyValues[$key] = $value;
+					}
+				}
+				
+				# Redirect so that the search parameters can be persistent; SCRIPT_URL is used as it is the location without query string
+				$url = $_SERVER['_SITE_URL'] . $_SERVER['SCRIPT_URL'] . '?' . str_replace ('%2C', ',', http_build_query ($nonemptyValues));	// Comma-replacement is to keep the URL easier to read, as it does not need to be encoded, being a sub-delim (and the query component does not use these sub-delims); see: http://stackoverflow.com/a/2375597
+				application::sendHeader (302, $url);
+			}
+		}
+		
 		# Return the data (whether virgin or grouped)
 		return $data;
 	}
@@ -5700,6 +5751,7 @@ class form
 		if (($this->settings['display'] != 'template') && ($this->settings['requiredFieldIndicator'] === 'top')) {$html .= $requiredFieldIndicatorHtml;}
 		
 		# Add unsaved data protection HTML if required, ensuring that an ID exists for the form tag
+		#!# If there is more than one form on the page, unsavedDataProtection does not work, probably because window.onbeforeunload is being set twice
 		if ($this->settings['unsavedDataProtection']) {
 			#!# This needs to be handled more generically as this code is duplicated
 			if (!$this->settings['id']) {
@@ -7362,6 +7414,7 @@ class form
 			'enumRadiobuttonsInitialNullText' => array (),	// Whether an initial empty radiobutton should have a label, specified as an array of fieldname=>value
 			'int1ToCheckbox' => false,	// Whether an INT/TINYINT/etc(1) field will be converted to a checkbox
 			'textAsVarchar' => false,	// Force a TEXT type to be a VARCHAR(255) instead
+			'inputAsSearch' => false,	// Set input widgets to be search boxes instead; this is recommended for a multisearch-style interface
 			'lookupFunction' => false,
 			'simpleJoin' => false,	// Overrides lookupFunction, uses targetId as a join to <database>.target; lookupFunctionParameters can still be used
 			'lookupFunctionParameters' => array (),
@@ -7376,7 +7429,7 @@ class form
 			'floatChopTrailingZeros' => true,	// Whether to replace trailing zeros at the end of a value where there is a decimal point
 			'valuesNamesAutomatic'	=> false,	// For select/radiobuttons/checkboxes, whether to create automatic value names based on the value itself (e.g. 'option1' would become 'Option 1')
 			'autocomplete' => false,	// An autocomplete data endpoint URL; if %field is specified, it will be replaced with the fieldname
-			'autocompleteOptions' => false,	// Array of options that will be converted to a javascript array - see http://docs.jquery.com/UI/Autocomplete#options (this is the new plugin)
+			'autocompleteOptions' => false,	// Array of options that will be converted to a javascript array - see http://api.jqueryui.com/autocomplete/#options (this is the new plugin)
 			'editingUniquenessUniChecking' => true,	// Whether uniqueness checking for editing of a record when a UNI field is found in the database (should be set to false when doing a record clone)
 			'notNullFields' => array (),	// Array of elements (or single element as string) that should be treated as NOT NULL, even if the database structure says they are nullable
 			'notNullExceptFields' => array (),	// Assume all elements are treated as NOT NULL (even if the database structure says they are nullable), except for these specified elements (or single element as string)
@@ -7425,6 +7478,14 @@ class form
 			'database'	=> $database,
 			'table'		=> $table,
 		);
+		
+		# If using redirection to simplified GET on success, check for a GET collection and use that in preference
+		#!# Currently only fields generated by dataBinding will be captured by redirectGet, not directly-generated fields
+		if ($this->settings['redirectGet']) {
+			if (!$_POST) {
+				$data = $_GET;
+			}
+		}
 		
 		# If simple join mode is enabled, proxy in the values for lookupFunction
 		if ($simpleJoin) {
@@ -7627,6 +7688,11 @@ Work-in-progress implementation for callback; need to complete: (i) form setup c
 					//$standardAttributes['directory'] = './uploads/';
 				}
 				
+				# Enable thumbnails for photographs
+				if (preg_match ('/(photograph)/i', $fieldName)) {
+					$standardAttributes['thumbnail'] = true;
+				}
+				
 				# Make an auto_increment field not appear
 				if ($fieldAttributes['Extra'] == 'auto_increment') {
 					if (!$value) {
@@ -7670,6 +7736,7 @@ Work-in-progress implementation for callback; need to complete: (i) form setup c
 					}
 				}
 				
+/* Work-in-progress map integration code:
 				# Create a map if both latitude and longitude present
 				$mapFields = array ('latitude', 'longitude');
 				if (in_array ($fieldName, $mapFields) && (!array_diff ($mapFields, array_keys ($fields)))) {
@@ -7680,6 +7747,7 @@ Work-in-progress implementation for callback; need to complete: (i) form setup c
 					$standardAttributes['_cssHide--DONOTUSETHISFLAGEXTERNALLY'] = true;
 					// NB $floatAttributes below will force the decimal places to be correct, e.g. FLOAT(10,6) will give 6 decimal places, i.e. 10cm resolution; maxlength will also be set automatically
 				}
+*/
 			}
 			
 			# Add per-widget overloading if attributes supplied by the calling application
@@ -7741,6 +7809,11 @@ Work-in-progress implementation for callback; need to complete: (i) form setup c
 				$skipWidgetCreation = true;
 			}
 			
+			# If the inputAsSearch option is on, convert standard text input field to search
+			if ($inputAsSearch && !$forceType && (strtolower ($fieldAttributes['Type']) == 'text')) {
+				$forceType = 'search';
+			}
+			
 			# If the textAsVarchar option is on, convert the type to VARCHAR(255)
 			if ($textAsVarchar && (strtolower ($fieldAttributes['Type']) == 'text')) {$fieldAttributes['Type'] = 'VARCHAR(255)';}
 			
@@ -7772,9 +7845,9 @@ Work-in-progress implementation for callback; need to complete: (i) form setup c
 					));
 					break;
 				
-				# FLOAT/DOUBLE (numeric with decimal point) field
-				case (preg_match ('/(float|double|double precision)\(([0-9]+),([0-9]+)\)/i', $type, $matches)):
-				case (preg_match ('/(float|double|double precision)$/i', $type, $matches)):
+				# FLOAT/DOUBLE (numeric with decimal point) / DECIMAL fields
+				case (preg_match ('/(float|decimal|double|double precision)\(([0-9]+),([0-9]+)\)/i', $type, $matches)):
+				case (preg_match ('/(float|decimal|double|double precision)$/i', $type, $matches)):
 					if ($floatChopTrailingZeros) {
 						if (substr_count ($standardAttributes['default'], '.')) {
 							$standardAttributes['default'] = preg_replace ('/0+$/', '', $standardAttributes['default']);
@@ -7816,7 +7889,9 @@ Work-in-progress implementation for callback; need to complete: (i) form setup c
 					if ($int1ToCheckbox && $matches[2] == '1') {
 						if (!$value) {	// i.e. 0 or '0' (or NULL)
 							$value = NULL;
-							$standardAttributes['default'] = NULL;	// Normalise 0 to NULL
+							if (!$standardAttributes['default']) {
+								$standardAttributes['default'] = NULL;	// Normalise 0 to NULL
+							}
 						}
 						$label = (is_string ($int1ToCheckbox) ? $int1ToCheckbox : '');	// Empty unless the 'int1ToCheckbox' value is a string
 						$this->checkboxes ($standardAttributes + array (
@@ -7825,9 +7900,10 @@ Work-in-progress implementation for callback; need to complete: (i) form setup c
 							'output' => array ('processing' => 'special-setdatatype'),
 						));
 					} else {
+						#!# Should be set to be a native numeric input type
 						$this->input ($standardAttributes + array (
 							'enforceNumeric' => true,
-							'regexp' => ($unsigned ? '^([0-9]*)$' : '^([-0-9]*)$'),
+							'regexp' => ($unsigned ? '^([0-9]+)$' : '^(-*[0-9]+)$'),	// e.g. '57' or '-2' but not '-'
 							#!# Make these recognise types without the numeric value after
 							'maxlength' => $matches[2],
 							'size' => $matches[2] + 1,
@@ -7930,6 +8006,7 @@ Work-in-progress implementation for callback; need to complete: (i) form setup c
 	
 	
 	# Function to return a list of countries
+	#!# Add option to obtain as moniker => name
 	public static function getCountries ($additionalStart = array ())
 	{
 		# Define the main list
@@ -8250,6 +8327,7 @@ class formWidget
 		if (!$this->settings['autofocus']) {return false;}
 		
 		# End if this current widget is not editable, as that will never have autofocus
+		#!# Undefined index: editable generated from __timestamp
 		if (!$this->arguments['editable']) {return false;}
 		
 		# End if there is an editable, non-heading widget already defined
@@ -8349,12 +8427,21 @@ class formWidget
 	
 	
 	# Function to check the maximum length of what is submitted
-	function checkMaxLength ()
+	function checkMaxLength ($stripHtml = false)
 	{
+		# Obtain the value, and strip HTML first if required
+		$value = $this->value;
+		if ($stripHtml) {
+			$value = strip_tags ($value);
+		}
+		
+		# Determine the string length
+		$length = strlen ($value);
+		
 		#!# Move the is_numeric check into the argument cleaning stage
 		if (is_numeric ($this->arguments['maxlength'])) {
-			if (strlen ($this->value) > $this->arguments['maxlength']) {
-				$this->elementProblems['exceedsMaximum'] = 'You submitted more characters (<strong>' . strlen ($this->value) . '</strong>) than are allowed (<strong>' . $this->arguments['maxlength'] . '</strong>).';
+			if ($length > $this->arguments['maxlength']) {
+				$this->elementProblems['exceedsMaximum'] = 'You submitted more characters (<strong>' . $length . '</strong>) than are allowed (<strong>' . $this->arguments['maxlength'] . '</strong>).';
 			}
 		}
 	}

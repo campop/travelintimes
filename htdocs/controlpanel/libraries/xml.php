@@ -1,7 +1,7 @@
 <?php
 
 # XML wrapper class
-# Version 1.6.5
+# Version 1.8.0
 class xml
 {
 	# Function to convert XML to an array
@@ -597,8 +597,24 @@ class xml
 	# XML string formatter, based on http://forums.devnetwork.net/viewtopic.php?p=213989
 	public static function formatter ($xml, $boxClass = 'code')
 	{
+		# Protect inline tag combinations
+		$inlineTagCombinations = array (
+			'</a></p>',
+		);
+		$inlineTagCombinationsReplacements = array ();
+		$safeString = '~~FOO~~';
+		foreach ($inlineTagCombinations as $inlineTagCombination) {
+			$replacement = str_replace ('><', ">{$safeString}<", $inlineTagCombination);
+			$inlineTagCombinationsReplacements[$inlineTagCombination] = $replacement;
+		}
+		$xml = strtr ($xml, $inlineTagCombinationsReplacements);
+		
 		// add marker linefeeds to aid the pretty-tokeniser (adds a linefeed between all tag-end boundaries)
 		$xml = preg_replace ('/(>)\s*(<)(\/*)/', "$1\n$2$3", $xml);
+		
+		# Undo protection of inline tag combinations
+		$inlineTagCombinationsReplacements = array_flip ($inlineTagCombinationsReplacements);
+		$xml = strtr ($xml, $inlineTagCombinationsReplacements);
 		
 		// now indent the tags
 		$token      = strtok ($xml, "\n");
@@ -682,7 +698,7 @@ class xml
 	
 	
 	# Function to generate an XML (hierarchical) representation of a record
-	public static function dropSerialRecordIntoSchema ($schema, $record, &$xPathMatches = array (), &$errorHtml = '', &$debugString = '')
+	public static function dropSerialRecordIntoSchema ($schema, $record, &$xPathMatches = array (), &$xPathMatchesWithIndex = array (), &$errorHtml = '', &$debugString = '')
 	{
 		# Start an string to represent the eventual listing
 		$xml = '';
@@ -690,13 +706,17 @@ class xml
 		# Start a stack
 		$stack = array ();
 		
-		# Start an array of xPath matches, for passing back
-		$xPathMatches = array ();
+		# Start two arrays of xPath matches, for passing back
+		$xPathMatches = array ();	// e.g. /foo/bar
+		$xPathMatchesWithIndex = array ();	// e.g. /foo/bar[2]; values will always have an index, even if there is only one
+		
+		# Start a registry of xPath indexes, e.g. /foo => 2, /foo/bar => 1, for use with creating the $xPathMatchesWithIndex array
+		$xPathCounts = array ();
 		
 		# Loop through part of the record
 		$errorHtml = '';
 		$debugString = '';
-		foreach ($record as $index => $data) {
+		foreach ($record as $lineIndex => $data) {
 			$key = $data['field'];
 			$value = $data['value'];
 			
@@ -729,7 +749,7 @@ class xml
 				
 				# Detect unmatchable keys, which cause an infinite loop
 				if ($stackAsStringBefore == $stackAsString) {
-					$errorHtml = "<p class=\"warning\">PARSE ERROR: The schema processing failed at <strong>{$stackAsStringBeforeLoop}</strong>, indicating an incomplete schema in the area near before this. Please modify the schema.</p>";
+					$errorHtml = "<p class=\"warning\">PARSE ERROR: The schema processing failed at <strong>{$stackAsStringBeforeLoop}</strong>, indicating an incomplete schema in the area near before this or an incorrect record. Please modify the schema or fix the record.</p>";
 					$debugString = trim ($debugString);
 					$xml = trim ($xml);
 					return $xml;
@@ -737,7 +757,14 @@ class xml
 			}
 			
 			# Register the match, trimming the final slash to make a proper XPath
-			$xPathMatches[$index] = rtrim ($stackAsString, '/');
+			$xPath = rtrim ($stackAsString, '/');
+			$xPathMatches[$lineIndex] = $xPath;
+			
+			# Register this XPath in the counts registry, either creating it or incrementing it
+			$xPathCounts[$xPath] = (isSet ($xPathCounts[$xPath]) ? $xPathCounts[$xPath] : 0) + 1;	// XPaths are indexed from 1
+			
+			# Add the counts version
+			$xPathMatchesWithIndex[$lineIndex] = $xPath . '[' . $xPathCounts[$xPath] . ']';
 			
 			# If a container, open the key
 			$isContainer = $schema[$stackAsString];
@@ -780,6 +807,41 @@ class xml
 		# Return the XML
 		return $xml;
 	}
+	
+	
+	# Function to get an XPath value
+	public static function xPathValue ($xml /* of type SimpleXMLElement */, $xPath, $autoPrependRoot = false)
+	{
+		if ($autoPrependRoot) {
+			$xPath = '/root' . $xPath;
+		}
+		$result = $xml->xpath ($xPath);
+		if (!$result) {return false;}
+		$value = array ();
+		foreach ($result as $node) {
+			$value[] = (string) $node;
+		}
+		$value = implode ($value);
+		return $value;
+	}
+	
+	
+	# Function to get a set of XPath values for a field known to have multiple entries; these are indexed from 1, mirroring the XPath spec, not 0
+	public static function xPathValues ($xml, $xPath, $autoPrependRoot = false, $maxItems = 20)
+	{
+		# Get each value
+		$values = array ();
+		for ($i = 1; $i <= $maxItems; $i++) {
+			$xPathThisI = str_replace ('%i', $i, $xPath);	// Convert %i to loop ID if present
+			$value = self::xPathValue ($xml, $xPathThisI, $autoPrependRoot);
+			if (strlen ($value)) {
+				$values[$i] = $value;
+			}
+		}
+		
+		# Return the values
+		return $values;
+	}
 }
 
 
@@ -804,11 +866,11 @@ class array2xml {
     public  function __construct($array){
         if(!is_array($array)){
             throw new Exception('array2xml requires an array', 1);
-            unset($this);
+            //unset($this);
         }
         if(!count($array)){
             throw new Exception('array is empty', 2);
-            unset($this);
+            //unset($this);
         }
         
         $this->data = new DOMDocument('1.0');
@@ -850,8 +912,8 @@ class array2xml {
      *
      * @return string
      */
-    public function saveXML(){
-        return $this->data->saveXML();
+    public function saveXML () {
+        return $this->data->saveXML ();
     }
 }
 
