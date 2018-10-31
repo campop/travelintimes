@@ -1,3 +1,4 @@
 var config = {
+	mapboxApiKey: 'YOUR_MAPBOX_API_KEY',	// Obtain at https://www.mapbox.com/account/
 	geocoderApiKey: 'YOUR_API_KEY',		// Obtain at https://www.cyclestreets.net/api/apply/
 }

@@ -59,3 +59,5 @@ table.lines {border-collapse: collapse;}
 /* .leaflet-routing-alt, .leaflet-routing-geocoders, .leaflet-routing-error {max-height: none;} */
 .leaflet-routing-alt h3 {font-size: 1.4em; color: #603; background-color: #eee;}
 .leaflet-routing-alt table tr td {padding-bottom: 10px; line-height: 1.3em;}
+
+#layerswitcher {width: 250px;}

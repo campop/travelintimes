@@ -1,47 +1,80 @@
-// Historic journey planner application code
-// Some code based on: https://github.com/cyclestreets/bikedata
+// Historic journey planner
+// Some code adapted from work by CycleStreets, GPL2
 
 /*jslint browser: true, white: true, single: true, for: true */
-/*global alert, console, window, $, jQuery, L, autocomplete */
+/*global $, alert, console, window, mapboxgl, FULLTILT, routing */
+
 
 var travelintimes = (function ($) {
 	
 	'use strict';
 	
-	// Internal class properties
-	var _map = null;
 	
 	// Settings
 	var _settings = {
 		
-		// Default map view
-		defaultLatitude: 53,
-		defaultLongitude: -2,
-		defaultZoom: 7,
+		// Initial lat/lon/zoom of map and tile layer
+		defaultLocation: {
+			latitude: 53,
+			longitude: -2,
+			zoom: 7
+		},
 		
 		// Tileservers; historical map sources are listed at: https://wiki.openstreetmap.org/wiki/National_Library_of_Scotland
+		// Raster styles; see: https://www.mapbox.com/mapbox-gl-js/example/map-tiles/
+		// NB If using only third-party sources, a Mapbox API key is not needed: see: https://github.com/mapbox/mapbox-gl-native/issues/2996#issuecomment-155483811
+		defaultStyle: 'bartholomew',
 		tileUrls: {
-			'bartholomew': [
-				'https://geo.nls.uk/mapdata2/bartholomew/great_britain/{z}/{x}/{y}.png',	// E.g. https://geo.nls.uk/mapdata2/bartholomew/great_britain/12/2021/1353.png
-				{maxZoom: 15, attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>', backgroundColour: '#a2c3ba'},
-				'NLS - Bartholomew Half Inch, 1897-1907'
-			],
-			'os1inch': [
-				'https://geo.nls.uk/maps/os/1inch_2nd_ed/{z}/{x}/{y}.png',	// E.g. https://geo.nls.uk/maps/os/1inch_2nd_ed/15/16395/10793.png
-				{maxZoom: 15, attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>', backgroundColour: '#f0f1e4', key: '/images/mapkeys/os1inch.jpg'},
-				'NLS - OS One Inch, 1885-1900'
-			],
-			'mapnik': [
-				'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',	// E.g. https://a.tile.openstreetmap.org/16/32752/21788.png
-				{maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'},
-				'OpenStreetMap style (modern)'
-			],
-			'osopendata': [
-				'https://{s}.os.openstreetmap.org/sv/{z}/{x}/{y}.png',	// E.g. https://a.os.openstreetmap.org/sv/18/128676/81699.png
-				{maxZoom: 19, attribution: 'Contains Ordnance Survey data &copy; Crown copyright and database right 2010'},
-				'OS Open Data (modern)'
-			]
+			'bartholomew': {
+				tiles: 'https://geo.nls.uk/mapdata2/bartholomew/great_britain/{z}/{x}/{y}.png',	// E.g. https://geo.nls.uk/mapdata2/bartholomew/great_britain/12/2021/1353.png
+				maxZoom: 15,
+				attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>',
+				backgroundColour: '#a2c3ba',
+				tileSize: 256,
+				label: 'NLS - Bartholomew Half Inch, 1897-1907'
+			},
+			'os1inch': {
+				tiles: 'https://geo.nls.uk/maps/os/1inch_2nd_ed/{z}/{x}/{y}.png',	// E.g. https://geo.nls.uk/maps/os/1inch_2nd_ed/15/16395/10793.png
+				maxZoom: 15,
+				attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>',
+				backgroundColour: '#f0f1e4',
+				key: '/images/mapkeys/os1inch.jpg',
+				tileSize: 256,
+				label: 'NLS - OS One Inch, 1885-1900'
+			},
+			'osopendata': {
+				tiles: 'https://{s}.os.openstreetmap.org/sv/{z}/{x}/{y}.png',	// E.g. https://a.os.openstreetmap.org/sv/18/128676/81699.png
+				maxZoom: 19,
+				attribution: 'Contains Ordnance Survey data &copy; Crown copyright and database right 2010',
+				tileSize: 256,
+				label: 'OS Open Data (modern)'
+			},
+			'mapnik': {
+				tiles: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',	// E.g. https://a.tile.openstreetmap.org/16/32752/21788.png
+				maxZoom: 19,
+				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+				tileSize: 256,
+				label: 'OpenStreetMap style (modern)'
+			},
+			"opencyclemap": {
+				tiles: 'https://{s}.tile.cyclestreets.net/opencyclemap/{z}/{x}/{y}.png',
+				maxZoom: 22,
+				attribution: 'Maps © <a href="https://www.thunderforest.com/">Thunderforest</a>, Data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+				tileSize: 256,
+				label: 'OpenCycleMap (modern)'
+			},
+			"streets": {
+				vectorTiles: 'mapbox://styles/mapbox/streets-v9',
+				label: 'Streets (modern)',
+			},
+			"satellite": {
+				vectorTiles: 'mapbox://styles/mapbox/satellite-v9',
+				label: 'Satellite',
+			},
 		},
+		
+		// Mapbox API key
+		mapboxApiKey: 'YOUR_MAPBOX_API_KEY',
 		
 		// Geocoder
 		geocoderApiBaseUrl: 'https://api.cyclestreets.net/v2/geocoder',
@@ -61,6 +94,9 @@ var travelintimes = (function ($) {
 		]
 	};
 	
+	// Internal class properties
+	var _map = null;
+	var _styles = {};
 	
 	
 	return {
@@ -73,8 +109,23 @@ var travelintimes = (function ($) {
 				_settings[key] = value;
 			});
 			
+			// Load styles
+			travelintimes.getStyles ();
+			
 			// Create the map
 			travelintimes.createMap ();
+			
+			// Add a geolocation control
+			travelintimes.geolocation ();
+			
+			// Add layer switching
+			travelintimes.layerSwitcher ();
+			
+			// Add placenames overlay
+			travelintimes.placenamesOverlay ();
+			
+			// Add move-to control
+			travelintimes.addMoveToControl ();
 			
 			// Show first-run welcome message if the user is new to the site
 			travelintimes.welcomeFirstRun ();
@@ -90,61 +141,213 @@ var travelintimes = (function ($) {
 		},
 		
 		
-		// Function to create the map
+		// Create map; see: https://www.mapbox.com/mapbox-gl-js/example/simple-map/
 		createMap: function ()
 		{
-			// Add the tile layers
-			var tileLayers = [];		// Background tile layers
-			var baseLayers = {};		// Labels, by name
-			var baseLayersById = {};	// Layers, by id
-			var mapKeys = {};		// Map keys, by name
-			var layer;
-			var name;
-			$.each (_settings.tileUrls, function (tileLayerId, tileLayerAttributes) {
-				layer = L.tileLayer(tileLayerAttributes[0], tileLayerAttributes[1]);
-				tileLayers.push (layer);
-				name = tileLayerAttributes[2];
-				baseLayers[name] = layer;
-				baseLayersById[tileLayerId] = layer;
-				mapKeys[name] = tileLayerAttributes[1]['key'] || null;
-			});
-			
-			// Create the map
-			_map = L.map('map', {
-				center: [_settings.defaultLatitude, _settings.defaultLongitude],
-				zoom: _settings.defaultZoom,
-				layers: tileLayers[0]	// Documentation suggests tileLayers is all that is needed, but that shows all together
+			// Create map, specifying the access token
+			mapboxgl.accessToken = _settings.mapboxApiKey;
+			_map = new mapboxgl.Map ({
+				container: 'map',
+				style: _styles[_settings.defaultStyle],
+				center: [_settings.defaultLocation.longitude, _settings.defaultLocation.latitude],
+				zoom: _settings.defaultLocation.zoom,
+				maxZoom: _settings.maxZoom,
+				hash: true
 			});
 			
 			// Set a class corresponding to the map tile layer, so that the background can be styled with CSS
-			travelintimes.setMapBackgroundColour (tileLayers[0].options);
-			_map.on('baselayerchange', function(e) {
-				travelintimes.setMapBackgroundColour (baseLayers[e.name].options);
+			travelintimes.setMapBackgroundColour (_settings.tileUrls[_settings.defaultStyle]);
+			
+			// Enable zoom in/out buttons
+			_map.addControl (new mapboxgl.NavigationControl ());
+			
+			// Add scale; see: https://stackoverflow.com/a/42510295/180733
+			_map.addControl (new mapboxgl.ScaleControl ());
+		},
+		
+		
+		// Define styles
+		getStyles: function ()
+		{
+			// Register each tileset
+			$.each (_settings.tileUrls, function (tileLayerId, tileLayerAttributes) {
+				
+				// Vector tiles
+				if (tileLayerAttributes.vectorTiles) {
+					_styles[tileLayerId] = tileLayerAttributes.vectorTiles;
+					
+				// Traditional bitmap tiles
+				} else {
+					
+					// Convert {s} server to a,b,c if present
+					if (tileLayerAttributes.tiles.indexOf('{s}') != -1) {
+						tileLayerAttributes.tiles = [
+							tileLayerAttributes.tiles.replace ('{s}', 'a'),
+							tileLayerAttributes.tiles.replace ('{s}', 'b'),
+							tileLayerAttributes.tiles.replace ('{s}', 'c')
+						]
+					}
+					
+					// Convert string (without {s}) to array
+					if (typeof tileLayerAttributes.tiles === 'string') {
+						tileLayerAttributes.tiles = [
+							tileLayerAttributes.tiles
+						]
+					}
+					
+					// Register the definition
+					_styles[tileLayerId] = {
+						"version": 8,
+						"sources": {
+							"simple-tiles": {
+								"type": "raster",
+								"tiles": tileLayerAttributes.tiles,
+								"tileSize": (tileLayerAttributes.tileSize ? tileLayerAttributes.tileSize : 256),	// NB Mapbox GL default is 512
+								"attribution": tileLayerAttributes.attribution
+							}
+						},
+						"layers": [{
+							"id": "simple-tiles",
+							"type": "raster",
+							"source": "simple-tiles",
+							"minzoom": 0,
+							"maxzoom": (tileLayerAttributes.maxZoom ? tileLayerAttributes.maxZoom : 22)
+						}]
+					}
+				}
+			});
+		},
+		
+		
+		// Function to add a geolocation control
+		// https://www.mapbox.com/mapbox-gl-js/example/locate-user/
+		// https://github.com/mapbox/mapbox-gl-js/issues/5464
+		geolocation: function ()
+		{
+			// Create a tracking control
+			var geolocate = new mapboxgl.GeolocateControl({
+				positionOptions: {
+					enableHighAccuracy: true
+				},
+				trackUserLocation: true
 			});
 			
-			// Create the location overlay pane
-			travelintimes.createPane ();
+			// Add to the map
+			_map.addControl (geolocate);
+		},
+		
+		
+		// Function to add layer switching
+		// https://www.mapbox.com/mapbox-gl-js/example/setstyle/
+		// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
+		layerSwitcher: function ()
+		{
+			// Add layer switcher UI
+			var control = this.createControl ('layerswitcher', 'bottom-left');
 			
-			// Map key control
-			travelintimes.mapKey (mapKeys, tileLayers[0]);
+			// Construct HTML for layer switcher
+			var layerSwitcherHtml = '<ul>';
+			var name;
+			$.each (_styles, function (styleId, style) {
+				name = (_settings.tileUrls[styleId].label ? _settings.tileUrls[styleId].label : travelintimes.ucfirst (styleId));
+				layerSwitcherHtml += '<li><input id="' + styleId + '" type="radio" name="layerswitcher" value="' + styleId + '"' + (styleId == _settings.defaultStyle ? ' checked="checked"' : '') + '><label for="' + styleId + '"> ' + name + '</label></li>';
+			});
+			layerSwitcherHtml += '</ul>';
+			$('#layerswitcher').append (layerSwitcherHtml);
 			
-			// Add scale
-			L.control.scale({maxWidth: 300}).addTo(_map);
+			// Switch to selected layer
+			var layerList = document.getElementById ('layerswitcher');
+			var inputs = layerList.getElementsByTagName ('input');
+			function switchLayer (layer) {
+				var layerId = layer.target.id;
+				var style = _styles[layerId];
+				_map.setStyle (style);
+				
+				// Set the background colour if required
+				travelintimes.setMapBackgroundColour (_settings.tileUrls[layerId]);
+			};
+			for (var i = 0; i < inputs.length; i++) {
+				inputs[i].onclick = switchLayer;
+			}
+		},
+		
+		
+		// Function to make first character upper-case; see: https://stackoverflow.com/a/1026087/180733
+		ucfirst: function (string)
+		{
+			if (typeof string !== 'string') {return string;}
+			return string.charAt(0).toUpperCase() + string.slice(1);
+		},
+		
+		
+		// Function to create a control in a corner
+		// See: https://www.mapbox.com/mapbox-gl-js/api/#icontrol
+		createControl: function (id, position)
+		{
+			function HelloWorldControl() { }
 			
-			// Add geocoder control
-			travelintimes.geocoder ();
+			HelloWorldControl.prototype.onAdd = function(_map) {
+				this._map = map;
+				this._container = document.createElement('div');
+				this._container.setAttribute ('id', id);
+				this._container.className = 'mapboxgl-ctrl-group mapboxgl-ctrl local';
+				return this._container;
+			};
 			
-			// Add hash support
-			new L.Hash (_map, baseLayersById);
+			HelloWorldControl.prototype.onRemove = function () {
+				this._container.parentNode.removeChild(this._container);
+				this._map = undefined;
+			};
 			
-			// Add geolocation control
-			_map.addControl(L.control.locate({
-				icon: 'fa fa-location-arrow',
-				locateOptions: {maxZoom: 13}
-			}));
+			// #!# Need to add icon and hover; partial example at: https://github.com/schulzsebastian/mapboxgl-legend/blob/master/index.js
 			
-			// Add the base (background) layer switcher
-			L.control.layers(baseLayers, null, {position: 'bottomleft'}).addTo(_map);
+			// Instiantiate and add the control
+			_map.addControl (new HelloWorldControl (), position);
+		},
+		
+		
+		// Move-to control
+		addMoveToControl: function ()
+		{
+			travelintimes.geocoder ('#geocoder input', false);
+		},
+		
+		
+		// Function to add a geocoder control
+		geocoder: function (addTo, callbackFunction)
+		{
+			// Geocoder URL; re-use of settings values is supported, represented as placeholders {%cyclestreetsApiBaseUrl}, {%cyclestreetsApiKey}, {%autocompleteBbox}
+			var geocoderApiUrl = travelintimes.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['cyclestreetsApiBaseUrl', 'cyclestreetsApiKey', 'autocompleteBbox']);
+			
+			// Attach the autocomplete library behaviour to the location control
+			autocomplete.addTo (addTo, {
+				sourceUrl: geocoderApiUrl,
+				select: function (event, ui) {
+					var bbox = ui.item.feature.properties.bbox.split(',');
+					_map.setMaxZoom (18);	// Prevent excessive zoom to give context
+					_map.fitBounds([ [bbox[0], bbox[1]], [bbox[2], bbox[3]] ]);	// Note that Mapbox GL JS uses sw,ne rather than ws,en as in Leaflet.js
+					_map.setMaxZoom (_settings.maxZoom);	// Reset
+					if (callbackFunction) {
+						callbackFunction (ui.item);
+					}
+					event.preventDefault();
+				}
+			});
+		},
+		
+		
+		// Helper function to implement settings placeholder substitution in a string
+		settingsPlaceholderSubstitution: function (string, supportedPlaceholders)
+		{
+			// Substitute each placeholder
+			var placeholder;
+			$.each(supportedPlaceholders, function (index, field) {
+				placeholder = '{%' + field + '}';
+				string = string.replace(placeholder, _settings[field]);
+			});
+			
+			// Return the modified string
+			return string;
 		},
 		
 		
@@ -153,62 +356,33 @@ var travelintimes = (function ($) {
 		{
 			// Set, using jQuery, if specified, or clear
 			var backgroundColour = (tileLayerOptions.backgroundColour ? tileLayerOptions.backgroundColour : '');
-			$('.leaflet-container').css ('background-color', backgroundColour);
+			$('.mapboxgl-map').css ('background-color', backgroundColour);
 		},
 		
 		
-		// Function to create a location overlay pane; see: http://leafletjs.com/examples/map-panes/
-		createPane: function ()
+		// Function to create a location overlay pane; see: https://www.mapbox.com/help/how-web-apps-work/#adding-layers-to-the-map
+		placenamesOverlay: function ()
 		{
-			// Create a pane
-			_map.createPane('labels');
-			_map.getPane('labels').style.zIndex = 650;
-			_map.getPane('labels').style.pointerEvents = 'none';
-			
-			// Create a labels layer; see: https://carto.com/location-data-services/basemaps/
-//			var locationLabels = L.tileLayer('http://tiles.oobrien.com/shine_labels_cdrc/{z}/{x}/{y}.png', {
-			var locationLabels = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_only_labels/{z}/{x}/{y}.png', {
-				attribution: '&copy; OpenStreetMap, &copy; CartoDB',
-				pane: 'labels'
-			})
+			// Register the definition
+			var locationLabelsLayer = {
+				"id": "locationlabels",
+				"type": "raster",
+				"source": {
+					"type": "raster",
+					"tiles": [
+						'https://cartodb-basemaps-a.global.ssl.fastly.net/light_only_labels/{z}/{x}/{y}.png',
+						'https://cartodb-basemaps-b.global.ssl.fastly.net/light_only_labels/{z}/{x}/{y}.png',
+						'https://cartodb-basemaps-c.global.ssl.fastly.net/light_only_labels/{z}/{x}/{y}.png',
+					],
+					"tileSize": 256,	// NB Mapbox GL default is 512
+					"attribution": '&copy; OpenStreetMap, &copy; CartoDB'
+				}
+			};
 			
 			// Add to the map
-			locationLabels.addTo(_map);
-		},
-		
-		
-		// Map key
-		mapKey: function (mapKeys, defaultLayer)
-		{
-			// Add map key div
-			$('#mapcontainer').append('<div id="mapkeylink"><p><a href="#">Map key</a></p></div>');
-			
-			// Default key
-			var mapKey = defaultLayer.options.key;
-			travelintimes.mapKeyControl (mapKey);
-			
-			// Detect changes
-			_map.on('baselayerchange', function(e) {
-				var selectedBasemap = e.name;
-				mapKey = mapKeys[selectedBasemap];
-				travelintimes.mapKeyControl (mapKey);
+			_map.on ('load', function () {
+				_map.addLayer (locationLabelsLayer);
 			});
-		},
-		
-		
-		// Map key control
-		mapKeyControl: function (mapKey)
-		{
-			// Show or hide
-			if (mapKey) {
-				$('#mapkeylink').show();
-				$('#mapkeylink p a').attr('href', mapKey);
-				$('#mapkeylink p a').off();	// Remove any existing handler
-				var html = '<img src="' + mapKey + '" />';
-				travelintimes.dialogBox ('#mapkeylink p a', 'mapkey', html);
-			} else {
-				$('#mapkeylink').hide();
-			}
 		},
 		
 		
