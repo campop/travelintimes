@@ -476,7 +476,12 @@ var travelintimes = (function ($) {
 			// Define the journey planner module config
 			var config = {
 				cyclestreetsApiKey: _settings.geocoderApiKey,
-				autocompleteBbox: _settings.autocompleteBbox
+				autocompleteBbox: _settings.autocompleteBbox,
+				images: {
+					start: '/images/itinerarymarkers/start.png',
+					waypoint: '/images/itinerarymarkers/waypoint.png',
+					finish: '/images/itinerarymarkers/finish.png'
+				}
 			};
 			
 			// Delegate to separate class
