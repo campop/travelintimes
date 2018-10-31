@@ -280,9 +280,9 @@ var travelintimes = (function ($) {
 		// See: https://www.mapbox.com/mapbox-gl-js/api/#icontrol
 		createControl: function (id, position)
 		{
-			function HelloWorldControl() { }
+			function newControl () { }
 			
-			HelloWorldControl.prototype.onAdd = function(_map) {
+			newControl.prototype.onAdd = function(_map) {
 				this._map = map;
 				this._container = document.createElement('div');
 				this._container.setAttribute ('id', id);
@@ -290,7 +290,7 @@ var travelintimes = (function ($) {
 				return this._container;
 			};
 			
-			HelloWorldControl.prototype.onRemove = function () {
+			newControl.prototype.onRemove = function () {
 				this._container.parentNode.removeChild(this._container);
 				this._map = undefined;
 			};
@@ -298,7 +298,7 @@ var travelintimes = (function ($) {
 			// #!# Need to add icon and hover; partial example at: https://github.com/schulzsebastian/mapboxgl-legend/blob/master/index.js
 			
 			// Instiantiate and add the control
-			_map.addControl (new HelloWorldControl (), position);
+			_map.addControl (new newControl (), position);
 		},
 		
 		
