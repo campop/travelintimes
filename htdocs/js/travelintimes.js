@@ -81,10 +81,6 @@ var travelintimes = (function ($) {
 		geocoderApiKey: 'YOUR_API_KEY',		// Obtain at https://www.cyclestreets.net/api/apply/
 		autocompleteBbox: '-6.6577,49.9370,1.7797,57.6924',
 		
-		// LRM Geocoder
-		lrmGeocoderServiceUrl: '//nominatim.openstreetmap.org/',
-		lrmGeocoderAutocomplete: false,		// NB: Do not enable on nominatim.openstreetmap.org - this is against the Usage policy for that server
-		
 		// Datasets, and the port they run on
 		datasets: [
 			{year: 1680, port: 5000},
@@ -136,8 +132,8 @@ var travelintimes = (function ($) {
 			travelintimes.travellerstales ();
 			travelintimes.acknowledgements ();
 			
-			// Add the data to the map as switchable layers
-			travelintimes.journeyplanner ();
+			// Add routing
+			travelintimes.routing ();
 		},
 		
 		
@@ -474,92 +470,17 @@ var travelintimes = (function ($) {
 		},
 		
 		
-		// Journey planner main entry point
-		journeyplanner: function ()
+		// Routing
+		routing: function ()
 		{
-			// https://github.com/perliedman/leaflet-routing-machine/issues/236
-			// http://www.liedman.net/leaflet-routing-machine/tutorials/interaction/
-			// http://www.liedman.net/leaflet-routing-machine/tutorials/alternative-routers/
-			// https://github.com/perliedman/leaflet-routing-machine/issues/200#issuecomment-175082024
+			// Define the journey planner module config
+			var config = {
+				cyclestreetsApiKey: _settings.geocoderApiKey,
+				autocompleteBbox: _settings.autocompleteBbox
+			};
 			
-			function button(label, container) {
-				var btn = L.DomUtil.create('button', '', container);
-				btn.setAttribute('type', 'button');
-				btn.setAttribute('class', 'year ' + label);
-				btn.innerHTML = label;
-				return btn;
-			}
-			
-			var geoPlan = L.Routing.Plan.extend({
-				
-				createGeocoders: function() {
-					
-					var container = L.Routing.Plan.prototype.createGeocoders.call(this);
-					
-					// Add each route, with a button
-					var thisButton;
-					$.each (_settings['datasets'], function (index, dataset) {
-						thisButton = button(dataset.year, container);
-						L.DomEvent.on(thisButton, 'click', function() {
-							//console.log(control.getRouter().options);
-							if (dataset.port) {
-								control.getRouter().options.serviceUrl = '/routing/' + dataset.port + '/route/v1';
-							} else if (dataset.url) {
-								control.getRouter().options.serviceUrl = dataset.url;
-							}
-							control.getRouter().options.useHints = false;
-							control.route();
-							control.setWaypoints(control.getWaypoints());
-							//console.log(dataset.year + ' route');
-							
-							// Highlight the current button, clearing existing selection first (if any)
-							$.each (_settings['datasets'], function (indexButton, datasetButton) {
-								$('.leaflet-routing-geocoders button.' + datasetButton.year).removeClass ('selected');
-							});
-							$('.leaflet-routing-geocoders button.' + dataset.year).addClass ('selected');
-							
-						}, this);
-					});
-					
-					return container;
-				}
-			});
-			
-			// Patch the Geocoder to add autocomplete if required
-			if (_settings.lrmGeocoderAutocomplete) {
-				L.Control.Geocoder.Nominatim.prototype.suggest = function(query, cb, context) {
-					return L.Control.Geocoder.Nominatim.prototype.geocode(query, cb, context);
-				}
-			}
-			
-			var plan = new geoPlan(
-				// #!# Need to convert this into a setting
-				[
-					L.latLng(52.20200, 0.10835),	// Faculty of History, Cambridge
-					L.latLng(51.50795, -0.07842)	// Tower of London
-				], {
-				geocoder: L.Control.Geocoder.nominatim({
-					// See: https://github.com/perliedman/leaflet-control-geocoder#lcontrolgeocodernominatim
-					serviceUrl: _settings.lrmGeocoderServiceUrl,
-					geocodingQueryParams: {
-						// See: https://wiki.openstreetmap.org/wiki/Nominatim#Parameters
-						viewboxlbrt: _settings.autocompleteBbox,
-						bounded: 1
-					}
-				}),
-				routeWhileDragging: true
-			});
-			
-			var control = L.Routing.control({
-				serviceUrl: '/routing/5000/route/v1',
-				routeWhileDragging: true,
-				plan: plan
-			}).addTo(_map);
-			
-			$('.leaflet-routing-geocoders button.year.' + _settings['datasets'][0]['year']).addClass ('selected');
-			
-			// Set focus to search start box
-			$('.leaflet-routing-geocoder:first-child input').focus();
+			// Delegate to separate class
+			routing.initialise (config, _map, false);
 		}
 	}
 	

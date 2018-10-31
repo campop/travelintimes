@@ -48,16 +48,4 @@ table.lines {border-collapse: collapse;}
 .lines tr:first-child {border-top: 1px solid #e9e9e9;}
 
 /* Routing */
-.leaflet-top.leaflet-right {height: 100%; background-color:rgba(237, 242, 255, 0.85); padding-left: 10px;}
-.leaflet-touch .leaflet-top.leaflet-right .leaflet-control-layers, .leaflet-touch .leaflet-top.leaflet-right .leaflet-routing-container.leaflet-bar {border: 0; background-color: transparent;}
-.leaflet-routing-container.leaflet-bar {box-shadow: none; border-radius: 0; background-color: transparent;}	/* IE & Firefox fixes */
-.leaflet-routing-alternatives-container {font-size: 1.2em;}
-.leaflet-routing-geocoder input {color: #603; margin-bottom: 0; min-height: 1.5em;}
-.leaflet-routing-geocoders button:nth-of-type(2) {clear: right;}
-.leaflet-routing-geocoders button.year {margin-top: 30px; float: left; padding: 5px 15px; border-bottom: 0; border-radius: 0; margin-right: 5px; background: linear-gradient(#ccc, white); background: -webkit-linear-gradient(#ccc, white); background-color: white; font-family: arial;}
-.leaflet-routing-geocoders button.year.selected {background: linear-gradient(#ccc, BurlyWood); background: -webkit-linear-gradient(#ccc, BurlyWood); background-color: BurlyWood;}
-/* .leaflet-routing-alt, .leaflet-routing-geocoders, .leaflet-routing-error {max-height: none;} */
-.leaflet-routing-alt h3 {font-size: 1.4em; color: #603; background-color: #eee;}
-.leaflet-routing-alt table tr td {padding-bottom: 10px; line-height: 1.3em;}
-
 #layerswitcher {width: 250px;}
