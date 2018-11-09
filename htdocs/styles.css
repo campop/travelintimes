@@ -3,7 +3,6 @@ html, body {width: 100%; height: 100%; margin: 0; padding: 0;}
 #header {height: 90px; background-color: #f7f7f7; border-bottom: 2px solid #eee; padding: 15px 10px;}
 
 /* Typography */
-body .leaflet-container {}
 
 /* Header */
 #header {font-family: 'Josefin Sans', sans-serif;}
@@ -49,3 +48,10 @@ table.lines {border-collapse: collapse;}
 
 /* Routing */
 #layerswitcher {width: 250px;}
+.mapboxgl-ctrl-bottom-right {top: 0; width: 280px; padding: 0; border: 0; background-color: rgba(237, 242, 255, 0.85); padding: 20px;}
+.mapboxgl-ctrl-bottom-right #routeplanning {height: 100%; width: 100%; margin: 0; border: 0; border-radius: 0; background-color: transparent;}
+.mapboxgl-ctrl-bottom-right .mapboxgl-ctrl-group:not(:empty) {-moz-box-shadow: none; -webkit-box-shadow: none; box-shadow: none;}
+.mapboxgl-ctrl-bottom-right .mapboxgl-ctrl-group.local {padding: 0;}
+.mapboxgl-ctrl-top-right {margin-right: 325px;}
+.mapboxgl-ctrl-bottom-right .mapboxgl-ctrl-attrib {margin-right: 300px /* This should be 320px, but minus 20px of extra margin from the bottom corner that is being added */; white-space: nowrap;}
+
