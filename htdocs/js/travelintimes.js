@@ -195,7 +195,7 @@ var travelintimes = (function ($) {
 					_styles[tileLayerId] = {
 						"version": 8,
 						"sources": {
-							"simple-tiles": {
+							"raster-tiles": {
 								"type": "raster",
 								"tiles": tileLayerAttributes.tiles,
 								"tileSize": (tileLayerAttributes.tileSize ? tileLayerAttributes.tileSize : 256),	// NB Mapbox GL default is 512
@@ -205,8 +205,9 @@ var travelintimes = (function ($) {
 						"layers": [{
 							"id": "simple-tiles",
 							"type": "raster",
-							"source": "simple-tiles",
+							"source": "raster-tiles",
 							"minzoom": 0,
+							// #!# Something is causing maxzoom not to be respected
 							"maxzoom": (tileLayerAttributes.maxZoom ? tileLayerAttributes.maxZoom : 22)
 						}]
 					}
