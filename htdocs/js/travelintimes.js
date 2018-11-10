@@ -81,12 +81,40 @@ var travelintimes = (function ($) {
 		geocoderApiKey: 'YOUR_API_KEY',		// Obtain at https://www.cyclestreets.net/api/apply/
 		autocompleteBbox: '-6.6577,49.9370,1.7797,57.6924',
 		
-		// Datasets, and the port they run on
-		datasets: [
-			{year: 1680, port: 5000},
-			{year: 1830, port: 5001},
-			{year: 1911, port: 5002},
-			{year: new Date().getFullYear(), url: 'https://router.project-osrm.org/route/v1'}
+		// Routing strategies, in order of appearance in the UI
+		strategies: [
+			{
+				id: 'year1680',
+				label: '1680',
+				format: 'osrm',
+				baseUrl: 'https://www.travelintimes.org/routing/5000',
+				parameters: {},
+				lineColour: 'silver'
+			},
+			{
+				id: 'year1830',
+				label: '1830',
+				format: 'osrm',
+				baseUrl: 'https://www.travelintimes.org/routing/5001',
+				parameters: {},
+				lineColour: 'peachpuff'
+			},
+			{
+				id: 'year1911',
+				label: '1911',
+				format: 'osrm',
+				baseUrl: 'https://www.travelintimes.org/routing/5002',
+				parameters: {},
+				lineColour: 'darkkhaki'
+			},
+			{
+				id: 'year' + new Date().getFullYear().toString(),
+				label: new Date().getFullYear().toString(),
+				format: 'osrm',
+				baseUrl: 'https://router.project-osrm.org',
+				parameters: {},
+				lineColour: 'thistle'
+			}
 		]
 	};
 	
@@ -482,7 +510,8 @@ var travelintimes = (function ($) {
 					start: '/js/lib/mobiledev/images/itinerarymarkers/start.png',
 					waypoint: '/js/lib/mobiledev/images/itinerarymarkers/waypoint.png',
 					finish: '/js/lib/mobiledev/images/itinerarymarkers/finish.png'
-				}
+				},
+				strategies: _settings.strategies
 			};
 			
 			// Delegate to separate class
