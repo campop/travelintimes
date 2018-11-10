@@ -82,6 +82,7 @@ var travelintimes = (function ($) {
 		autocompleteBbox: '-6.6577,49.9370,1.7797,57.6924',
 		
 		// Routing strategies, in order of appearance in the UI
+		defaultStrategy: 'year1830',
 		strategies: [
 			{
 				id: 'year1680',
@@ -511,6 +512,7 @@ var travelintimes = (function ($) {
 					waypoint: '/js/lib/mobiledev/images/itinerarymarkers/waypoint.png',
 					finish: '/js/lib/mobiledev/images/itinerarymarkers/finish.png'
 				},
+				defaultStrategy: _settings.defaultStrategy,
 				strategies: _settings.strategies
 			};
 			
