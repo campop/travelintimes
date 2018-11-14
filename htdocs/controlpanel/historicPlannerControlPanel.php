@@ -94,6 +94,9 @@ class historicPlannerControlPanel extends frontControllerApplication
 		# Determine the location of the local software
 		$this->softwareRoot = $this->repoRoot . '/' . '../';
 		
+		# Set the exports directory location
+		$this->settings['exportsDirectory'] = $this->repoRoot . '/exports/';
+		
 		# Define the profile and turns locations
 		foreach ($this->settings['datasets'] as $profile => $label) {
 			$this->profiles[$profile] = "profile-{$profile}.lua";
