@@ -112,8 +112,8 @@ var travelintimes = (function ($) {
 				id: 'year' + new Date().getFullYear().toString(),
 				label: new Date().getFullYear().toString(),
 				format: 'osrm',
-				baseUrl: 'https://router.project-osrm.org/route/v1/driving',
-				parameters: {},
+				baseUrl: 'https://api.mapbox.com/directions/v5/mapbox/driving',
+				parameters: {access_token: '%mapboxApiKey'},
 				lineColour: 'thistle'
 			}
 		]
