@@ -239,7 +239,7 @@ var travelintimes = (function ($) {
 							// #!# Something is causing maxzoom not to be respected
 							"maxzoom": (tileLayerAttributes.maxZoom ? tileLayerAttributes.maxZoom : 22)
 						}]
-					}
+					};
 				}
 			});
 		},
