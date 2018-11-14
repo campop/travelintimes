@@ -291,10 +291,32 @@ var travelintimes = (function ($) {
 				
 				// Set the background colour if required
 				travelintimes.setMapBackgroundColour (_settings.tileUrls[layerId]);
+				
+				// Fire an event; see: https://javascript.info/dispatch-events
+				travelintimes.styleChanged ();
 			};
 			for (var i = 0; i < inputs.length; i++) {
 				inputs[i].onclick = switchLayer;
 			}
+		},
+		
+		
+		// Function to trigger style changed, checking whether it is actually loading; see: https://stackoverflow.com/a/47313389/180733
+		// Cannot use _map.on(style.load) directly, as that does not fire when loading a raster after another raster: https://github.com/mapbox/mapbox-gl-js/issues/7579
+		styleChanged: function ()
+		{
+			// Delay for 200 minutes in a loop until the style is loaded; see: https://stackoverflow.com/a/47313389/180733
+			if (!_map.isStyleLoaded()) {
+				setTimeout (function () {
+					travelintimes.styleChanged ();	// Done inside a function to avoid "Maximum Call Stack Size Exceeded"
+				}, 250);
+				return;
+			}
+			
+			// Fire a custom event that client code can pick up when the style is changed
+			var body = document.getElementsByTagName ('body')[0];
+			var myEvent = new Event ('style-changed', {'bubbles': true});
+			body.dispatchEvent (myEvent);
 		},
 		
 		
