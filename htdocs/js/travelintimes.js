@@ -525,6 +525,15 @@ var travelintimes = (function ($) {
 		// Routing
 		routing: function ()
 		{
+			// Replace token for modern routing
+			$.each (_settings.strategies, function (index, strategy) {
+				if (strategy.parameters.hasOwnProperty ('access_token')) {
+					if (strategy.parameters.access_token.indexOf ('%mapboxApiKey') !== -1) {
+						_settings.strategies[index].parameters.access_token = strategy.parameters.access_token.replace ('%mapboxApiKey', _settings.mapboxApiKey);
+					}
+				}
+			});
+			
 			// Define the journey planner module config
 			var config = {
 				cyclestreetsApiKey: _settings.geocoderApiKey,
