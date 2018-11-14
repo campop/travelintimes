@@ -88,7 +88,7 @@ var travelintimes = (function ($) {
 				id: 'year1680',
 				label: '1680',
 				format: 'osrm',
-				baseUrl: 'https://www.travelintimes.org/routing/5000',
+				baseUrl: 'https://www.travelintimes.org/routing/5000/route/v1/driving',
 				parameters: {},
 				lineColour: 'silver'
 			},
@@ -96,7 +96,7 @@ var travelintimes = (function ($) {
 				id: 'year1830',
 				label: '1830',
 				format: 'osrm',
-				baseUrl: 'https://www.travelintimes.org/routing/5001',
+				baseUrl: 'https://www.travelintimes.org/routing/5001/route/v1/driving',
 				parameters: {},
 				lineColour: 'peachpuff'
 			},
@@ -104,7 +104,7 @@ var travelintimes = (function ($) {
 				id: 'year1911',
 				label: '1911',
 				format: 'osrm',
-				baseUrl: 'https://www.travelintimes.org/routing/5002',
+				baseUrl: 'https://www.travelintimes.org/routing/5002/route/v1/driving',
 				parameters: {},
 				lineColour: 'darkkhaki'
 			},
@@ -112,7 +112,7 @@ var travelintimes = (function ($) {
 				id: 'year' + new Date().getFullYear().toString(),
 				label: new Date().getFullYear().toString(),
 				format: 'osrm',
-				baseUrl: 'https://router.project-osrm.org',
+				baseUrl: 'https://router.project-osrm.org/route/v1/driving',
 				parameters: {},
 				lineColour: 'thistle'
 			}
