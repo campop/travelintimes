@@ -381,12 +381,14 @@ class historicPlannerControlPanel extends frontControllerApplication
 		# Process the form
 		if ($result = $form->process ($html)) {
 			
-			# Back up the current version
+			# Back up the current version (if not starting a new one)
 			$definitionArchiveFile = $this->repoRoot . '/configuration/' . $type . '/archive/' . $definitionFilename;
-			if (!copy ($definitionFile, $definitionArchiveFile . '.until-' . date ('Ymd-His') . ".replacedby-{$this->user}" . '.txt')) {
-				$html = "\n<p class=\"warning\">There was a problem archiving the old definition.</p>";
-				echo $html;
-				return false;
+			if (file_exists ($definitionFile)) {
+				if (!copy ($definitionFile, $definitionArchiveFile . '.until-' . date ('Ymd-His') . ".replacedby-{$this->user}" . '.txt')) {
+					$html = "\n<p class=\"warning\">There was a problem archiving the old definition.</p>";
+					echo $html;
+					return false;
+				}
 			}
 			
 			# Save the new version
