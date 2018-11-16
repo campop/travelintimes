@@ -17,9 +17,10 @@ class historicPlannerControlPanel extends frontControllerApplication
 			# Datasets
 			'startPort' => 5000,
 			'datasets' => array (
-				'multimodal1680' => 'Multimodal 1680',	// Port 5000
-				'multimodal1830' => 'Multimodal 1830',	// Port 5001
-				'multimodal1911' => 'Multimodal 1911',	// Port 5002
+				'roman' => 'Roman',						// Port 5000
+				'multimodal1680' => 'Multimodal 1680',	// Port 5001
+				'multimodal1830' => 'Multimodal 1830',	// Port 5002
+				'multimodal1911' => 'Multimodal 1911',	// Port 5003
 			),
 			'builds' => NULL /* supplied as array */,	// Array of last known good builds, needed for restarting the engine
 		
@@ -469,7 +470,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 			# Restart the engine, for each profile
 			$port = $this->settings['startPort'] - 1;	// Minus one, as will be immediately incremented to the first
 			foreach ($this->settings['datasets'] as $profile => $label) {
-				$port++;	// E.g. 5000, 5001, 5002
+				$port++;	// E.g. 5000, 5001, 5002, 5003
 				
 				# State the engine profile
 				$html .= "\n<p><em>Engine profile {$profile}:</em></p>";

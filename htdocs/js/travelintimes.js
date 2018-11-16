@@ -85,6 +85,14 @@ var travelintimes = (function ($) {
 		defaultStrategy: 'year1830',
 		strategies: [
 			{
+				id: 'roman',
+				label: 'Roman',
+				format: 'osrm',
+				baseUrl: 'https://dev.travelintimes.org/routing/5000/route/v1/driving',
+				parameters: {},
+				lineColour: 'gray'
+			},
+			{
 				id: 'year1680',
 				label: '1680',
 				format: 'osrm',
