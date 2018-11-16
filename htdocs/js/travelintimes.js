@@ -442,7 +442,7 @@ var travelintimes = (function ($) {
 				sourceUrl: _settings.geocoderApiBaseUrl + '?key=' + _settings.geocoderApiKey + '&bounded=1&bbox=' + _settings.autocompleteBbox,
 				select: function (event, ui) {
 					var bbox = ui.item.feature.properties.bbox.split(',');
-					_map.fitBounds([ [bbox[1], bbox[0]], [bbox[3], bbox[2]] ], {maxZoom: 13});
+					_map.fitBounds([ [bbox[0], bbox[1]], [bbox[2], bbox[3]] ], {maxZoom: 13});	// Note that Mapbox GL JS uses sw,ne rather than ws,en as in Leaflet.js
 					event.preventDefault();
 				}
 			});
