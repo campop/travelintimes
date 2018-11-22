@@ -88,7 +88,7 @@ var travelintimes = (function ($) {
 				id: 'roman',
 				label: 'Roman',
 				format: 'osrm',
-				baseUrl: 'https://dev.travelintimes.org/routing/5000/route/v1/driving',
+				baseUrl: 'https://www.travelintimes.org/routing/5000/route/v1/driving',
 				parameters: {},
 				lineColour: 'gray'
 			},
@@ -96,7 +96,7 @@ var travelintimes = (function ($) {
 				id: 'year1680',
 				label: '1680',
 				format: 'osrm',
-				baseUrl: 'https://dev.travelintimes.org/routing/5001/route/v1/driving',
+				baseUrl: 'https://www.travelintimes.org/routing/5001/route/v1/driving',
 				parameters: {},
 				lineColour: 'silver'
 			},
@@ -104,7 +104,7 @@ var travelintimes = (function ($) {
 				id: 'year1830',
 				label: '1830',
 				format: 'osrm',
-				baseUrl: 'https://dev.travelintimes.org/routing/5002/route/v1/driving',
+				baseUrl: 'https://www.travelintimes.org/routing/5002/route/v1/driving',
 				parameters: {},
 				lineColour: 'peachpuff'
 			},
@@ -112,7 +112,7 @@ var travelintimes = (function ($) {
 				id: 'year1911',
 				label: '1911',
 				format: 'osrm',
-				baseUrl: 'https://dev.travelintimes.org/routing/5003/route/v1/driving',
+				baseUrl: 'https://www.travelintimes.org/routing/5003/route/v1/driving',
 				parameters: {},
 				lineColour: 'darkkhaki'
 			},
