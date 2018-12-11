@@ -90,7 +90,8 @@ var travelintimes = (function ($) {
 				format: 'osrm',
 				baseUrl: 'https://www.travelintimes.org/routing/5000/route/v1/driving',
 				parameters: {},
-				lineColour: 'gray'
+				lineColour: 'gray',
+				attribution: 'Routing by Campop'
 			},
 			{
 				id: 'year1680',
@@ -98,7 +99,8 @@ var travelintimes = (function ($) {
 				format: 'osrm',
 				baseUrl: 'https://www.travelintimes.org/routing/5001/route/v1/driving',
 				parameters: {},
-				lineColour: 'silver'
+				lineColour: 'silver',
+				attribution: 'Routing by Campop'
 			},
 			{
 				id: 'year1830',
@@ -106,7 +108,8 @@ var travelintimes = (function ($) {
 				format: 'osrm',
 				baseUrl: 'https://www.travelintimes.org/routing/5002/route/v1/driving',
 				parameters: {},
-				lineColour: 'peachpuff'
+				lineColour: 'peachpuff',
+				attribution: 'Routing by Campop'
 			},
 			{
 				id: 'year1911',
@@ -114,7 +117,8 @@ var travelintimes = (function ($) {
 				format: 'osrm',
 				baseUrl: 'https://www.travelintimes.org/routing/5003/route/v1/driving',
 				parameters: {},
-				lineColour: 'darkkhaki'
+				lineColour: 'darkkhaki',
+				attribution: 'Routing by Campop'
 			},
 			{
 				id: 'year' + new Date().getFullYear().toString(),
@@ -122,7 +126,8 @@ var travelintimes = (function ($) {
 				format: 'osrm',
 				baseUrl: 'https://api.mapbox.com/directions/v5/mapbox/driving',
 				parameters: {access_token: '%mapboxApiKey'},
-				lineColour: 'thistle'
+				lineColour: 'thistle',
+				attribution: 'Routing using OpenStreetMap data'
 			}
 		]
 	};
