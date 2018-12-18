@@ -90,7 +90,7 @@ var travelintimes = (function ($) {
 				format: 'osrm',
 				baseUrl: 'https://www.travelintimes.org/routing/5000/route/v1/driving',
 				parameters: {},
-				lineColour: 'gray',
+				lineColour: '#505160',
 				attribution: 'Routing by Campop'
 			},
 			{
@@ -99,7 +99,7 @@ var travelintimes = (function ($) {
 				format: 'osrm',
 				baseUrl: 'https://www.travelintimes.org/routing/5001/route/v1/driving',
 				parameters: {},
-				lineColour: 'silver',
+				lineColour: 'green',
 				attribution: 'Routing by Campop'
 			},
 			{
@@ -108,7 +108,7 @@ var travelintimes = (function ($) {
 				format: 'osrm',
 				baseUrl: 'https://www.travelintimes.org/routing/5002/route/v1/driving',
 				parameters: {},
-				lineColour: 'peachpuff',
+				lineColour: 'yellow',
 				attribution: 'Routing by Campop'
 			},
 			{
@@ -117,7 +117,7 @@ var travelintimes = (function ($) {
 				format: 'osrm',
 				baseUrl: 'https://www.travelintimes.org/routing/5003/route/v1/driving',
 				parameters: {},
-				lineColour: 'darkkhaki',
+				lineColour: 'orange',
 				attribution: 'Routing by Campop'
 			},
 			{
@@ -126,7 +126,7 @@ var travelintimes = (function ($) {
 				format: 'osrm',
 				baseUrl: 'https://api.mapbox.com/directions/v5/mapbox/driving',
 				parameters: {access_token: '%mapboxApiKey'},
-				lineColour: 'thistle',
+				lineColour: 'brown',
 				attribution: 'Routing using OpenStreetMap data'
 			}
 		]
