@@ -558,7 +558,8 @@ var travelintimes = (function ($) {
 					finish: '/js/lib/mobiledev/images/itinerarymarkers/finish.png'
 				},
 				defaultStrategy: _settings.defaultStrategy,
-				strategies: _settings.strategies
+				strategies: _settings.strategies,
+				showAllRoutes: false
 			};
 			
 			// Delegate to separate class
