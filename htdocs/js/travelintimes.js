@@ -20,6 +20,9 @@ var travelintimes = (function ($) {
 			zoom: 7
 		},
 		
+		// Initial route
+		initialRoute: [[0.123902, 52.202968], [-0.127669, 51.507318]],	// As array of lon,lat pairs, or false to disable
+		
 		// Tileservers; historical map sources are listed at: https://wiki.openstreetmap.org/wiki/National_Library_of_Scotland
 		// Raster styles; see: https://www.mapbox.com/mapbox-gl-js/example/map-tiles/
 		// NB If using only third-party sources, a Mapbox API key is not needed: see: https://github.com/mapbox/mapbox-gl-native/issues/2996#issuecomment-155483811
@@ -557,6 +560,7 @@ var travelintimes = (function ($) {
 					waypoint: '/js/lib/mobiledev/images/itinerarymarkers/waypoint.png',
 					finish: '/js/lib/mobiledev/images/itinerarymarkers/finish.png'
 				},
+				initialRoute: _settings.initialRoute,
 				defaultStrategy: _settings.defaultStrategy,
 				strategies: _settings.strategies,
 				showAllRoutes: false
