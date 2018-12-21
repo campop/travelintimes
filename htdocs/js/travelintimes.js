@@ -553,6 +553,7 @@ var travelintimes = (function ($) {
 			
 			// Define the journey planner module config
 			var config = {
+				title: 'Travel in times - Historic journey planner',
 				cyclestreetsApiKey: _settings.geocoderApiKey,
 				autocompleteBbox: _settings.autocompleteBbox,
 				images: {
