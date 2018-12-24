@@ -76,6 +76,9 @@ var travelintimes = (function ($) {
 			},
 		},
 		
+		// Max zoom
+		maxZoomToSegment: 14,
+		
 		// Mapbox API key
 		mapboxApiKey: 'YOUR_MAPBOX_API_KEY',
 		
@@ -564,7 +567,8 @@ var travelintimes = (function ($) {
 				initialRoute: _settings.initialRoute,
 				defaultStrategy: _settings.defaultStrategy,
 				strategies: _settings.strategies,
-				showAllRoutes: false
+				showAllRoutes: false,
+				maxZoomToSegment: _settings.maxZoomToSegment
 			};
 			
 			// Delegate to separate class
