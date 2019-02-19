@@ -633,8 +633,8 @@ var travelintimes = (function ($) {
 				properties: {
 					path: 'plan/' + strategy,
 					plan: strategy,
-					lengthMetres: osrm.routes[0].distance,
-					timeSeconds: osrm.routes[0].duration
+					lengthMetres: osrm.routes[0].length,
+					timeSeconds: osrm.routes[0].time
 				},
 				geometry: osrm.routes[0].geometry	// Already in GeoJSON coordinates format
 			});
@@ -652,8 +652,8 @@ var travelintimes = (function ($) {
 						path: 'plan/' + strategy + '/street/' + (index + 1),
 						number: (index + 1),
 						name: step.name,
-						distanceMetres: step.distance,
-						durationSeconds: step.duration,
+						lengthMetres: step.distance,
+						timeSeconds: step.duration,
 						ridingSurface: '',				// Not available in OSRM
 						color: '',						// Not available in OSRM
 						travelMode: (step.name.indexOf ('railway') !== -1 ? 'railway' : step.mode),
