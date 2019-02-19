@@ -67,12 +67,6 @@ class historicPlannerControlPanel extends frontControllerApplication
 				'icon' => 'map',
 				'url' => 'mapnikstylesheet/',
 			),
-			'frontend' => array (
-				'description' => 'Define the frontend GUI configuration',
-				'tab' => 'GUI',
-				'icon' => 'application_view_gallery',
-				'url' => 'frontend/',
-			),
 			'engine' => array (
 				'tab' => 'Start/stop',
 				'icon' => 'control_play_blue',
@@ -285,38 +279,6 @@ class historicPlannerControlPanel extends frontControllerApplication
 		#!# Ideally this would also check valid Mapnik syntax
 		require_once ('xml.php');
 		return xml::isValid ($string, $errors);
-	}
-	
-	
-	# Function to edit the frontend configuration
-	public function frontend ()
-	{
-		# Define the instruction text
-		$instructionsHtml  = "\n" . '<p>Here you can define the frontend configuration file.</p>';
-		$instructionsHtml .= "\n" . '<p>This is written in Javascript and expects to comply with the <a href="https://github.com/Project-OSRM/osrm-frontend" target="_blank" title="[Opens in a new window]">OSRM frontend options</a>.</p>';
-		$instructionsHtml .= "\n" . "<p>Changes will take effect immediately (as soon as the form confirms success).</p>";
-		
-		# Show the HTML, delegating to the file editor
-		echo $html = $this->definitionFileEditor (__FUNCTION__, 'osrm-frontend.js', $instructionsHtml, 'frontendValidation', 'frontendRunAfter');
-	}
-	
-	
-	# Define the validation
-	private function frontendValidation ($string, &$errors)
-	{
-		#!# todo
-		return true;
-	}
-	
-	
-	# Function to process the front end configuration
-	private function frontendRunAfter (&$output)
-	{
-		# Run the command
-		$script = "cd {$this->softwareRoot}/osrm-frontend/ && make 2>&1 && cd -";
-		exec ($script, $output, $returnStatusValue);
-		$output = implode ("\n", $output);
-		return (!$returnStatusValue);
 	}
 	
 	
