@@ -2,7 +2,7 @@
 // Some code adapted from work by CycleStreets, GPL2
 
 /*jslint browser: true, white: true, single: true, for: true */
-/*global $, alert, console, window, mapboxgl, FULLTILT, routing */
+/*global $, alert, console, window, mapboxgl, FULLTILT, routing, geojsonExtent */
 
 
 var travelintimes = (function ($) {
@@ -96,7 +96,8 @@ var travelintimes = (function ($) {
 				baseUrl: '/routing/5000/route/v1/driving',
 				parameters: {},
 				lineColour: '#505160',
-				attribution: 'Routing by Campop'
+				attribution: 'Routing by Campop',
+				isochroneUrl: '/isochrones/4000'
 			},
 			{
 				id: 'year1680',
@@ -104,7 +105,8 @@ var travelintimes = (function ($) {
 				baseUrl: '/routing/5001/route/v1/driving',
 				parameters: {},
 				lineColour: 'green',
-				attribution: 'Routing by Campop'
+				attribution: 'Routing by Campop',
+				isochroneUrl: '/isochrones/4001'
 			},
 			{
 				id: 'year1830',
@@ -112,7 +114,8 @@ var travelintimes = (function ($) {
 				baseUrl: '/routing/5002/route/v1/driving',
 				parameters: {},
 				lineColour: 'yellow',
-				attribution: 'Routing by Campop'
+				attribution: 'Routing by Campop',
+				isochroneUrl: '/isochrones/4002'
 			},
 			{
 				id: 'year1911',
@@ -120,7 +123,8 @@ var travelintimes = (function ($) {
 				baseUrl: '/routing/5003/route/v1/driving',
 				parameters: {},
 				lineColour: 'orange',
-				attribution: 'Routing by Campop'
+				attribution: 'Routing by Campop',
+				isochroneUrl: '/isochrones/4003'
 			},
 			{
 				id: 'year' + new Date().getFullYear().toString(),
@@ -128,9 +132,19 @@ var travelintimes = (function ($) {
 				baseUrl: 'https://api.mapbox.com/directions/v5/mapbox/driving',
 				parameters: {access_token: '%mapboxApiKey'},
 				lineColour: 'brown',
-				attribution: 'Routing using OpenStreetMap data'
+				attribution: 'Routing using OpenStreetMap data',
+				isochroneUrl: false
 			}
-		]
+		],
+		
+		// Isochrone times, in minutes
+		isochrones: {
+			'maroon': 360,		// 1/4 day
+			'red': 720,			// 1/2 days
+			'orange': 1440,		// 1 day
+			'green': 4320,		// 3 days
+			'aqua': 10080		// 7 days
+		}
 	};
 	
 	// Internal class properties
@@ -177,6 +191,9 @@ var travelintimes = (function ($) {
 			
 			// Add routing
 			travelintimes.routing ();
+			
+			// Add isochrones
+			travelintimes.isochrones ();
 		},
 		
 		
@@ -691,6 +708,147 @@ var travelintimes = (function ($) {
 			
 			// Return the result
 			return geojson;
+		},
+		
+		
+		// Function to add isochrone display; see: https://github.com/urbica/galton and demo at https://galton.urbica.co/
+		isochrones: function ()
+		{
+			// Add layer switcher UI
+			var control = this.createControl ('isochrones', 'bottom-left');
+			
+			// Create a legend for the isochrones UI control
+			var labelsRows = [];
+			$.each (_settings.isochrones, function (colour, time) {
+				labelsRows.push ('<tr><td>' + '<i style="background-color: ' + colour + ';"></i>' + '</td><td>' + (time / (60*24)) + ' days</td></tr>');
+			});
+			var legendHtml = '<table>' + labelsRows.join ('\n') + '</table>';
+			legendHtml = '<div class="legend">' + legendHtml + '</div>';
+			
+			// Construct HTML for the isochrones UI control
+			var isochronesHtml  = '<h2>Isochrones</h2>';
+			isochronesHtml += '<p>Click on the map to show travel time isochrones.</p>';
+			isochronesHtml += legendHtml;
+			$('#isochrones').append (isochronesHtml);
+			
+			// Load route indexes
+			var strategiesIndexes = travelintimes.loadRouteIndexes ();
+			
+			// Add isochrone on map click
+			_map.on ('click', function (e) {
+				
+				// Get the currently-selected strategy from the routing module
+				var selectedStrategy = routing.getSelectedStrategy ();
+				var selectedStrategyIndex = strategiesIndexes[selectedStrategy];
+				
+				// Construct the URL; see: https://github.com/urbica/galton#usage
+				// /isochrones/4000/?lng=-0.6065986342294138&lat=52.126834119853015&radius=1000&deintersect=true&cellSize=10&concavity=2&lengthThreshold=0&units=kilometers&intervals=1200&intervals=3600&intervals=30000
+				var parameters = {
+					lng: e.lngLat.lng,
+					lat: e.lngLat.lat,
+					radius: 1000,
+					deintersect: true,
+					cellSize: 10,
+					concavity: 2,
+					lengthThreshold: 0,
+					units: 'kilometers'
+					// intervals handled specially below
+				};
+				var url = _settings.strategies[selectedStrategyIndex].isochroneUrl + '/?' + $.param (parameters);
+				
+				// Add isochrones, e.g. &intervals=1200&intervals=3600&intervals=30000
+				$.each (_settings.isochrones, function (colour, time) {
+					url += '&intervals=' + time;
+				});
+				
+				// Show loading indicator
+				var loadingIndicator = '<p class="loading">Loading &hellip;</p>';
+				$('#isochrones').append (loadingIndicator);
+				
+				// Load over AJAX; see: https://stackoverflow.com/a/48655332/180733
+				$.ajax ({
+					dataType: 'json',
+					url: url,
+					error: function (jqXHR, textStatus, errorThrown) {
+						alert ('Sorry, the isochrone for ' + _settings.strategies[selectedStrategyIndex].label + ' could not be loaded: ' + textStatus);
+						console.log (errorThrown);
+					},
+					success: function (geojson) {
+						
+						// Remove layer if already present
+						var layerName = 'isochrone';
+						var mapLayer = _map.getLayer (layerName);
+						if (typeof mapLayer !== 'undefined') {
+							_map.removeLayer (layerName).removeSource (layerName);
+						}
+						
+						// Define the fill-colour definition, adding the colours for each isochrone definition
+						var fillColour = [
+							'match',
+							['get', 'time']
+						];
+						$.each (_settings.isochrones, function (colour, time) {
+							fillColour.push (time, colour);		// E.g.: [..., 1200, 'red', 3600, 'orange', ...]
+						});
+						fillColour.push (/* other */ 'gray');
+						
+						// Add the map layer
+						_map.addLayer ({
+							'id': layerName,
+							'type': 'fill',
+							'source': {
+								'type': 'geojson',
+								'data': geojson
+							},
+							'layout': {},
+							'paint': {
+								// Data-driven styling: https://docs.mapbox.com/mapbox-gl-js/example/data-driven-circle-colors/ and https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-match
+								'fill-color': fillColour,
+								'fill-opacity': 0.5
+							}
+						});
+						
+						// Remove the loading indicator
+						$('#isochrones .loading').remove ();
+						
+						// Zoom out the map
+						var bounds = geojsonExtent (geojson);
+						_map.fitBounds (bounds, {padding: 20});
+						
+						/*
+						// Enable popups; see: https://stackoverflow.com/questions/45841086/show-popup-on-hover-mapbox
+						var popup = new mapboxgl.Popup({
+							closeButton: false
+						});
+						_map.on ('mousemove', layerName, function (e) {
+							_map.getCanvas().style.cursor = 'pointer';
+							var feature = e.features[0];
+							popup.setLngLat (e.lngLat)
+								.setText ((feature.properties.time / (60*24)) + ' days')
+								.addTo (_map);
+						});
+						_map.on ('mouseleave', layerName, function (e) {
+							_map.getCanvas().style.cursor = '';
+							popup.remove ();
+						});
+						*/
+					}
+				});
+			});
+		},
+		
+		
+		// Function to create an index of strategies
+		loadRouteIndexes: function ()
+		{
+			// Map from strategyId => index
+			var strategiesIndexes = {};
+			$.each (_settings.strategies, function (index, strategy) {
+				strategiesIndexes[strategy.id] = index;
+			});
+			
+			// Return the indexes
+			return strategiesIndexes;
 		}
 	}
 	

@@ -15,7 +15,8 @@ class historicPlannerControlPanel extends frontControllerApplication
 			'importsSectionsMode' => true,
 			
 			# Datasets
-			'startPort' => 5000,
+			'routingStartPort' => 5000,
+			'isochronesStartPort' => 4000,
 			'datasets' => array (
 				'roman' => 'Roman',						// Port 5000
 				'multimodal1680' => 'Multimodal 1680',	// Port 5001
@@ -417,33 +418,42 @@ class historicPlannerControlPanel extends frontControllerApplication
 	}
 	
 	
-	# Function to start/stop the engine process
+	# Function to start/stop the routing engine and isochrone generator processes
 	public function engine ()
 	{
 		# Start the HTML
 		$html  = '';
 		
 		# Obtain confirmation from the user
-		$message = '<strong>Are you sure you want to (re)start the engine?</strong>';
+		$message = '<strong>Are you sure you want to (re)start the routing engine and isochrone generator services?</strong>';
 		$confirmation = 'Yes, (re)start';
 		if ($this->areYouSure ($message, $confirmation, $html)) {
 			
 			# Reset the HTML
 			$html = '';
 			
-			# Restart the engine, for each profile
-			$port = $this->settings['startPort'] - 1;	// Minus one, as will be immediately incremented to the first
-			foreach ($this->settings['datasets'] as $profile => $label) {
-				$port++;	// E.g. 5000, 5001, 5002, 5003
+			# Define the services
+			$services = array (
+				'routing' => array (
+					'startPort'	=> $this->settings['routingStartPort'],
+					'pkill'		=> 'osrm-routed -p',
+					'command'	=> "{$this->softwareRoot}/osrm-backend/build/osrm-routed -p %port {$this->softwareRoot}/travelintimes/enginedata/%profile/%build/merged.osrm > {$this->softwareRoot}/travelintimes/logs-osrm/osrm-%profile.log &",
+				),
+				'isochrones' => array (
+					'startPort'	=> $this->settings['isochronesStartPort'],
+					'pkill'		=> 'galton',
+					'command'	=> "node {$this->softwareRoot}/node_modules/galton/index.js --port=%port {$this->softwareRoot}/travelintimes/enginedata/%profile/%build/merged.osrm > {$this->softwareRoot}/travelintimes/logs-osrm/isochrones-%profile.log &",
+				),
+			);
+			
+			# Restart the engine, for each service
+			foreach ($services as $id => $service) {
 				
-				# State the engine profile
-				$html .= "\n<p><em>Engine profile {$profile}:</em></p>";
-				
-				# Kill any existing process
-				$command = "pgrep -f 'osrm-routed -p ${port}'";
+				# Kill any existing process for this service
+				$command = "pgrep -f '{$service['pkill']}'";
 				exec ($command, $pids);		// See: http://stackoverflow.com/a/3111553
 				if ($pids) {
-					$command = "pkill -f 'osrm-routed -p ${port}'";
+					$command = "pkill -f '{$service['pkill']}'";
 					exec ($command, $output = array (), $returnStatusValue);
 					#!# Return status does not seem to be handled properly
 					/*
@@ -455,27 +465,36 @@ class historicPlannerControlPanel extends frontControllerApplication
 					*/
 				}
 				
-				# Execute the command for this profile
-				$commandBase = "{$this->softwareRoot}/osrm-backend/build/osrm-routed -p %port {$this->softwareRoot}/travelintimes/enginedata/%profile/%build/merged.osrm > {$this->softwareRoot}/travelintimes/logs-osrm/osrm-%profile.log &";
-				$replacements = array (
-					'%port' => $port,
-					'%profile' => $profile,
-					'%build' => $this->settings['builds'][$profile],
-				);
-				$command = strtr ($commandBase, $replacements);
-				exec ($command, $output = array (), $returnStatusValue);
-				// var_dump ($command);
-				#!# Return status does not seem to be handled properly
-				/*
-				if ($returnStatusValue) {
-					$html .= "\n" . '<p class="error">Problem starting the engine:</p>';
-					$html .= "\n" . application::dumpData ($output, false, $return = true);
-					continue;
+				# Start for each port
+				$port = $service['startPort'] - 1;	// Minus one, as will be immediately incremented to the first
+				foreach ($this->settings['datasets'] as $profile => $label) {
+					$port++;	// E.g. 5000, 5001, 5002, 5003
+					
+					# State the engine profile
+					$html .= "\n<p><em>" . ucfirst ($id) . " engine profile {$profile}:</em></p>";
+					
+					# Execute the command for this profile
+					$commandBase = $service['command'];
+					$replacements = array (
+						'%port' => $port,
+						'%profile' => $profile,
+						'%build' => $this->settings['builds'][$profile],
+					);
+					$command = strtr ($commandBase, $replacements);
+					exec ($command, $output = array (), $returnStatusValue);
+					// var_dump ($command);
+					#!# Return status does not seem to be handled properly
+					/*
+					if ($returnStatusValue) {
+						$html .= "\n" . '<p class="error">Problem starting the engine:</p>';
+						$html .= "\n" . application::dumpData ($output, false, $return = true);
+						continue;
+					}
+					*/
+					
+					# Confirm success
+					$html .= "<p>{$this->tick} The {$id} engine was (re)started.</p>";
 				}
-				*/
-				
-				# Confirm success
-				$html .= "<p>{$this->tick} The engine was (re)started.</p>";
 			}
 		}
 		
@@ -513,7 +532,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 		$exportFile = $exportFiles[$grouping];  // i.e. first value
 		
 		# Determine the port the eventual routing engine should use
-		$port = $this->settings['startPort'];
+		$port = $this->settings['routingStartPort'];
 		foreach ($this->settings['datasets'] as $dataset => $label) {
 			if ($dataset == $grouping) {
 				break;	// Port is now set, e.g. first dataset is 5000
