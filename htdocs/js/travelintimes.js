@@ -577,9 +577,9 @@ var travelintimes = (function ($) {
 				cyclestreetsApiKey: _settings.geocoderApiKey,
 				autocompleteBbox: _settings.autocompleteBbox,
 				images: {
-					start: '/js/lib/mobiledev/images/itinerarymarkers/start.png',
-					waypoint: '/js/lib/mobiledev/images/itinerarymarkers/waypoint.png',
-					finish: '/js/lib/mobiledev/images/itinerarymarkers/finish.png'
+					start: '/js/lib/travelintimes-ui/images/itinerarymarkers/start.png',
+					waypoint: '/js/lib/travelintimes-ui/images/itinerarymarkers/waypoint.png',
+					finish: '/js/lib/travelintimes-ui/images/itinerarymarkers/finish.png'
 				},
 				initialRoute: _settings.initialRoute,
 				defaultStrategy: _settings.defaultStrategy,
