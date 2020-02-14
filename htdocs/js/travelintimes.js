@@ -67,7 +67,7 @@ var travelintimes = (function ($) {
 				label: 'OpenCycleMap (modern)'
 			},
 			"streets": {
-				vectorTiles: 'mapbox://styles/mapbox/streets-v9',
+				vectorTiles: 'mapbox://styles/mapbox/streets-v11',
 				label: 'Streets (modern)',
 			},
 			"satellite": {
