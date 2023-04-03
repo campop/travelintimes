@@ -333,10 +333,10 @@ var travelintimes = (function ($) {
 		
 		
 		// Function to trigger style changed, checking whether it is actually loading; see: https://stackoverflow.com/a/47313389/180733
-		// Cannot use _map.on(style.load) directly, as that does not fire when loading a raster after another raster: https://github.com/mapbox/mapbox-gl-js/issues/7579
+		// Cannot use _map.on(style.load) directly, as that does not fire when loading a raster after another raster: https://github.com/mapbox/mapbox-gl-js/issues/7579 and https://github.com/mapbox/mapbox-gl-js/issues/7579
 		styleChanged: function ()
 		{
-			// Delay for 200 minutes in a loop until the style is loaded; see: https://stackoverflow.com/a/47313389/180733
+			// Delay for 250ms in a loop until the style is loaded; see: https://stackoverflow.com/a/47313389/180733
 			if (!_map.isStyleLoaded()) {
 				setTimeout (function () {
 					travelintimes.styleChanged ();	// Done inside a function to avoid "Maximum Call Stack Size Exceeded"
