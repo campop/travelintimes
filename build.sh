@@ -95,7 +95,7 @@ for file in *.shp ; do
 #	ogr2osm --epsg=4326 --proj4="'${proj4}'" --add-version --add-timestamp $file
 	#rm "${file/.shp/.osm}"
 	#!# -f used to overwrite whatever was there before; ideally should be cleaning out the directory instead
-	ogr2osm -f --epsg=4326 --add-version --add-timestamp $file
+	ogr2osm -f --epsg=4326 --gis-order --add-version --add-timestamp $file
 	mv "${file/.shp/.osm}" "${file/.shp/.shp.osm}"
 done
 ##cd ../
