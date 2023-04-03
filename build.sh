@@ -92,10 +92,10 @@ echo "BBOX is: ${bboxWsen}"
 # See reference to undocumented options at: https://sourceforge.net/p/vectormap2garmin/wiki/ogr2osm/
 # File is saved as converted/<basename>.shp.osm
 for file in *.shp ; do
-#	python $softwareRoot/ogr2osm/ogr2osm.py --epsg=4326 --proj4="'${proj4}'" --add-version --add-timestamp $file
+#	ogr2osm --epsg=4326 --proj4="'${proj4}'" --add-version --add-timestamp $file
 	#rm "${file/.shp/.osm}"
 	#!# -f used to overwrite whatever was there before; ideally should be cleaning out the directory instead
-	python $softwareRoot/ogr2osm/ogr2osm.py -f --epsg=4326 --add-version --add-timestamp $file
+	ogr2osm -f --epsg=4326 --add-version --add-timestamp $file
 	mv "${file/.shp/.osm}" "${file/.shp/.shp.osm}"
 done
 ##cd ../
