@@ -6,6 +6,7 @@ p.timestamp {text-align: right;}
 
 /* Clearance */
 .clearright {clear: right;}
+.clearafter:after {content: ""; display: table; clear: both;}	/* https://css-tricks.com/snippets/css/clear-fix/ */
 
 /* Firefox placeholder styling - see http://stackoverflow.com/questions/9723716/firefox-placeholder-color-changes */
 input::-webkit-input-placeholder, #purecontenteditor input::-webkit-input-placeholder, .ultimateform input::-webkit-input-placeholder {color: #999;}
@@ -13,7 +14,7 @@ input:-moz-placeholder,           #purecontenteditor input:-moz-placeholder,    
 input:-ms-input-placeholder,      #purecontenteditor input:-ms-input-placeholder,      .ultimateform input:-ms-input-placeholder      {color: #999;}
 
 /* General alignment */
-p.alignright {text-align: right; margin-left: 12px;}
+.alignright {text-align: right; margin-left: 12px;}
 
 /* Tables */
 th {font-weight: bold; text-align: left;}
@@ -43,6 +44,7 @@ table.compressed td {padding: 0 4px;}
 table.spaced td {padding: 8px 4px;}
 table tr.spaced td {padding-top: 2em;}
 table tr.grouplast td {padding-bottom: 2em;}
+table.heavilyspaced td {padding-bottom: 2em;}
 table.small td {font-size: 11px;}	/* #!# Doesn't work because .small below overrides */
 table.alternate tr:nth-child(even) td {background-color: #f7f7f7;}
 table.lines.regulated td.key, table.lines.regulated td:first-child {width: 150px;}
@@ -56,6 +58,13 @@ table.boxy {border-collapse: separate; border-spacing: 0 10px;}
 .boxy td, .boxy th {border-top: 1px solid #e9e9e9; padding: 5px;}
 .boxy td:first-child {border-left: 1px solid #e9e9e9;}
 .boxy td:last-child {border-right: 1px solid #e9e9e9;}
+
+div.clearfix div.featurebox365:first-child {margin-right: 20px;}
+div.featurebox365 {width: 365px; padding: 20px; border: 1px solid #eee; background-color: #f7f7f7; float: left; margin-bottom: 45px;}
+div.featurebox365 img {border-bottom-right-radius: 30px;}
+
+p.linkfeature a, p.linkfeature a[target=_blank]:link {color: #603; font-weight: bold; font-size: 1em; background-color: #eee; border-left: 20px solid #ddd; padding: 10px 50px 10px 20px; display: inline-block; margin: 5px 10px 24px 0;}
+
 
 /* Code box style */
 div.code {background-color: #fcfaf3; color: #0b0b0b; border: 1px solid #eee; padding: 10px;}
@@ -74,7 +83,7 @@ table.hover tr:hover {background-color: #eaf5fd;}
 
 /* Table style which is similar to div.graybox */
 table.graybox {border-collapse: separate; border-spacing: 0 10px;}
-table.graybox td {vertical-align: top; padding: 10px 0; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; background-color: #fcfcfc;}
+table.graybox th, table.graybox td {vertical-align: top; padding: 10px 4px; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; background-color: #fcfcfc;}
 table.graybox td:nth-child(2) > h3 {margin-top: 0; padding-top: 0;}
 table.graybox td:first-child img {margin-right: 20px;}
 
@@ -114,7 +123,7 @@ table.news.portal td:first-child {width: 155px;}
 div.contextbox2 ul {margin-left: 15px;}
 
 div.graybox {border: 1px solid #ddd; padding: 10px 15px; margin: 0 10px 10px 0; background-color: #fcfcfc; overflow: hidden; /* overflow prevents floats not being enclosed - see http://gtwebdev.com/workshop/floats/enclosing-floats.php */}
-div.graybox:hover {background-color: #fafafa; border-color: #aaa;}
+div.graybox:hover {background-color: #fafafa; border-color: #aaa; transition: 0.5s;}
 div.graybox h2, div.graybox h3 {margin-top: 0.4em;}
 div.graybox p {text-align: left; margin-top: 10px;}
 /* div.graybox img {border: 1px solid #999; margin-right: 10px;} */
@@ -152,6 +161,7 @@ ul.thread li a {padding: 7px 5px; margin: 0 10px;}
 .error, .important, .warning, .failure {color: red;}
 .pleasenote {color: #990000;}
 .success {color: green;}
+.amber {color: orange;}
 .faded {color: #bbb/*#666*/;}
 .highlight, .highlight td {background-color: #ff9;}
 .comment {color: #777;}
@@ -169,6 +179,7 @@ p.signature {text-align: right; font-style: italic;}
 .spaced li, li.spaced {margin-top: 12px;}
 .spaced .normal li, .spaced li.normal {margin-top: 3px;}
 p.spaced {margin-top: 3em;}
+.lightlyspaced li, li.lightlyspaced {margin-top: 5px;}
 .heavilyspaced li, li.heavilyspaced {margin-top: 24px;}
 ul.nobullet, .nobullet ul {list-style-type: none; margin: 0; padding: 0;}
 ul.nobullet li, .nobullet ul li {list-style: none;}
@@ -178,6 +189,7 @@ ul.inline li {white-space: nowrap;}
 ul.noindent {margin-left: 10px; padding-left: 10px;}
 ul.noindent ul {margin-left: 10px; padding-left: 10px;}
 ul.sectionmenu, .sectionmenu ul, ul.thread {border-top: 1px solid #e0e0e0; border-bottom: 1px solid #e0e0e0; text-align: center;}
+ul.small li {font-size: 12px;}
 div.splitlist ul {float: left; margin-left: 10px; padding-left: 20px; margin-bottom: 20px;}
 ul.sectionmenu li a {white-space: nowrap;}
 ul.projectlist li {font-weight: bold; margin-top: 1em;}
@@ -197,10 +209,11 @@ dl.spaced dd {margin-top: 0.5em;}
 #ssocontainer {width: 100%; display: block; min-height: 70px;}
 #ssologin {float: right; padding-top: 4px;}
 #ssologin ul {margin: 0; padding: 0; list-style: none; z-index: 1000; position: relative /* Required for z-index */;}
-#ssologin ul li {background-color: #e3e3e3; border-radius: 0 0 8px 8px; position: relative; opacity: 0.8;}
-#ssologin ul li a, #ssologin ul li span {color: #333; display: block; width: 100%; height: 100%; padding: 5px 10px;}
+#ssologin ul li {background-color: #e3e3e3; border-radius: 0 0 8px 8px; position: relative; opacity: 0.9;}
+#ssologin ul li a, #ssologin ul li span, #ssologin ul li form {color: #333; display: block; width: 100%; height: 100%; max-height: 1.6em; padding: 5px 10px;}
 #ssologin ul li a {cursor: pointer;}
 #ssologin ul li span, #ssologin ul li.submenu:hover {cursor: default;}
+#ssologin ul li span.impersonation {color: red;}
 #ssologin ul li.submenu:hover {border-radius: 0;}
 #ssologin ul li ul {position: absolute; display: none; width: 100%; float: left;}
 #ssologin ul li ul li {opacity: 0.9;}	/* Avoid compound opacity */
@@ -225,6 +238,7 @@ ul.pde .show {position: static; display:  table; top: 0; left: 1em;}	/* The clas
 
 /* Expandable headings */
 _div.expandable .collapse p {padding: 0 10px 1em;}
+div.expandable {margin-top: 20px;}
 div.expandable .collapse {margin-bottom: 2em; overflow: hidden; }	/* overflow prevents floats not being enclosed - see http://gtwebdev.com/workshop/floats/enclosing-floats.php */
 div.expandable .switch {text-align: right; padding: 3px}
 div.expandable .post .switch {position: static; text-align: right}
@@ -282,7 +296,7 @@ hr {border: 0; height: 1px; color: #e0e0e0; background-color: #e0e0e0;}
 /* Miscellaneous */
 p[align=right] {text-align: right;} /* Only works for Mozilla */
 .signature {text-align: right; font-style: italic;}
-.small {font-size: 11px;}
+p.small {font-size: 11px !important;}
 
 /* Photo gallery */
 div.gallery div.image {display: block; float: left; text-align: center;}
@@ -320,6 +334,7 @@ ul.filelist li a img {border: 0;}
 .search ul.navigationmenu li.current {width: 60px; text-align: center;}
 .search dl dd.attributes {font-size: 0.83em; padding: 0; margin-top: 3px;}
 
+dl.searchresults dt {padding-top: 1.5em;}
 ol.searchresults dt {padding-bottom: 1.5em;}
 ol.searchresults li ul {list-style-type: none; margin: 0; padding: 0;}
 ol.searchresults li li {padding-bottom: 0.1em;}
@@ -334,23 +349,25 @@ span.referer {background-color: #eee;}
 
 /* External links - add arrow - CSS2 not supported by IE<7 */
 a[target=external]:link, a[target=external]:visited, a[target=_blank]:link, a[target=_blank]:visited {background-image: url(/images/general/offsite.gif); background-repeat: no-repeat; background-position: 100% 60%; padding-right: 13px;}
-a[target=external].noarrow:link, a[target=external].noarrow:visited, a[target=_blank].noarrow:link, a[target=_blank].noarrow:visited {background: none; padding-right: 0; border-bottom: 0;}
+a[target=external].noarrow:link, a[target=external].noarrow:visited, a[target=_blank].noarrow:link, a[target=_blank].noarrow:visited {background: none; padding-right: 0;}
 .imagelinks a, a.imagelinks {border: 0; padding: 0;}
 
 /* File icons; see: http://davidwalsh.name/advanced-css-links-spice-up-your-links */
-a[href$='.pdf']  {padding-left: 20px; background: transparent url(/images/fileicons/pdf.gif) no-repeat center left;}
-a[href$='.doc']  {padding-left: 20px; background: transparent url(/images/fileicons/doc.gif) no-repeat center left;}
-a[href$='.docx'] {padding-left: 20px; background: transparent url(/images/fileicons/docx.gif) no-repeat center left;}
-a[href$='.rtf']  {padding-left: 20px; background: transparent url(/images/fileicons/rtf.gif) no-repeat center left;}
-a[href$='.odt']  {padding-left: 20px; background: transparent url(/images/fileicons/odt.gif) no-repeat center left;}
-a[href$='.ppt']  {padding-left: 20px; background: transparent url(/images/fileicons/ppt.gif) no-repeat center left;}
-a[href$='.pptx'] {padding-left: 20px; background: transparent url(/images/fileicons/pptx.gif) no-repeat center left;}
-a[href$='.pps']  {padding-left: 20px; background: transparent url(/images/fileicons/pps.gif) no-repeat center left;}
-a[href$='.txt']  {padding-left: 20px; background: transparent url(/images/fileicons/txt.gif) no-repeat center left;}
-a[href$='.xls']  {padding-left: 20px; background: transparent url(/images/fileicons/xls.gif) no-repeat center left;}
-a[href$='.xlsx'] {padding-left: 20px; background: transparent url(/images/fileicons/xlsx.gif) no-repeat center left;}
-a[href$='.zip']  {padding-left: 20px; background: transparent url(/images/fileicons/zip.gif) no-repeat center left;}
-a.noautoicon {padding: 0; background: none;}
+a[href$='.pdf']:link  {padding-left: 20px; background: transparent url(/images/fileicons/pdf.png) no-repeat center left; padding-right: 0;}
+a[href$='.doc']:link  {padding-left: 20px; background: transparent url(/images/fileicons/doc.gif) no-repeat center left; padding-right: 0;}
+a[href$='.docx']:link {padding-left: 20px; background: transparent url(/images/fileicons/docx.png) no-repeat center left; padding-right: 0;}
+a[href$='.rtf']:link  {padding-left: 20px; background: transparent url(/images/fileicons/rtf.gif) no-repeat center left; padding-right: 0;}
+a[href$='.odt']:link  {padding-left: 20px; background: transparent url(/images/fileicons/odt.gif) no-repeat center left; padding-right: 0;}
+a[href$='.ppt']:link  {padding-left: 20px; background: transparent url(/images/fileicons/ppt.gif) no-repeat center left; padding-right: 0;}
+a[href$='.pptx']:link {padding-left: 20px; background: transparent url(/images/fileicons/pptx.gif) no-repeat center left; padding-right: 0;}
+a[href$='.pps']:link  {padding-left: 20px; background: transparent url(/images/fileicons/pps.gif) no-repeat center left; padding-right: 0;}
+a[href$='.txt']:link  {padding-left: 20px; background: transparent url(/images/fileicons/txt.gif) no-repeat center left; padding-right: 0;}
+a[href$='.xls']:link  {padding-left: 20px; background: transparent url(/images/fileicons/xls.gif) no-repeat center left; padding-right: 0;}
+a[href$='.xlsx']:link {padding-left: 20px; background: transparent url(/images/fileicons/xlsx.png) no-repeat center left; padding-right: 0;}
+a[href$='.zip']:link  {padding-left: 20px; background: transparent url(/images/fileicons/zip.gif) no-repeat center left; padding-right: 0;}
+a[href$='.m4a']:link  {padding-left: 20px; background: transparent url(/images/fileicons/m4a.png) no-repeat center left; padding-right: 0;}
+a[href$='.mp4']:link  {padding-left: 20px; background: transparent url(/images/fileicons/mp4.png) no-repeat center left; padding-right: 0;}
+a.noautoicon, body a:link.noautoicon {padding: 0; background-image: none;}
 
 
 /* Table-like definition list - see http://archivist.incutio.com/viewlist/css-discuss/27940 */
@@ -405,6 +422,7 @@ img.shiftup, p.shiftup, div.shiftup {position: relative; top: -2.5em;}
 div.imagestrip {border-left: 1px dashed #ccc; padding-left: 10px; float: right; position: relative; top: -2.5em; margin-left: 20px; background-color: white;}
 div.imagestrip img {border: 1px solid gray; display: block; margin-bottom: 10px;}
 .shadow {box-shadow: 5px 5px 10px 0px #999;}
+.shadow:hover {box-shadow: 5px 5px 10px 0px #666; transition: 0.5s;}
 .margin {margin-right: 20px; margin-bottom: 20px;}
 
 /* Full-justified paragraphs, which works properly only when using XHTML 1.0 Transitional; see: http://blog.vjeux.com/2011/css/css-one-line-justify.html and http://blog.vjeux.com/2012/css/css-displaying-a-justified-line-of-text.html */
@@ -511,20 +529,36 @@ div.autocombined .autocombinedhidden {display: none;}
 /* Generic applications */
 p.loggedinas {float: right; font-size: 0.91em; text-align: right;}
 ul.tabs {padding: 3px 0 4px 2px; margin-left: 0; margin-bottom: 1.5em; border-bottom: 1px solid #778; line-height: 1em;}
-ul.tabs li {list-style: none; margin: 0; display: inline;}
+ul.tabs li {list-style: none; margin: 0; display: inline; white-space: nowrap;}
 ul.tabs li a {padding: 3px 0.5em; margin-left: 2px; border: 1px solid #778; border-bottom: none; background: #f7f7f7; text-decoration: none;}
 ul.tabs li a:link {color: #448;}
 ul.tabs li a:visited {color: #667;}
 ul.tabs li a:hover {color: #000; background: #eee; border-color: #227;}
 ul.tabs li.selected a {background: white; border-bottom: 1px solid white;}
-ul.tabs img {border: 0; vertical-align: bottom; padding: 0;}
+ul.tabs img {line-height: 1em; border: 0; padding: 0;}
 ul.tabs li select {margin-bottom: 1em;}
 ul.tabs li select option {color: #603;}
 ul.tabs li a {border-radius: 3px 3px 0 0;}
 ul.tabs li a {-moz-border-radius: 3px 3px 0 0; -webkit-border-radius: 3px 3px 0 0;} /* Vendor-specific hacks */
+@media screen and (max-width: 480px) {
+	ul.tabs {line-height: 2.4em;}
+}
 ul.subtabs {padding: 0 0 2px 2px;}
 ul.subtabs li a {border-style: dotted; border-bottom: none; padding: 0 0.5em;}
 #cornersearch {float: right; margin-bottom: 20px; margin-left: 5em;}
+
+ul.tabsflat {padding: 3px 0 4px 2px; margin-left: 0; margin-bottom: 1.4em; border-bottom: 1px solid #ccc; line-height: 2.1em;}
+ul.tabsflat li {list-style: none; margin: 0; display: inline; white-space: nowrap;}
+ul.tabsflat li a {padding: 8px 14px; margin-right: 4px; background: #f7f7f7; color: #333; text-decoration: none; border-bottom: 3px solid #ddd; transition: all 0.2s linear;}
+@media screen and (max-width: 480px) {
+	ul.tabsflat li a {padding: 8px 10px; margin-right: 2px;}
+}
+ul.tabsflat.small li a, ul.tabsflat.subtabs li a {padding-top: 3px; padding-bottom: 3px; border-width: 1px;}
+ul.tabsflat li a:hover {color: #000; background: #eee; border-color: #227;}
+ul.tabsflat li.selected a {background: #f7f7f7; border-bottom-color: #c93;}
+ul.tabsflat img {line-height: 1em; border: 0; padding: 0;}
+ul.tabsflat li select {margin-bottom: 1em;}
+ul.tabsflat li select option {color: #603;}
 
 
 /* Switchtable tabs */
@@ -585,26 +619,6 @@ p.adminloginlink.floatright {text-align: left; float: left;}
 p.adminloginlink a {border: 1px solid #aaa; padding: 5px; border-radius: 4px;}
 p.adminloginlink a:hover {background-color: #eee; border-color: #603;}
 
-/* Abstract submission */
-#abstractsubmissions {max-width: 800px;}
-#abstractsubmissions h3 {margin-top: 2.5em; margin-bottom: 1.1em;}
-#abstractsubmissions ul.boxylist {margin-bottom: 1.4em;}
-/* #!# Not working */
-#abstractsubmissions ul.ui-autocomplete {list-style: none;}
-#abstractsubmissions ul.tabs.submission li.selected a {background-color: #ddd; color: black; font-weight: bold;}
-#abstractsubmissions ul.tabs.submission {margin-bottom: 0;}
-#abstractsubmissions ul.tabs a.confirm {margin-left: 20px;}
-#abstractsubmissions p.tools {margin-top: 0; text-align: right; background-color: #f7f7f7; padding: 5px 10px; color: #ccc; margin-bottom: 2em;}
-#abstractsubmissions p.tools a {margin: 0 7px 0 7px;}
-#abstractsubmissions .ultimateform table tr.dataStorage td, #abstractsubmissions .ultimateform table tr.metadata td, #abstractsubmissions .ultimateform table tr.dataAvailability td {border-bottom: 0; padding-bottom: 0;}
-#abstractsubmissions .ultimateform table tr.dataStorageDetails td, #abstractsubmissions .ultimateform table tr.metadataDetails td, #abstractsubmissions .ultimateform table tr.dataAvailabilityDetails td {border-top: 0; padding-top: /* Needed for old IE */ 2px; padding-left: 5em; padding-bottom: 2em;}
-#abstractsubmissions .ultimateform table tr.dataStorageDetails td.title, #abstractsubmissions .ultimateform table tr.metadataDetails td.title, #abstractsubmissions .ultimateform table tr.dataAvailabilityDetails td.title {color: #777;}
-#abstractsubmissions .ultimateform table tr.heading td {border-left: 0; border-right: 0;}
-#abstractsubmissions .ultimateform table tr.heading td h3 {margin: 1.2em 0 0.2em;}
-#abstractsubmissions h4 span {margin-left: 20px; font-weight: normal; font-size: 0.9em;}
-#abstractsubmissions h4 span, #abstractsubmissions h4 span a {color: #888;}
-#abstractsubmissions ul.tabs li {white-space: nowrap;}
-
 /* Contact person */
 div.contactperson {width: 300px; margin-left: 25px; float: right;}
 div.contactperson img {float: left;}
@@ -627,6 +641,7 @@ body .yui-skin-sam .yui-navset .yui-nav {border-bottom: 1px solid #bbb;}
 
 
 /* Editing interface */
+/* #!# Move into code */
 /* NB add #purecontenteditor {font-size: 1em;} to the main stylesheet when the font-size is already small (e.g. 82%) */
 #purecontenteditor, #purecontenteditor p, #purecontenteditor input, #purecontenteditor textarea, #purecontenteditor option, #purecontenteditor select {font-family: verdana, arial, helvetica, sans-serif; font-size: 1em;}
 #purecontenteditor input, #purecontenteditor textarea, #purecontenteditor option, #purecontenteditor select, #purecontenteditor label {color: #603;}
@@ -649,23 +664,34 @@ body .yui-skin-sam .yui-navset .yui-nav {border-bottom: 1px solid #bbb;}
 #purecontenteditor #administration ul li.selected a {background-color: #936; color: white;}
 #purecontenteditor #administration ul li a:hover {color: black; text-decoration: none; background-color: #f0e1ff; border: 1px solid #6100c1; border-width: 0 1px;}
 #purecontenteditor #administration ul li ul li {display: inline;}
-#container {position: relative;}	/* Ensures that #purecontenteditor #administration ul li ul positioning below works; see www.wpdfd.com/editorial/wpd0904news.htm#feature */
+#container {position: relative;}
+#purecontenteditor ul#administrationtypes {position: relative;}
 #purecontenteditor ul#administrationtypes {margin-top: 5px;}
-#purecontenteditor #administration ul li ul {position: absolute; left: 290px /*27em*/; width: auto; display: inline;}
+#purecontenteditor #administration ul li ul {position: absolute; left: 8em; width: auto; display: inline;}
 #purecontenteditor .ultimateform table {width: 99%;}
+#purecontenteditor table.archive .compare {padding-left: 50px;}
+#purecontenteditor table.archive .to {width: 50px;}
 #purecontenteditorresult {clear: both; margin-top: 1.5em;}
 body #purecontenteditor div.graybox {float: none; width: auto; min-height: auto;}
-p.editlink {text-align: right;}
 
+/*
+p.editlink {text-align: right;}
 span.editlink {position: absolute; opacity: 0.2; z-index: 999; right: 0; top: 90px;}
 span.editlink {font-size: 0.93em; border: 1px solid #eee; border-radius: 5px;}
 span.editlink a {display: block; border: none; padding: 4px 6px;}
 span.editlink img {margin-right: 2px;}
+*/
+
+/* Primary action buttons */
+body .primaryaction {z-index: 999; transition: all 0.5s; opacity: 0.85; border: 2px solid #ddd; border-radius: 5px; background-color: #603; box-shadow: inset 0 -0.6em 1em -0.35em rgba(0,0,0,0.17),inset 0 0.6em 2em -0.3em rgba(255,255,255,0.15),inset 0 0 0em 0.05em rgba(255,255,255,0.12);}
+body .primaryaction.absolute {position: absolute; right: 0; top: 80px;}
+body .primaryaction:hover {opacity: 1; background-color: #606;}
+body .primaryaction a {font-size: 12px; color: white !important; display: block; padding: 4px 7px;}		/* Font size set specifically to be consistent and not overriden */
+body .primaryaction a:hover {text-decoration: none; background-color: inherit !important;}
+body .primaryaction img {margin-right: 2px;}
 
 
-
-
-/* UltimateForm styles */
+/* ultimateForm styles */
 /* Font scaling needs to be in the calling stylesheet
 .ultimateform * {font-family: verdana, arial, helvetica, sans-serif;}
 body {font-size: 69%;}
@@ -730,6 +756,7 @@ pre, code {font-size: 110%;}
 .ultimateform label {vertical-align: top; margin-right: 0.5em;}	/* For the margin, ideally, input[type=radio] should be used instead, but that is poorly supported */
 .ultimateform.horizontalonly td, .ultimateform.horizontalonly th {border-left: 0; border-right: 0;}
 .ultimateform tr.checkboxes table td {border: 0; padding: 0; padding-right: 4px; vertical-align: top;}
+body .cke_combopanel {width: 200px; height: 225px;}		/* See: https://stackoverflow.com/questions/26384943/ */
 
 
 /* Survey results */
@@ -760,7 +787,7 @@ div.accountdetails table tr.currentpassword td {background-color: #eee;}
 div.accountdetails table td.description {padding-left: 20px; font-size: 0.83em; max-width: 250px;}
 
 /* Diffing */
-.diff-html-removed {background-color: pink; font-weight: bold;}
-.diff-html-added {background-color: lightgreen; font-weight: bold;}
+.diff-html-removed {background-color: pink;}
+.diff-html-added {background-color: lightgreen;}
 
 /* #!# Change some of the px-based stuff to em-based */
