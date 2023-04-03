@@ -101,23 +101,23 @@ done
 ##cd ../
 
 # Convert tags
-# See: http://wiki.openstreetmap.org/wiki/Osmosis/TagTransform
-# See: http://wiki.openstreetmap.org/wiki/Osmosis/Detailed_Usage_0.44
+# See: https://wiki.openstreetmap.org/wiki/Osmosis/Detailed_Usage_0.48
+# See: https://wiki.openstreetmap.org/wiki/Osmosis/TagTransform
 # Avoid using highway=motorway as that will give an implied oneway=yes; see: http://wiki.openstreetmap.org/wiki/Key:highway
 ##cd converted/
 ###for file in *.shp.osm ; do
 	file="${edgesShapefile}.osm"
 ##	rm -f "${file/.shp.osm/.osm}"
-	$softwareRoot/osmosis/bin/osmosis --read-xml file="./${file}" --tag-transform file="./tagtransform.xml" --write-xml file="${file/.shp.osm/.osm}"
+	osmosis --read-xml file="./${file}" --tag-transform file="./tagtransform.xml" --write-xml file="${file/.shp.osm/.osm}"
 ###done
 ##cd ../
 
 # Merge files
 # Note: --sort is needed after each --rx as noted here: https://www.mail-archive.com/osmosis-dev@openstreetmap.org/msg00319.html to avoid "org.openstreetmap.osmosis.core.OsmosisRuntimeException: Pipeline entities are not sorted, previous entity type=Node, id=-2, version=1 current entity type=Node, id=-3, version=1."
-#$softwareRoot/osmosis/bin/osmosis --rx Railway.osm --sort --rx InlandWways.osm --sort --merge --wx merged.osm
+#osmosis --rx Railway.osm --sort --rx InlandWways.osm --sort --merge --wx merged.osm
 # Alternative method: osmconvert Railway.osm InlandWways.osm -o=merged.osm
 ##cd converted/
-###$softwareRoot/osmosis/bin/osmosis --rx *Edges.osm --sort --rx *Junctions.osm --sort --merge --wx merged.osm
+###osmosis --rx *Edges.osm --sort --rx *Junctions.osm --sort --merge --wx merged.osm
 mv "${file/.shp.osm/.osm}" merged.osm
 file=merged.shp.osm
 ##cd ../
