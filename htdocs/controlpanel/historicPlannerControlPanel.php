@@ -12,6 +12,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 			'useDatabase' => false,
 			'useCamUniLookup' => false,
 			'page404' => false,	// Internal
+			'tabUlClass' => 'tabsflat',
 			'importsSectionsMode' => true,
 			
 			# Datasets
@@ -175,7 +176,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 		}
 		$home = "<a href=\"{$this->baseUrl}/{$this->actions[$this->action]['url']}\"><img src=\"/images/icons/house.png\" class=\"icon\" /></a>";
 		$tabs = array_merge (array ('' => $home), $list);
-		$instructionsHtml .= application::htmlUl ($tabs, 0, 'tabs', true, false, false, false, $selectedProfile);
+		$instructionsHtml .= application::htmlUl ($tabs, 0, 'tabsflat subtabs', true, false, false, false, $selectedProfile);
 		
 		# If no profile selected, show selection list
 		if (!$selectedProfile) {
