@@ -132,7 +132,7 @@ var travelintimes = (function ($) {
 				baseUrl: 'https://api.mapbox.com/directions/v5/mapbox/driving',
 				parameters: {access_token: '%mapboxApiKey'},
 				lineColour: 'brown',
-				attribution: 'Routing using OpenStreetMap data',
+				attribution: new Date().getFullYear().toString() + ' routing using OpenStreetMap data',
 				isochroneUrl: false
 			}
 		],
