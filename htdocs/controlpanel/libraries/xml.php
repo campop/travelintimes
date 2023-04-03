@@ -1,7 +1,7 @@
 <?php
 
 # XML wrapper class
-# Version 1.8.0
+# Version 1.9.0
 class xml
 {
 	# Function to convert XML to an array
@@ -448,7 +448,7 @@ class xml
 	
 	
 	# Function to chunk files into pieces into a database; NB This does *not* clear existing records - only inserts/overwrites records
-	public static function databaseChunking ($file, $credentials, $database, $table, $xpathRecordsRoot, $recordIdPath, $otherPaths = array (), $multiplesDelimiter = '|', $entityConversions = true, $documentToDataOrientatedXml = true, $timeLimit = 300, $filter = false)
+	public static function recordParser ($file, $xpathRecordsRoot, $recordIdPath, $otherPaths = array (), $multiplesDelimiter = '|', $entityConversions = true, $documentToDataOrientatedXml = true, $timeLimit = 300, $filter = false)
 	{
 		# Set a larger time limit than the default
 		set_time_limit ($timeLimit);
@@ -563,34 +563,8 @@ class xml
 			}
 		}
 		
-		# Get the authentication credentials
-		#!# This is failing
-		if (is_string ($credentials)) {
-			if (!is_readable ($credentials)) {
-				echo "\n<p class=\"warning\">The authentication file could not be read or does not exist.</p>";
-				return false;
-			}
-			include ($credentials);
-		}
-		
-		# Connect to the database
-		require_once ('database.php');
-		if (!$databaseConnection = new database ($credentials['hostname'], $credentials['username'], $credentials['password'])) {
-			echo "<p>There was a problem connecting to the database.</p>";
-			return false;
-		}
-		
-		# Insert the data, converting an INSERT to an UPDATE when the id exists already
-		foreach ($dataset as $key => $data) {
-			if (!$databaseConnection->insert ($database, $table, $data, true)) {
-				echo "<p>There was a problem inserting the data into the database. MySQL said:</p>";
-				application::dumpData ($databaseConnection->error ());
-				return false;
-			}
-		}
-		
-		# Return success
-		return count ($dataset);
+		# Return the dataset
+		return $dataset;
 	}
 	
 	

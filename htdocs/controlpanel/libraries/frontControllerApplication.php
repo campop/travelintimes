@@ -5,7 +5,7 @@
 
 
 # Front Controller pattern application
-# Version 1.9.10
+# Version 1.11.2
 class frontControllerApplication
 {
 	# Define global defaults
@@ -43,9 +43,10 @@ class frontControllerApplication
 			'jQuery'										=> false,	// Whether to load jQuery
 			'peopleDatabase'								=> 'people',
 			'table'											=> NULL,
-			'administrators'								=> false,	// Administrators table e.g. 'administrators' or 'facility.administrators', or an array of usernames
+			'administrators'								=> false,	// Administrators table e.g. 'administrators' or 'facility.administrators', or an array of usernames; true will use the default, 'administrators'
 			'settingsTable'									=> 'settings',	// Settings table (must be in the main database) e.g. 'settings' or false to disable (only needed a table of that name is present for a different purpose)
 			'settingsTableExplodeTextarea'					=> false,	// Whether to split textarea columns in a settings table into an array of values - true/false, or an array of fieldnames which should have this applied to
+			'settingsTableExplodeTextareaPairs'				=> false,	// Whether to split textarea columns in a settings table into key-value pairs (assuming a,b lines), or an array of fieldnames which should have this applied to; this assumes settingsTableExplodeTextarea is enabled
 			'profiles'										=> false,	// Use of the profiles system (true/false or table, e.g. 'profiles'; true will use 'profiles'
 			'tablePrefix'									=> false,	// Prefix which will be added to any table/administrators/settingsTable/profiles settings
 			'logfile'										=> './logfile.txt',
@@ -56,6 +57,7 @@ class frontControllerApplication
 			'feedbackRecipient'								=> (isSet ($_SERVER['SERVER_ADMIN']) ? $_SERVER['SERVER_ADMIN'] : NULL),	#!# This ought to be the value of administratorEmail by default
 			'useCamUniLookup'								=> true,
 			'directoryIndex'								=> 'index.html',					# The directory index, used for local file retrieval
+			#!# Needs updating
 			'userAgent'										=> 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)',	# The user-agent string used for external retrieval
 			'emailDomain'									=> 'cam.ac.uk',
 			'ravenGetPasswordUrl'							=> 'https://jackdaw.cam.ac.uk/get-raven-password/',
@@ -66,7 +68,9 @@ class frontControllerApplication
 			'useAdmin'										=> true,
 			'revealAdminFunctions'							=> false,	// Whether to show admins-only tabs etc to non-administrators
 			'useFeedback'									=> true,
-			'disableTabs'									=> false,
+			'disableTabs'									=> false,	// Whether to disable tabs
+			'disableSubtabs'								=> false,	// Whether to disable subtabs
+			'disableGuiSearchBox'							=> false,	// Whether to disable the search box
 			'helpTab'										=> false,
 			'useEditing'									=> false,	// Whether to enable editing as a main tab
 			'debug'											=> false,	# Whether to switch on debugging info
@@ -74,6 +78,7 @@ class frontControllerApplication
 			'showChanges'									=> 25,		// Number of most recent changes to show in log file
 			'user'											=> false,	// Become this user
 			'form'											=> true,	// Whether to load ultimateForm
+			#!# Needs a formDiv setting, for setting the 'div' parameter of ultimateForm; this would also propagate to the sinenomine integration in editing()
 			'opening'										=> false,
 			'closing'										=> false,
 			'div'											=> false,	// Whether to create a surrounding div with this id
@@ -85,7 +90,7 @@ class frontControllerApplication
 			'chmodPermissions'								=> 0644,	// Permissions for chmod calls; the default here is standard Unix
 			'editingPagination'								=> 250,		// Pagination when editing the embedded record editor
 			'cronUsername'									=> false,	// HTTP username required for cron jobs
-			'apiUsername'									=> false,	// HTTP username required for API calls
+			'apiUsername'									=> false,	// HTTP username required for API calls, or true for open access
 			'apiJsonPretty'									=> true,	// Whether to use pretty printing for JSON output
 			'applicationStylesheet'							=> '/styles.css',	// Where / represents the root of the repository containing the application
 			'dataDirectory'									=> '/data/',	// Where / represents the root of the repository containing user data files
@@ -96,6 +101,8 @@ class frontControllerApplication
 			'useTemplating'									=> false,	// Whether to enable templating
 			'templatesDirectory'							=> '%applicationRoot/app/views/',
 			'exportsDirectory'								=> '%applicationRoot/exports/',
+			'userSwitcherUsers'								=> false,	// Or callback returning the list of users (as username => name, optionally as nested groupings) for use in a drop-down form
+			'userSwitcherOnSwitch'							=> false,	// Or callback that will be run if the user is switched
 		);
 	}
 	
@@ -140,6 +147,16 @@ class frontControllerApplication
 			'url' => 'admin.html',
 			'tab' => 'Admin',
 			'administrator' => true,
+			'description' => 'Administrative options, including settings',
+		),
+		'settings' => array (
+			'description' => 'Settings',
+			'url' => 'settings.html',
+			'administrator' => true,
+			'parent' => 'admin',
+			'subtab' => 'Settings',
+			'icon' => 'cog',
+			'description' => 'Settings and configuration for this system',
 		),
 		'administrators' => array (
 			'description' => 'Add/remove/list administrators',
@@ -148,6 +165,8 @@ class frontControllerApplication
 			'parent' => 'admin',
 			'subtab' => 'Administrators',
 			'restrictedAdministrator' => true,
+			'icon' => 'group',
+			'description' => 'Manage who has special privileges within this system',
 		),
 		'history' => array (
 			'description' => 'History of changes made',
@@ -156,13 +175,6 @@ class frontControllerApplication
 			'parent' => 'admin',
 			'subtab' => 'History',
 			'restrictedAdministrator' => true,
-		),
-		'settings' => array (
-			'description' => 'Settings',
-			'url' => 'settings.html',
-			'administrator' => true,
-			'parent' => 'admin',
-			'subtab' => 'Settings',
 		),
 		'login' => array (
 			'description' => 'Login',
@@ -234,7 +246,7 @@ class frontControllerApplication
 			'administrator' => true,
 		),
 		'data' => array (	// Used for e.g. AJAX calls, etc.
-			'description' => 'Data point',
+			'description' => 'Data endpoint',
 			'url' => 'data.html',
 			'export' => true,
 		),
@@ -259,12 +271,16 @@ class frontControllerApplication
 	
 	# Templating
 	public $template = array ();
+	#!# Should change writing of templateFunctions to be a setting, not a direct change without an accessor
 	public $templateFunctions = array ();	// NB Functions must be within the class, not static, and marked public
 	
 	
 	# Constructor
 	public function __construct ($settings = array (), $disableAutoGui = false)
 	{
+		# In CLI mode, e.g. for cron, emulate a webserver environment
+		$settings = $this->cliModeEmulation ($settings);
+		
 		# Load required libraries
 		require_once ('application.php');
 		
@@ -361,7 +377,7 @@ class frontControllerApplication
 		# If required, make connections to the database server and ensure the tables exist
 		if ($this->settings['useDatabase']) {
 			require_once ('database.php');
-			$this->databaseConnection = new database ($this->settings['hostname'], $this->settings['username'], $this->settings['password'], $this->settings['database'], $this->settings['vendor'], $this->settings['logfile'], $this->user, $this->settings['nativeTypes']);
+			$this->databaseConnection = new database ($this->settings['hostname'], $this->settings['username'], $this->settings['password'], $this->settings['database'], $this->settings['vendor'], $this->settings['logfile'], $this->user /* If using internalAuth, set later */, $this->settings['nativeTypes']);
 			if (!$this->databaseConnection->connection) {
 				echo $this->databaseConnection->reportError ($this->settings['administratorEmail'], $this->settings['applicationName']);
 				echo $footer;
@@ -401,6 +417,9 @@ class frontControllerApplication
 			$this->loadInternalAuth ();
 			$this->user = $this->internalAuthClass->getUserId ();
 			$this->userEmail = $this->internalAuthClass->getUserEmail ();
+			if ($this->settings['useDatabase']) {
+				$this->databaseConnection->setUserForLogging ($this->userEmail);
+			}
 			$this->userVisibleIdentifier = $this->internalAuthClass->getUserEmail ();
 			#!# This appears above the tabs
 			echo $this->internalAuthClass->getHtml ();	// Basically will only appear if the user gets logged out for security reasons
@@ -448,6 +467,11 @@ class frontControllerApplication
 			}
 		}
 		
+		# Add user-switching UI control if required; this must be run after the $this->userIsAdministrator phase and after mainPreActions in case that sets required properties
+		if ($this->settings['userSwitcherUsers']) {
+			echo $this->userSwitcher ();
+		}
+		
 		# Get the available actions
 		$this->actions = $this->assignActions ();
 		
@@ -479,15 +503,18 @@ class frontControllerApplication
 		}
 		
 		# Load any stylesheet if supplied
-		if (!$this->exportType) {
-			$stylesheet = $this->applicationRoot . $this->settings['applicationStylesheet'];
-			if (is_readable ($stylesheet)) {
-				$styles = file_get_contents ($stylesheet);
-				echo "\n\n" . '<style type="text/css">' . "\n\t" . str_replace ("\n", "\n\t", trim ($styles)) . "\n</style>\n";
+		if ($this->settings['applicationStylesheet']) {
+			if (!$this->exportType) {
+				$stylesheet = $this->applicationRoot . $this->settings['applicationStylesheet'];
+				if (is_readable ($stylesheet)) {
+					$styles = file_get_contents ($stylesheet);
+					echo "\n\n" . '<style type="text/css">' . "\n\t" . str_replace ("\n", "\n\t", trim ($styles)) . "\n</style>\n";
+				}
 			}
 		}
 		
 		# Determine the data directory
+		#!# If an application is using inheritance, this ends up getting the parent, not the child
 		if ($this->settings['dataDirectory']) {
 			$dataDirectory = $this->applicationRoot . $this->settings['dataDirectory'];
 			if (is_dir ($dataDirectory) && is_readable ($dataDirectory)) {
@@ -510,13 +537,13 @@ class frontControllerApplication
 			}
 		}
 		
-		# Move feedback and admin to the end
+		# Move feedback, admin and other functions to the end
 		$functions = array ('editing', 'profile', 'import', 'templates', 'apidocumentation', 'feedback', 'help', 'admin');
 		foreach ($functions as $function) {
 			if (isSet ($this->actions[$function])) {
-				$temp{$function} = $this->actions[$function];
+				$actionAttributes = $this->actions[$function];
 				unset ($this->actions[$function]);
-				$this->actions[$function] = $temp{$function};
+				$this->actions[$function] = $actionAttributes;
 			}
 		}
 		
@@ -544,10 +571,12 @@ class frontControllerApplication
 		# Show the tabs, any subtabs, and the action name
 		$selectedTab = ($this->tabForced ? $this->tabForced : $this->action);
 		$headerHtml .= $this->showTabs ($selectedTab, $this->settings['tabUlClass']);
-		if (method_exists ($this, 'guiSearchBox')) {
-			$headerHtml .= "\n<div id=\"cornersearch\">";
-			$headerHtml .= $this->guiSearchBox ();
-			$headerHtml .= "\n</div>";
+		if (!$this->settings['disableGuiSearchBox']) {
+			if (method_exists ($this, 'guiSearchBox')) {
+				$headerHtml .= "\n<div id=\"cornersearch\">";
+				$headerHtml .= $this->guiSearchBox ();
+				$headerHtml .= "\n</div>";
+			}
 		}
 		$headerHtml .= $this->showSubTabs ($this->action);
 		if (isSet ($this->actions[$this->action]) && array_key_exists ('description', $this->actions[$this->action]) && $this->actions[$this->action]['description'] && !substr_count ($this->actions[$this->action]['description'], '%') && (!isSet ($this->actions[$this->action]['heading']) || $this->actions[$this->action]['heading'])) {
@@ -662,8 +691,9 @@ class frontControllerApplication
 		$this->userName = false;
 		$this->userPhone = false;
 		if ($this->settings['useCamUniLookup']) {
-			if ($this->user) {
-				if ($person = camUniData::getLookupData ($this->user)) {
+			$isCronUser = ($this->settings['cronUsername'] && ($this->user == $this->settings['cronUsername']));
+			if ($this->user && !$isCronUser) {
+				if ($person = camUniData::lookupUser ($this->user)) {
 					$this->userName = $person['name'];
 					$this->userEmail = ($person['email'] ? $person['email'] : $this->user . '@' . $this->settings['emailDomain']);
 					$this->userPhone = $person['telephone'];
@@ -673,6 +703,9 @@ class frontControllerApplication
 		
 		# Create a shortcut for the current year
 		$this->year = date ('Y');
+		
+		# Initialise templating if required; this is done before main() to enable it to be passed onto subclasses loaded there
+		$this->templateHandle = $this->initialiseTemplating ();
 		
 		# Additional processing if required
 		if (method_exists ($this, 'main')) {
@@ -697,9 +730,6 @@ class frontControllerApplication
 			header ('Expires: Sat, 26 Jul 1997 05:00:00 GMT');		// Date in the past
 		}
 		
-		# Initialise templating if required
-		$this->templateHandle = $this->initialiseTemplating ();
-		
 		# Perform the action
 		if (!$disableAutoGui) {
 			$this->performAction ($this->doAction, $this->item);
@@ -715,6 +745,131 @@ class frontControllerApplication
 		if (method_exists ($this, 'shutdown')) {
 			$this->shutdown ();
 		}
+	}
+	
+	
+	# Function to emulate a webserver environment when in CLI mode
+	# Launch using e.g.
+	#   cd /path/to/bootstrap/file/ && DOCUMENT_ROOT="/path/to/document/root/" SERVER_ADMIN="webmaster@example.com" php -d include_path="/include/path/as/per/.httpd.conf.extract/" index.html cron
+	# More complex parameterrequests could be passed in using: `REQUEST_URI="?foo=bar" php index.html`
+	private function cliModeEmulation ($settings)
+	{
+		# End if not in CLI mode
+		if (php_sapi_name () != 'cli') {return $settings;}
+		
+		# Deal with DOCUMENT_ROOT, which does not appear as $_SERVER['DOCUMENT_ROOT'] even when added to the environment in the CLI call (`DOCUMENT_ROOT=".." php ...`)
+		if (getenv ('DOCUMENT_ROOT')) {
+			$_SERVER['DOCUMENT_ROOT'] = getenv ('DOCUMENT_ROOT');	// NB $_ENV not always populated
+		}
+		
+		# Set SCRIPT_FILENAME to behave like the webserver behaviour, i.e. the full path rather than relative; see: https://php.net/reserved.variables.server
+		if (getenv ('SCRIPT_FILENAME')) {
+			list ($scriptPath) = get_included_files ();		// Assumes first being the 'main' file; see: https://stackoverflow.com/a/49045535/180733
+			$_SERVER['SCRIPT_FILENAME'] = $scriptPath;
+		}
+		
+		# Bring in arguments
+		global $argv;
+		
+		# Get any action
+		if (isSet ($argv[1])) {
+			$_GET['action'] = $argv[1];
+		}
+		
+		# Get any ID
+		if (isSet ($argv[2])) {
+			$_GET['id'] = $argv[2];
+		}
+		
+		# Disable GUI features which cause unnecessary output
+		$settings['applicationStylesheet'] = false;
+		$settings['div'] = false;
+		$settings['authLinkVisibility'] = false;
+		$settings['h1'] = '';
+		$settings['disableTabs'] = true;
+		$settings['disableSubtabs'] = true;
+		$settings['disableGuiSearchBox'] = true;
+		
+		# Deal with user auth, potentially used in requestHttpAuthUsername () and in cron ()
+		#!# Currently cronUsername HAS to be supplied in the boostrap file and not the client class's defaults as cliModeEmulation is called too early
+		if ($_GET['action'] == 'cron') {
+			$_SERVER['PHP_AUTH_USER'] = $settings['cronUsername'];
+		}
+		
+		# Return the modified settings
+		return $settings;
+	}
+	
+	
+	# Function to provide a user switcher
+	private function userSwitcher ()
+	{
+		# Ensure the user is an administrator
+		if (!$this->userIsAdministrator) {return false;}
+		
+		# Get the list of users
+		$callback = $this->settings['userSwitcherUsers'];
+		$users = $callback ();
+		
+		# Start a session
+		if (!session_id ()) {
+			session_start ();
+		}
+		
+		# Check the session for the switched user
+		$default = false;
+		if (isSet ($_SESSION['userswitcher'])) {
+			$usersFlattened = application::flattenMultidimensionalArray ($users);	// Ensure a flattened array, in case nested by some grouping
+			if (array_key_exists ($_SESSION['userswitcher'], $usersFlattened)) {
+				$default = $_SESSION['userswitcher'];
+				
+				# Set the user properties
+				#!# This is not very satifactory for generic use, and has only been tested against a specific application; restricted administrator is not yet supported, and other user properties need reload
+				$this->user = $_SESSION['userswitcher'];
+				$this->userVisibleIdentifier = $usersFlattened[$this->user];
+				$this->userIsAdministrator = $this->userIsAdministrator ();
+				
+				# If there is a callback, run it
+				if ($this->settings['userSwitcherOnSwitch']) {
+					$callback = $this->settings['userSwitcherOnSwitch'];
+					$callback ($this->user);
+				}
+			}
+		}
+		
+		# Create a form
+		$form = new form (array (
+			'name' => 'userswitcher',
+			'div' => 'userswitcher ultimateform',
+			'formCompleteText' => false,
+			'display' => 'template',
+			'displayTemplate' => '<p class="alignright">Act as user: {[[PROBLEMS]]} {user} {[[SUBMIT]]}</p>',
+			'requiredFieldIndicator' => false,
+			'submitButtonAccesskey' => false,
+			'submitButtonText' => 'Go!',
+			'reappear' => true,
+		));
+		$form->select (array (
+		    'name'				=> 'user',
+		    'title'				=> 'Username',
+		    'values'			=> $users,
+			'default'			=> $default,
+		    'required'			=> false,
+			'nullText'			=> '[Myself]',
+			'onchangeSubmit'	=> true,
+		));
+		$html = '';
+		if ($result = $form->process ($html)) {
+			
+			# Set the new session user
+			$_SESSION['userswitcher'] = $result['user'];
+			
+			# Refresh the page
+			$html = application::sendHeader ('refresh');
+		}
+		
+		# Return the HTML
+		return $html;
 	}
 	
 	
@@ -1016,6 +1171,7 @@ class frontControllerApplication
 		}
 		
 		# Execute each query, and show failure error message if something went wrong
+		#!# This can fail because of multiple queries in one execution
 		$i = 0;
 		foreach ($databaseStructure as $query) {
 			$i++;
@@ -1023,6 +1179,7 @@ class frontControllerApplication
 				$html  = "\n<p>The database setup process did not complete" . (count ($databaseStructure) > 1 ? ", failing at query #{$i}" : '') . ". You may need to set this up manually. The database error was:</p>";
 				$databaseError = $installerDatabaseConnection->error ();
 				$html .= "\n<p><pre>" . wordwrap (htmlspecialchars ($databaseError[2])) . '</pre></p>';
+				$html .= "\n<p><pre>" . wordwrap (htmlspecialchars ($query)) . '</pre></p>';
 				return false;
 			}
 		}
@@ -1077,13 +1234,18 @@ class frontControllerApplication
 		$html  = "\n<h4 id=\"tabsheading\">" . (isSet ($this->actions[$parent]['subheading']) ? $this->actions[$parent]['subheading'] : $this->actions[$parent]['description']) . '</h4>';
 		$html .= $this->actionsListHtml ($actions, $useDescriptionAsText = false, $this->settings['tabUlClass'] . ' subtabs', $current);
 		
+		# If not showing the subtabs, cancel the HTML
+		if ($this->settings['disableSubtabs']) {
+			$html = '';
+		}
+		
 		# Return the HTML
 		return $html;
 	}
 	
 	
 	# Function to get the child actions for a function
-	public function getChildActions ($parent, $includeParent = false, $subtabsOnly = false)
+	public function getChildActions ($parent, $includeParent = false, $subtabsOnly = false, $except = array ())
 	{
 		# End if not in a subtabbed section
 		if (!$parent) {return array ();}
@@ -1100,6 +1262,9 @@ class frontControllerApplication
 				
 				# If required, skip if there is no subtab attribute
 				if ($subtabsOnly && !isSet ($attributes['subtab'])) {continue;}
+				
+				# Skip specified exceptions, if any
+				if ($except && in_array ($action, $except)) {continue;}
 				
 				# Allocate to the list
 				$children[$action] = $this->actions[$action];
@@ -1327,24 +1492,54 @@ class frontControllerApplication
 		# Get the settings
 		if (!$settingsFromTable = $this->databaseConnection->selectOne ($this->settings['database'], $this->settings['settingsTable'], array ('id' => 1))) {return false;}
 		
-		# If the setting is a textarea (but not HTML), explode the options into a list
-		if ($this->settings['settingsTableExplodeTextarea']) {
-			$fieldStructure = $this->databaseConnection->getFields ($this->settings['database'], $this->settings['settingsTable']);
-			foreach ($fieldStructure as $fieldname => $field) {
-				if (is_array ($this->settings['settingsTableExplodeTextarea']) && !in_array ($fieldname, $this->settings['settingsTableExplodeTextarea'])) {continue;}	// Skip if a list is supplied and the field is not in it
-				if ($field['Type'] == 'text') {
-					if (!preg_match ('/(html|richtext)/i', $fieldname)) {	// Exclude fields that look like richtext (HTML); this should match the defintion in the dataBinding function in ultimateForm.php, so that the developer can be sure that if a richtext field appears in the settings page, that it won't get exploded
-						$settingContent = trim ($settingsFromTable[$fieldname]);
-						$settingsFromTable[$fieldname] = (strlen ($settingContent) ? preg_split ("/\s*\r?\n\t*\s*/", $settingContent) : array ());
-					}
-				}
-			}
-		}
-		
 		# Merge in the settings, ignoring the id, and overwriting anything currently present
 		foreach ($settingsFromTable as $key => $value) {
 			if ($key == 'id') {continue;}
 			$this->settings[$key] = $value;
+		}
+		
+		# If any setting from the table is a textarea (but not HTML), explode the options into a list, where enabled
+		if ($this->settings['settingsTableExplodeTextarea']) {
+			$this->settingsOriginal = $this->settings;	// Cache the pre-pared values, for use on the settings page
+			$fieldStructure = $this->databaseConnection->getFields ($this->settings['database'], $this->settings['settingsTable']);
+			foreach ($fieldStructure as $fieldname => $field) {
+				
+				# Skip if a list is supplied and the field is not in it
+				if (is_array ($this->settings['settingsTableExplodeTextarea']) && !in_array ($fieldname, $this->settings['settingsTableExplodeTextarea'])) {continue;}
+				
+				# Limit to text fields only
+				if (in_array ($field['Type'], array ('text', 'tinytext', 'mediumtext', 'longtext'))) {
+					
+					# Exclude fields that look like richtext (HTML); this should match the defintion in the dataBinding function in ultimateForm.php, so that the developer can be sure that if a richtext field appears in the settings page, that it won't get exploded
+					if (!preg_match ('/(html|richtext)/i', $fieldname)) {
+						
+						# Split lines out
+						$overwrittenSetting = trim ($settingsFromTable[$fieldname]);
+						$overwrittenSetting = (strlen ($overwrittenSetting) ? preg_split ("/\s*\r?\n\t*\s*/", $overwrittenSetting) : array ());
+						
+						# Overwrite the original setting
+						$this->settings[$fieldname] = $overwrittenSetting;
+						
+						# If the lines should be treated as key,value pairs, split further
+						if ($this->settings['settingsTableExplodeTextareaPairs']) {
+							
+							# Skip if a list is supplied and the field is not in it
+							if (is_array ($this->settings['settingsTableExplodeTextareaPairs']) && !in_array ($fieldname, $this->settings['settingsTableExplodeTextareaPairs'])) {continue;}
+							
+							# Parse out each line
+							$lines = array ();
+							foreach ($overwrittenSetting as $line) {
+								list ($key, $value) = explode (',', $line, 2);
+								$lines[$key] = $value;
+							}
+							$overwrittenSetting = $lines;	// Overwrite the original lines array
+						}
+						
+						# Overwrite the original setting again
+						$this->settings[$fieldname] = $overwrittenSetting;
+					}
+				}
+			}
 		}
 	}
 	
@@ -1528,8 +1723,11 @@ class frontControllerApplication
 	# API documentation page
 	public function apidocumentation ($introductionHtml = '')
 	{
+		# Get the API class
+		$apiClass = $this->getApiClass ();
+		
 		# Create a list of API calls
-		$apiCalls = $this->getApiCalls (true);
+		$apiCalls = $this->getApiCalls ($apiClass, true);
 		
 		# Ensure that apiCalls have been defined
 		if (!$apiCalls) {
@@ -1541,8 +1739,8 @@ class frontControllerApplication
 		$html = "\n<p>This page details the API calls available.</p>";
 		
 		# Add introduction if any
-		if (method_exists ($this, 'apidocumentationIntroduction')) {
-			$html .= $this->apidocumentationIntroduction ();
+		if (method_exists ($apiClass, 'apidocumentationIntroduction')) {
+			$html .= $apiClass->apidocumentationIntroduction ();
 		}
 		
 		# Add drop-down list
@@ -1559,13 +1757,13 @@ class frontControllerApplication
 			$html .= "\n<h2 class=\"apidocumentation\" id=\"{$apiCall}\"><a href=\"#{$apiCall}\">#</a> {$apiCall}</h2>";
 			
 			# State if no documentation
-			if (!method_exists ($this, $documentationMethod)) {
+			if (!method_exists ($apiClass, $documentationMethod)) {
 				$html .= "\n<p><em>No documentation available yet.</em></p>";
 				continue;
 			}
 			
 			# Add documentation
-			$html .= $this->{$documentationMethod} ();
+			$html .= $apiClass->{$documentationMethod} ();
 		}
 		
 		# Show the HTML
@@ -1573,11 +1771,28 @@ class frontControllerApplication
 	}
 	
 	
+	# Function to load the API class (either a distinct class, or the core class)
+	private function getApiClass ()
+	{
+		# Check for a dedicated API file
+		$apiFile = $this->applicationRoot . '/api.php';
+		if (file_exists ($apiFile)) {
+			require_once ($apiFile);
+			$apiClass = new api ($this, $this->settings, $this->databaseConnection, $this->baseUrl);
+		} else {
+			$apiClass = $this;
+		}
+		
+		# Return the class handle
+		return $apiClass;
+	}
+	
+	
 	# Function to get the list of API calls
-	private function getApiCalls ($documentationMode = false)
+	private function getApiCalls ($apiClass, $documentationMode = false)
 	{
 		# Get the API calls defined by the application class
-		$classMethods = get_class_methods ($this);
+		$classMethods = get_class_methods ($apiClass);
 		$apiCalls = array ();
 		foreach ($classMethods as $classMethod) {
 			if (preg_match ('/^apiCall_([a-zA-Z]+)$/', $classMethod, $matches)) {
@@ -1598,8 +1813,11 @@ class frontControllerApplication
 	#!# Make private once overriding callers have been migrated
 	public function api ()
 	{
+		# Get the API class
+		$apiClass = $this->getApiClass ();
+		
 		# Get the list of API calls
-		$apiCalls = $this->getApiCalls ();
+		$apiCalls = $this->getApiCalls ($apiClass);
 		
 		# Ensure that apiCalls have been defined
 		if (!$apiCalls) {
@@ -1615,11 +1833,12 @@ class frontControllerApplication
 			
 			# Obtain the data (which may be empty) from the API calls function; error is returned by reference
 			$function = $apiCalls[$method];
-			$data = $this->{$function} ($id, $error);	// i.e. uses class method defined as apiCall_foobar ($id, &$error = '')
+			$data = $apiClass->{$function} ($id, $error);	// i.e. uses class method defined as apiCall_foobar ($id, &$error = '')
 		}
 		
 		# If an error occured, set the error as the output
 		if ($error) {
+			header ('HTTP/1.0 400 Bad Request');
 			$data = array ('error' => $error);
 		}
 		
@@ -1668,7 +1887,7 @@ class frontControllerApplication
 			
 			# Obtain the HTTP-supplied username and validate it
 			if (!$httpAuthUsername = $this->requestHttpAuthUsername ()) {
-				$error = 'A HTTP-supplied username has not been supplied.';	// Probably will never be shown, as a dialog box should be shown instead
+				$error = 'An HTTP-supplied username has not been supplied.';	// Probably will never be shown, as a dialog box should be shown instead
 				return false;
 			}
 			
@@ -1717,6 +1936,7 @@ class frontControllerApplication
 		}
 		
 		# End if not enabled
+		#!# Eliminate cronUsername when all uses migrated to direct cron rather than HTTP-launched
 		if (!$this->settings['cronUsername']) {
 			echo 'Application error: The cron system is not enabled.';
 			return false;
@@ -1730,13 +1950,13 @@ class frontControllerApplication
 		
 		# Obtain the HTTP-supplied username and validate it
 		if (!$httpAuthUsername = $this->requestHttpAuthUsername ()) {
-			echo 'A HTTP-supplied username has not been supplied.';	// Probably will never be shown, as a dialog box should be shown instead
+			echo 'An HTTP-supplied username for cron has not been supplied.';	// Probably will never be shown, as a dialog box should be shown instead
 			return false;
 		}
 		
 		# Check the username matches
 		if ($httpAuthUsername != $this->settings['cronUsername']) {
-			echo "The HTTP-supplied username ({$httpAuthUsername}) is not correct.";
+			echo "The HTTP-supplied username ({$httpAuthUsername}) for cron is not correct.";
 			return false;
 		}
 		
@@ -1765,8 +1985,8 @@ class frontControllerApplication
 		header ('WWW-Authenticate: Basic realm="Specify the username, and anything as the password."');
 		header ('HTTP/1.0 401 Unauthorized');
 		
-		# Return false
-		return false;
+		# End; do not allow continuing to generic 400 error
+		die;
 	}
 	
 	
@@ -2175,7 +2395,7 @@ class frontControllerApplication
 	}
 	
 	
-	# Data point
+	# Data endpoint
 	public function data ()
 	{
 		echo '<p>This URL can be assigned a function data() for transmission of data.</p>';
@@ -2220,8 +2440,11 @@ class frontControllerApplication
 	{
 		# Attempt to get the data
 		if ($this->settings['useCamUniLookup']) {
-			if ($userLookupData = camUniData::getLookupData ($user)) {
-				return $userLookupData['name'];
+			$isCronUser = ($this->settings['cronUsername'] && ($user == $this->settings['cronUsername']));
+			if (!$isCronUser) {
+				if ($userLookupData = camUniData::lookupUser ($user)) {
+					return $userLookupData['name'];
+				}
 			}
 		}
 		
@@ -2276,7 +2499,7 @@ class frontControllerApplication
 		foreach ($changes as $index => $change) {
 			if (++$i == $this->settings['showChanges']) {break;}
 			$delimiter = '!';
-			if (preg_match ($delimiter . "/\* (Success|Failure) (.{19}) by ([a-zA-Z0-9]+) \*/ (UPDATE|INSERT INTO) ([^.]+)\.([^ ]+) (.*)" . $delimiter, $change, $parts)) {
+			if (preg_match ($delimiter . "/\* (Success|Failure) (.{19}) by ([.@a-zA-Z0-9]+) \*/ (UPDATE|INSERT INTO) ([^.]+)\.([^ ]+) (.*)" . $delimiter, $change, $parts)) {
 				$nameMatch = array ();
 				// preg_match ($delimiter . ($parts[4] == 'UPDATE' ? "WHERE id='([a-z]+)';$" : "VALUES \('([a-z]+)',") . $delimiter, trim ($parts[7]), $nameMatch);
 				$changesHtml[] = "\n<h3 class=\"spaced\">[" . ($index + 1) . '] ' . ($parts[1] == 'Success' ? 'Successful' : 'Failed') . ' ' . ($parts[4] == 'UPDATE' ? 'update' : 'new submission') . (isSet ($nameMatch[1]) ? " made to <span class=\"warning\"><a href=\"{$this->baseUrl}/{$nameMatch[1]}/\">{$nameMatch[1]}</a></span>" : '') . ' by<br />' . $parts[3] . ' at ' . $parts[2] . ":</h3>\n<p>{$parts[4]} {$parts[5]}.{$parts[6]} " . htmlspecialchars ($parts[7]) . '</p>';
@@ -2364,11 +2587,7 @@ class frontControllerApplication
 		# Ensure settings are all strings - some may have been exploded
 		$settings = $this->settings;
 		if ($this->settings['settingsTableExplodeTextarea']) {
-			foreach ($settings as $key => $value) {
-				if (is_array ($value)) {
-					$settings[$key] = implode ("\n", $value);
-				}
-			}
+			$settings = $this->settingsOriginal;
 		}
 		
 		# Define default dataBinding settings
@@ -2376,6 +2595,7 @@ class frontControllerApplication
 			'database' => $this->settings['database'],
 			'table' => $this->settings['settingsTable'],
 			'intelligence' => true,
+			'int1ToCheckbox' => true,
 			'data' => $settings,
 			'attributes' => array (),
 		);
@@ -2395,6 +2615,8 @@ class frontControllerApplication
 			'unsavedDataProtection' => true,
 			'jQuery' => !$this->settings['jQuery'],	// Do not load if already loaded
 			'cols' => 80,
+			'richtextEditorToolbarSet' => 'BasicLonger',	// Settings tend to be simple text, such as a paragraph with minimal formatting
+			'richtextHeight' => 150,
 		));
 		$form->dataBinding ($dataBindingSettings);
 		
@@ -2521,7 +2743,8 @@ class frontControllerApplication
 		$form = new form (array (
 			'displayRestrictions' => false,
 			'formCompleteText' => "Many thanks for your input - we'll be in touch shortly if applicable.",
-			'antispam'	=> true,
+			'antispam' => true,
+			'emailName' => $this->settings['applicationName'],
 		));
 		
 		# Widgets
@@ -2537,7 +2760,7 @@ class frontControllerApplication
 			'name'		=> 'name',
 			'title'		=> 'Your name',
 			'required'	=> true,
-			'default'	=> ($this->settings['useCamUniLookup'] && $this->user && ($userLookupData = camUniData::getLookupData ($this->user)) ? $userLookupData['name'] : ''),
+			'default'	=> $this->userName,
 		));
 		$form->email (array (
 			'name'		=> 'contacts',
@@ -2553,6 +2776,9 @@ if ($unfinalisedData = $form->getUnfinalisedData ()) {
 		if (preg_match ("~http://([^\s]+)$~i", trim ($unfinalisedData['message']))) {   // Message always ends with a link
 			$form->registerProblem ('antispam', 'Please remove web addresses from your submission.');
 		}
+	}
+	if (substr_count ($unfinalisedData['message'], 'Cryptaxbot')) {
+		$form->registerProblem ('antispam', 'Error.');
 	}
 }
 
@@ -2598,7 +2824,7 @@ if ($unfinalisedData = $form->getUnfinalisedData ()) {
 		# Determine the name of the username field
 		#!# Use of $this->settings['administrators'] as table name here needs auditing
 		$fields = $this->databaseConnection->getFieldnames ($this->settings['database'], $this->settings['administrators']);
-		$possibleUsernameFields = array ('username', 'crsid', "username__JOIN__{$this->settings['peopleDatabase']}__people__reserved");
+		$possibleUsernameFields = array ('id', 'username', 'crsid', "username__JOIN__{$this->settings['peopleDatabase']}__people__reserved");
 		foreach ($possibleUsernameFields as $field) {
 			if (in_array ($field, $fields)) {
 				return $field;
@@ -2641,6 +2867,7 @@ if ($unfinalisedData = $form->getUnfinalisedData ()) {
 		$html  = '';
 		
 		# Compile the HTML
+		#!# if (true) is bogus code
 		if (true) {
 			$authSystemName = 'Raven';
 			if ($this->settings['internalAuth']) {
@@ -2785,8 +3012,9 @@ if ($unfinalisedData = $form->getUnfinalisedData ()) {
 		$html .= "\n<h3 id=\"remove\">Remove an administrator</h3>";
 		$administrators = $this->administrators;
 		//unset ($administrators[$this->user]);	// Remove current user - you can't delete yourself
+		#!# Should be changed so that there is always one admin, but that inactive admins can always be removed
 		if (!$administrators) {
-			$html .= "<p>There are no other administrators.</p>";
+			$html .= "<p>No administrators can be removed, as there always needs to be at least one.</p>";
 		} else {
 			$form = new form (array (
 				'name' => 'remove',
@@ -2795,6 +3023,8 @@ if ($unfinalisedData = $form->getUnfinalisedData ()) {
 				'div' => false,
 				'requiredFieldIndicator' => false,
 			));
+			#!# Should have an option to e-mail them, set on by default
+			$form->heading ('p', 'NB Removing an admin will not e-mail them.');
 			$form->select (array (
 				'name'	=> $usernameField,
 				'title'	=> 'Select administrator to remove',
@@ -2867,14 +3097,72 @@ if ($unfinalisedData = $form->getUnfinalisedData ()) {
 		if (!$this->administrators) {
 			$html .= "\n<p>There are no administrators set up yet.</p>";
 		} else {
+			
+			# Show editing form if user selected
+			$username = (isSet ($_GET['user']) && strlen ($_GET['user']) && array_key_exists ($_GET['user'], $this->administrators) ? $_GET['user'] : false);
+			if ($username) {
+				$html .= $this->usernameEditingForm ($username, $showFields);
+			}
+			
+			# Show the listing
 			$html .= "\n<p>The following are administrators of this system and can make changes to the data in it:</p>";
 			$onlyFields = array_merge (array ($usernameField), array_keys ($showFields));
 			if ($this->settings['externalAuth']) {$onlyFields[] = 'userType';}
 			$tableHeadingSubstitutions = $showFields;
 			$tableHeadingSubstitutions[$usernameField] = 'Username';
-			$html .= application::htmlTable ($this->administrators, $tableHeadingSubstitutions, $class = 'lines', $showKey = false, $uppercaseHeadings = true, false, false, false, false, $onlyFields);
+			$administrators = $this->administrators;
+			$administratorUsernameField = $this->administratorUsernameField ();
+			foreach ($administrators as $username => $user) {
+				$url = $this->baseUrl . '/' . $this->actions['administrators']['url'] . '?user=' . htmlspecialchars (urlencode ($user[$administratorUsernameField])) . '#list';
+				$administrators[$username][$administratorUsernameField] = "<a href=\"{$url}\">" . htmlspecialchars ($user[$administratorUsernameField]) . '</a>';
+			}
+			$html .= application::htmlTable ($administrators, $tableHeadingSubstitutions, $class = 'lines', $showKey = false, $uppercaseHeadings = true, $allowHtml = array ($administratorUsernameField), false, false, false, $onlyFields);
 		}
 		$html .= "\n" . '</div>';
+		
+		# Return the HTML
+		return $html;
+	}
+	
+	
+	# Function to create a username editing form
+	private function usernameEditingForm ($username, $showFields)
+	{
+		# Start the HTML
+		$html = '';
+		
+		# Determine the current page URL
+		$url = $this->baseUrl . '/' . $this->actions['administrators']['url'];
+		
+		# Determine the username field in the table
+		$administratorUsernameField = $this->administratorUsernameField ();
+		
+		# Create the form
+		$form = new form (array (
+			'databaseConnection'		=> $this->databaseConnection,
+			'formCompleteText'			=> false,
+			'requiredFieldIndicator'	=> false,
+			'unsavedDataProtection'		=> true,
+		));
+		$form->heading ('p', 'Edit details for user <em>' . htmlspecialchars ($username) . "</em> (or <a href=\"{$url}#list\">cancel</a>):");
+		$form->dataBinding (array (
+			'database' => $this->settings['database'],
+			'table' => 'administrators',
+			'data' => $this->administrators[$username],
+			'includeOnly' => array_keys ($showFields),
+			'attributes' => array (
+				$administratorUsernameField => array ('editable' => false, ),
+			),
+		));
+		if (!$result = $form->process ($html)) {
+			return $html;
+		}
+		
+		# Update the user
+		$this->databaseConnection->update ($this->settings['database'], 'administrators', $result, $conditions = array ($administratorUsernameField => $username));
+		
+		# Redirect to main page, which will show the new data
+		$html = application::sendHeader (302, $url . '#list', true);
 		
 		# Return the HTML
 		return $html;
@@ -2996,6 +3284,9 @@ if ($unfinalisedData = $form->getUnfinalisedData ()) {
 		$html .= $sinenomine->getContentCss (true);
 		$html .= $sinenomine->getHtml ();
 		
+		# Surround with a div to enable styling
+		$html = "\n<div id=\"editinginternal\">\n\n" . $html . "\n\n</div>";
+		
 		# Show the HTML
 		echo $html;
 	}
@@ -3004,6 +3295,7 @@ if ($unfinalisedData = $form->getUnfinalisedData ()) {
 	# Editing of a single table, substantially delegated to the sinenomine editing component
 	# Needs adding to httpd.conf, where $applicationBaseUrl is not slash-terminated
 	#	Use MacroSinenomineEmbeddedTable "$applicationBaseUrl" "$editingUrl" "$applicationAction"
+	#!# Sinenomine integration doesn't currently enable supply of the main settings, which are partly hard-coded below; currently only dataBinding attributes and dataBinding main are supported
 	public function editingTable ($table, $dataBindingAttributes = array (), $formDiv = 'graybox lines', $tableUrlMoniker = false, $sinenomineExtraSettings = array ())
 	{
 		# Start the HTML
@@ -3143,7 +3435,7 @@ if ($unfinalisedData = $form->getUnfinalisedData ()) {
 		}
 		$templateHandle->assign ('templates_tpl', $tplDirectory);
 		
-		# Register plugin functions
+		# Register plugin functions, if any
 		foreach ($this->templateFunctions as $function) {
 			$templateHandle->registerPlugin ('modifier', $function, array ($this, $function));
 		}
@@ -3156,6 +3448,10 @@ if ($unfinalisedData = $form->getUnfinalisedData ()) {
 	# Function to provide templatisation
 	public function templatise ($templateFile = false /* Normally assigned automatically based on the action */)
 	{
+		# Add general properties
+		$this->template['userIsAdministrator'] = $this->userIsAdministrator;
+		$this->template['baseUrl'] = $this->baseUrl;
+		
 		# Assign each provided placeholder
 		foreach ($this->template as $placeholder => $fragmentHtml) {
 			$this->templateHandle->assign ($placeholder, $fragmentHtml);

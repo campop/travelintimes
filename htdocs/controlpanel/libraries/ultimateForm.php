@@ -52,8 +52,8 @@
  * 
  * @package ultimateForm
  * @license	https://opensource.org/licenses/gpl-license.php GNU Public License
- * @author	{@link http://www.geog.cam.ac.uk/contacts/webmaster.html Martin Lucas-Smith}, University of Cambridge
- * @copyright Copyright  2003-17, Martin Lucas-Smith, University of Cambridge
+ * @author	{@link https://www.geog.cam.ac.uk/contacts/webmaster/ Martin Lucas-Smith}, University of Cambridge
+ * @copyright Copyright  2003-23, Martin Lucas-Smith, University of Cambridge
  * @version See $version below
  */
 class form
@@ -70,7 +70,7 @@ class form
 	var $name;									// The name of the form
 	var $location;								// The location where the form is submitted to
 	var $duplicatedElementNames = array ();		// The array to hold any duplicated form field names
-	var $formSetupErrors = array ();			// Array of form setup errors, to which any problems can be added
+	var $formSetupErrors = array ();			// Array of form setup errors, to which any problems can be added; those whose key is prefixed with _ are warnings
 	var $elementProblems = array ();			// Array of submitted element problems
 	var $externalProblems = array ();			// Array of external element problems as inserted by the calling applications
 	var $validationRules = array ();			// Array of validation rules
@@ -89,7 +89,7 @@ class form
 	var $hiddenElementPresent = false;			// Flag for whether the form includes one or more hidden elements
 	var $antispamWait = 0;						// Time to wait in the event of spam attempt detection, in seconds
 	var $dataBinding = false;					// Whether dataBinding is in use; if so, this will become an array containing connection variables
-	var $jQueryLibraries = array ();			// Array of jQuery client library loading HTML tags, if any, which are treated as plain HTML
+	var $jsCssAssets = array ();				// Array of JS/CSS client library loading HTML tags, if any, which are treated as plain HTML
 	var $jQueryCode = array ();					// Array of jQuery client code, if any, which will get wrapped in a script tag
 	var $javascriptCode = array ();				// Array of javascript client code, if any, which will get wrapped in a script tag
 	var $formSave = false;						// Whether the submission is a save rather than a proper submission
@@ -111,7 +111,7 @@ class form
 	var $displayTypes = array ('tables', 'css', 'paragraphs', 'templatefile');
 	
 	# Constants
-	var $version = '1.25.0';
+	var $version = '1.28.5';
 	var $timestamp;
 	var $minimumPhpVersion = 5;	// md5_file requires 4.2+; file_get_contents and is 4.3+; function process (&$html = NULL) requires 5.0
 	var $escapeCharacter = "'";		// Character used for escaping of output	#!# Currently ignored in derived code
@@ -145,6 +145,7 @@ class form
 		'submitButtonAccesskeyString'		=> false,							# Whether to show the accesskey string in the submit button
 		'submitButtonTabindex'				=> false,							# The form submit button tabindex (if any)
 		'submitButtonImage'					=> false,							# Location of an image to replace the form submit button
+		'submitButtonClass'					=> 'button',							# Submit button class
 		'refreshButton'						=> false,							# Whether to include a refresh button (i.e. submit form to redisplay but not process)
 		'refreshButtonAtEnd'				=> true,							# Whether the refresh button appears at the end or the start of the form
 		'refreshButtonText'					=> 'Refresh!',						# The form refresh button text
@@ -165,6 +166,7 @@ class form
 		'submitTo'							=> false,							# The form processing location if being overriden
 		'nullText'							=> 'Please select',					# The 'null' text for e.g. selection boxes
 		'linebreaks' 						=> true,							# Widget-based linebreaks (top level default)
+		'labelsSurround' 						=> false,							# Whether to use the surround method of label HTML formatting
 		'opening'							=> false,							# Optional starting datetime as an SQL string
 		'closing'							=> false,							# Optional closing datetime as an SQL string
 		'validUsers'						=> false,							# Optional valid user(s) - if this is set, a user will be required. To set, specify string/array of valid user(s), or '*' to require any user
@@ -174,6 +176,7 @@ class form
 		'timestamping'						=> false,							# Add a timestamp to any CSV entry
 		'ipLogging'							=> false,							# Add the user IP address to any CSV entry
 		'escapeOutput'						=> false,							# Whether to escape output in the processing output ONLY (will not affect other types)
+		'emailName'							=> 'Website feedback',				# Name string for emitted e-mails
 		'emailIntroductoryText'				=> '',								# Introductory text for e-mail output type
 		'emailShowFieldnames'				=> true,							# Whether to show the underlying fieldnames in the e-mail output type
 		'confirmationEmailIntroductoryText'	=> '',								# Introductory text for confirmation e-mail output type
@@ -182,7 +185,7 @@ class form
 		'truncate'							=> false,							# Whether to truncate the visible part of a widget (global setting)
 		'listUnzippedFilesMaximum'			=> 5,								# When auto-unzipping an uploaded zip file, the maximum number of files contained that should be listed (beyond this, just 'x files' will be shown) in any visible result output
 		'fixMailHeaders'					=> false,							# Whether to add additional mail headers, for use with a server that fails to add Message-Id/Date/Return-Path; set as (bool) true or (str) application name
-		'size'								=> 30,								# Global setting for input widget - size
+		'size'								=> 50,								# Global setting for input widget - size
 		'cols'								=> 30,								# Global setting for textarea cols - number of columns
 		'rows'								=> 5,								# Global setting for textarea cols - number of rows
 		'richtextEditorBasePath'			=> '/_ckeditor/',					# Global default setting for of the editor files
@@ -192,6 +195,9 @@ class form
 		'richtextWidth'						=> '100%',							# Global default setting for richtext width; assumed to be px unless % specified
 		'richtextHeight'					=> 400,								# Global default setting for richtext height; assumed to be px unless % specified
 		'richtextEditorFileBrowser'			=> '/_ckfinder/',					# Global default setting for richtext file browser path (must have trailing slash), or false to disable
+		'richtextAutoembedKey'				=> false,							# Autoembed API key from IFramely
+		'richtextTemplates'					=> false,							# Path to templates file, also settable on a per-widget basis
+		'richtextSnippets'					=> false,							# Array of snippets, as array (title => HTML, ...)
 		'mailAdminErrors'					=> false,							# Whether to mail the admin with any errors in the form setup
 		'attachments'						=> false,							# Whether to send uploaded file(s) as attachment(s) (they will not be unzipped)
 		'attachmentsMaxSize'				=> '10M',							# Total maximum attachment(s) size; attachments will be allowed into an e-mail until they reach this limit
@@ -218,6 +224,14 @@ class form
 		'uploadThumbnailWidth'				=> 300,								# Default upload thumbnail box width
 		'uploadThumbnailHeight'				=> 300,								# Default upload thumbnail box height
 		'redirectGet'						=> false,							# On successful submission, redirect, simplifying with non-empty values as GET parameters
+		#!# This should be made automatic, once the system is used to a parse-settings-then-render pattern
+		'enableNativeRequired'				=> false,							# Whether to enable native HTML5 required attributes; this should be disabled when using Save and continue or expandable
+		'mapTileUrl'						=> 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+		'mapTileCopyrightHtml'				=> 'Map data &copy; <a href=\"https://openstreetmap.org/\">OpenStreetMap</a> contributors, ODbL',
+		'mapTileMaxZoom'					=> 18,
+		'mapGeocoder'						=> 'geocoder.js',	# Whether to enable geocoder, and if so, JS path
+		'mapGeocoderApiKey'					=> false,	# Geocoder API key for external provider
+		'mapGeocoderAutocompleteBbox'		=> '-6.6577,49.9370,1.7797,57.6924',	# Geocoder autocomplete bbox as W,S,E,N; default here is UK area
 	);
 	
 	
@@ -279,7 +293,7 @@ class form
 	 * Create a standard input widget
 	 * @param array $arguments Supplied arguments - see template
 	 */
-	function input ($suppliedArguments, $functionName = __FUNCTION__)
+	function input ($suppliedArguments, $functionName = __FUNCTION__, /* internal */ $additionalArgumentDefaults = array ())
 	{
 		# Specify available arguments as defaults or as NULL (to represent a required argument)
 		$argumentDefaults = array (
@@ -293,7 +307,7 @@ class form
 			'required'				=> false,	# Whether required or not
 			'expandable'			=> false,	# Whether the widget can be expanded into subwidgets (whose value is imploded in the result), whose number can be incremented by pressing a + button; either false / true (separator=\n) / separator string
 			'enforceNumeric'		=> false,	# Whether to enforce numeric input or not (optional; defaults to false) [ignored for e-mail type]
-			'size'					=> $this->settings['size'],		# Visible size (optional; defaults to 30)
+			'size'					=> $this->settings['size'],		# Visible size (optional; defaults to 60)
 			'minlength'				=> '',		# Minimum length (optional; defaults to no limit)
 			'maxlength'				=> '',		# Maximum length (optional; defaults to no limit)
 			// 'min'	 	- implemented below
@@ -317,7 +331,7 @@ class form
 			'after'					=> false,	# Placing the widget after a specific other widget
 			'multiple'				=> false,	# For e-mail types only: whether the field can accept multiple e-mail addresses (separated with comma-space)
 			'autocomplete'			=> false,	# URL of data provider
-			'autocompleteOptions'	=> false,	# Autocomplete options; see: http://jqueryui.com/demos/autocomplete/#remote (this is the new plugin)
+			'autocompleteOptions'	=> false,	# Autocomplete options; see: https://jqueryui.com/autocomplete/#remote (this is the new plugin)
 			'tags'					=> false,	# Tags mode
 			'entities'				=> true,	# Convert HTML in value (useful only for editable=false)
 			'displayedValue'		=> false,	# When using editable=false, optional text that should be displayed instead of the value; can be made into HTML using entities=false
@@ -326,32 +340,15 @@ class form
 			'_visible--DONOTUSETHISFLAGEXTERNALLY'		=> true,	# DO NOT USE - this is present for internal use only and exists prior to refactoring
 		);
 		
-		# Add in password-specific defaults
-		#!# These blocks ought to be specifiable in the native password()/email()/etc. functions
-		if ($functionName == 'password') {
-			$argumentDefaults['generate'] = false;		# Whether to generate a password if no value supplied as default
-			$argumentDefaults['confirmation'] = false;	# Whether to generate a second confirmation password field
-		}
+		# Add any element type -specific argument defaults, overriding any existing ones
+		$argumentDefaults = array_merge ($argumentDefaults, $additionalArgumentDefaults);
 		
 		# Add in email-specific defaults
+		#!# These do not appear to do anything - should these be $suppliedArguments ?
 		if ($functionName == 'email') {
 			$argumentDefaults['confirmation'] = false;	# Whether to generate a second confirmation e-mail field
 		} else {
 			$argumentDefaults['multiple'] = false;	# Ensure this option is disabled for non-email types
-		}
-		
-		# Add in URL-specific defaults
-		if ($functionName == 'url') {
-			$argumentDefaults['regexpi'] = '^(http|https)://(.+)\.(.+)';
-		}
-		
-		# Add in Number-specific defaults
-		#!# This needs to have min/max/step value validation and restriction text, and make enforceNumeric set numeric
-		if (($functionName == 'number') || ($functionName == 'range')) {
-			$argumentDefaults['min'] = false;
-			$argumentDefaults['max'] = false;
-			$argumentDefaults['step'] = false;
-			$argumentDefaults['roundFloat'] = false;
 		}
 		
 		# If an element is expandable, if it is boolean true, convert to default string
@@ -543,7 +540,7 @@ class form
 				}
 				
 			} else {
-				$widgetHtml = '<input' . $this->nameIdHtml ($arguments['name']) . ' type="' . ($functionName == 'input' ? 'text' : $functionName) . "\" size=\"{$arguments['size']}\"" . ($arguments['maxlength'] != '' ? " maxlength=\"{$arguments['maxlength']}\"" : '') . ($arguments['placeholder'] != '' ? " placeholder=\"{$arguments['placeholder']}\"" : '') . ((isSet ($arguments['min']) && $arguments['min'] !== false) ? " min=\"{$arguments['min']}\"" : '') . ((isSet ($arguments['max']) && $arguments['max'] !== false) ? " max=\"{$arguments['max']}\"" : '') . ((isSet ($arguments['step']) && $arguments['step'] !== false) ? ' step="' . $arguments['step'] . '"' : '') . ($arguments['autofocus'] ? ' autofocus="autofocus"' : '') . ($arguments['multiple'] ? ' multiple="multiple"' : '') . " value=\"" . htmlspecialchars ($this->form[$arguments['name']]) . '"' . $widget->tabindexHtml () . ' />';
+				$widgetHtml = '<input' . $this->nameIdHtml ($arguments['name']) . ' type="' . ($functionName == 'input' ? 'text' : $functionName) . "\" size=\"{$arguments['size']}\"" . ($arguments['maxlength'] != '' ? " maxlength=\"{$arguments['maxlength']}\"" : '') . ($this->settings['enableNativeRequired'] && $arguments['required'] ? ' required="required"' : '') . ($arguments['placeholder'] != '' ? " placeholder=\"{$arguments['placeholder']}\"" : '') . ((isSet ($arguments['min']) && $arguments['min'] !== false) ? " min=\"{$arguments['min']}\"" : '') . ((isSet ($arguments['max']) && $arguments['max'] !== false) ? " max=\"{$arguments['max']}\"" : '') . ((isSet ($arguments['step']) && $arguments['step'] !== false) ? ' step="' . $arguments['step'] . '"' : '') . ($arguments['autofocus'] ? ' autofocus="autofocus"' : '') . ($arguments['multiple'] ? ' multiple="multiple"' : '') . " value=\"" . htmlspecialchars ($this->form[$arguments['name']]) . '"' . $widget->tabindexHtml () . ' />';
 			}
 		} else {
 			$displayedValue = ($arguments['displayedValue'] ? $arguments['displayedValue'] : $this->form[$arguments['name']]);
@@ -646,12 +643,18 @@ class form
 	
 	/**
 	 * Create a password widget (same as an input widget but using the HTML 'password' type)
-	 * @param array $arguments Supplied arguments same as input type
+	 * @param array $arguments Supplied arguments same as input type plus those below
 	 */
 	function password ($suppliedArguments)
 	{
+		# Additional argument defaults
+		$additionalArgumentDefaults = array (
+			'generate' => false,		# Whether to generate a password if no value supplied as default
+			'confirmation' => false,	# Whether to generate a second confirmation password field
+		);
+		
 		# Pass through to the standard input widget, but in password mode
-		$this->input ($suppliedArguments, __FUNCTION__);
+		$this->input ($suppliedArguments, __FUNCTION__, $additionalArgumentDefaults);
 	}
 	
 	
@@ -668,12 +671,17 @@ class form
 	
 	/**
 	 * Create a URL widget (same as an input widget but using the HTML5 'url' type)
-	 * @param array $arguments Supplied arguments same as input type
+	 * @param array $arguments Supplied arguments same as input type plus those below
 	 */
 	function url ($suppliedArguments)
 	{
+		# Additional argument defaults
+		$additionalArgumentDefaults = array (
+			'regexpi' => '^(http|https)://(.+)\.(.+)',
+		);
+		
 		# Pass through to the standard input widget
-		$this->input ($suppliedArguments, __FUNCTION__);
+		$this->input ($suppliedArguments, __FUNCTION__, $additionalArgumentDefaults);
 	}
 	
 	
@@ -701,23 +709,41 @@ class form
 	
 	/**
 	 * Create a Number widget (same as an input widget but using the HTML5 'number' type)
-	 * @param array $arguments Supplied arguments same as input type
+	 * @param array $arguments Supplied arguments same as input type plus those below
 	 */
 	function number ($suppliedArguments)
 	{
+		# Additional argument defaults
+		#!# This needs to have min/max/step value validation and restriction text, and make enforceNumeric set numeric
+		$additionalArgumentDefaults = array (
+			'min' => false,
+			'max' => false,
+			'step' => false,
+			'roundFloat' => false,
+		);
+		
 		# Pass through to the standard input widget
-		$this->input ($suppliedArguments, __FUNCTION__);
+		$this->input ($suppliedArguments, __FUNCTION__, $additionalArgumentDefaults);
 	}
 	
 	
 	/**
 	 * Create a Range widget (same as an input widget but using the HTML5 'range' type)
-	 * @param array $arguments Supplied arguments same as input type
+	 * @param array $arguments Supplied arguments same as input type plus those below
 	 */
 	function range ($suppliedArguments)
 	{
+		# Additional argument defaults
+		#!# This needs to have min/max/step value validation and restriction text, and make enforceNumeric set numeric
+		$additionalArgumentDefaults = array (
+			'min' => false,
+			'max' => false,
+			'step' => false,
+			'roundFloat' => false,
+		);
+		
 		# Pass through to the standard input widget
-		$this->input ($suppliedArguments, __FUNCTION__);
+		$this->input ($suppliedArguments, __FUNCTION__, $additionalArgumentDefaults);
 	}
 	
 	
@@ -729,6 +755,523 @@ class form
 	{
 		# Pass through to the standard input widget, but in password mode
 		$this->input ($suppliedArguments, __FUNCTION__);
+	}
+	
+	
+	/**
+	 * Create a Map widget
+	 * @param array $arguments Supplied arguments same as input type plus those below
+	 */
+	public function map ($suppliedArguments)
+	{
+		# Specify available arguments as defaults or as NULL (to represent a required argument)
+		$argumentDefaults = array (
+			'name'						=> NULL,	# Name of the element
+			'editable'					=> true,	# Whether the widget is editable (if not, a hidden element will be substituted but the value displayed)
+			'title'						=> '',		# Introductory text
+			'description'				=> '',		# Description text
+			'append'					=> '',		# HTML appended to the widget
+			'prepend'					=> '',		# HTML prepended to the widget
+			'output'					=> array (),# Presentation format
+			'required'					=> false,	# Whether required or not
+			'default'					=> '',		# Default value (optional)
+			'regexp'					=> '',		# Case-sensitive regular expression against which the submission must validate
+			'regexpi'					=> '',		# Case-insensitive regular expression against which the submission must validate
+			'disallow'					=> false,	# Regular expression against which the submission must not validate
+			'antispam'					=> $this->settings['antispam'],		# Whether to switch on anti-spam checking
+			'discard'					=> false,	# Whether to process the input but then discard it in the results
+			'datatype'					=> false,	# Datatype used for database writing emulation (or caching an actual value)
+			'confirmation'				=> false,	# Whether to generate a confirmation field
+			'tabindex'					=> false,	# Tabindex if required; replace with integer between 0 and 32767 to create
+			'after'						=> false,	# Placing the widget after a specific other widget
+			'width'						=> 'auto',	# Map width in px, or string e.g. 'auto'
+			'height'					=> 400,		# Map height in px, or string value
+			'defaultLocationLatitude'	=> NULL,	# Default location: latitude
+			'defaultLocationLongitude'	=> NULL,	# Default location: longitude
+			'defaultLocationZoom'		=> NULL,	# Default location: zoom
+			#!# Currently these are set globally and if there is more than one map element, the first only is used
+			'tileUrl'					=> $this->settings['mapTileUrl'],
+			'tileCopyrightHtml'			=> $this->settings['mapTileCopyrightHtml'],
+			'tileMaxZoom'				=> $this->settings['mapTileMaxZoom'],
+			'geocoder'					=> $this->settings['mapGeocoder'],
+			'geocoderApiKey'			=> $this->settings['mapGeocoderApiKey'],
+			'geocoderAutocompleteBbox'	=> $this->settings['mapGeocoderAutocompleteBbox'],
+			'instructionsHtml'			=> '<p>Zoom in and click on the map to set the exact location:</p>',
+			'max'						=> 1,		# Max number of features that can be placed on the map
+			'propertiesEditable'		=> true,	# Whether the properties are editable in the popup
+			'popupHtml'					=> false,	# Customised HTML popup (in addition to standard deletion button); placeholders as '{properties.id}' can be used to populate data
+		);
+		
+		# Create a new form widget
+		$widget = new formWidget ($this, $suppliedArguments, $argumentDefaults, __FUNCTION__);
+		
+		$arguments = $widget->getArguments ();
+		
+		# If the widget is not editable, fix the form value to the default
+		if (!$arguments['editable']) {$this->form[$arguments['name']] = $arguments['default'];}
+		
+		# Obtain the value of the form submission (which may be empty)
+		$value = (isSet ($this->form[$arguments['name']]) ? $this->form[$arguments['name']] : '');
+		
+		# Set the value
+		$widget->setValue ($value);
+		
+		# Handle whitespace issues
+		$widget->handleWhiteSpace ();
+		
+		# Perform pattern checks
+		$regexpCheck = $widget->regexpCheck ();
+		
+		# Perform antispam checks
+		$widget->antispamCheck ();
+		
+		$elementValue = $widget->getValue ();
+		
+		# Assign the initial value if the form is not posted (this bypasses any checks, because there needs to be the ability for the initial value deliberately not to be valid)
+		if (!$this->formPosted) {$elementValue = $arguments['default'];}
+		
+		# Re-assign back the value
+		$this->form[$arguments['name']] = $elementValue;
+		
+		# Assemble the widget ID for use in script registration
+		$widgetId = $this->cleanId ($this->settings['name'] ? "{$this->settings['name']}[{$arguments['name']}]" : $arguments['name']);
+		
+		# Start the widget HTML
+		$widgetHtml = '';
+		
+		# Define the map JS/CSS; these are loaded only once even if there are multiple map widgets, so are namespaced
+		$this->jsCssAssets['mapCode']  = '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />';
+		$this->jsCssAssets['mapCode'] .= '<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>';
+		$this->jsCssAssets['mapCode'] .= $this->mapCss ($arguments);
+		$this->jQueryCode['mapCode'] = $this->mapJs ($arguments);
+		
+		# Add geocoder if required; this input element is not related to the form itself but a standalone control
+		$geocoderHtml = '';
+		if ($arguments['geocoder']) {
+			$this->enableJqueryUi ();
+			$this->jsCssAssets['mapCode'] .= '<script src="' . htmlspecialchars ($arguments['geocoder']) . '"></script>';
+			$geocoderHtml .= "\n\t" . '<div class="mapgeocoder">';
+			$geocoderHtml .= "\n\t\t" . '<input id="' . $widgetId . '_geocoder" type="text" name="location" autocomplete="off" placeholder="Search locations and move map" spellcheck="false" />';
+			$geocoderHtml .= "\n\t" . '</div>';
+		}
+		
+		# Add instructions if required
+		if ($arguments['instructionsHtml']) {
+			$widgetHtml .= "\n\n" . $arguments['instructionsHtml'];
+		}
+		
+		# Assemble the form and map, which is a hidden input plus a Leaflet map div that writes into the field
+		$widgetHtml .= "\n" . '<textarea class="mapinput"' . $this->nameIdHtml ($arguments['name']) . $widget->tabindexHtml () . ' cols="60" rows="8"' . ($arguments['editable'] ? '' : ' readonly="readonly"') . '>' . htmlspecialchars ($this->form[$arguments['name']]) . '</textarea>';
+		$widgetHtml .= "\n" . '<div class="mapcontainer" style="width: ' . (is_int ($arguments['width']) ? $arguments['width'] . 'px' : $arguments['width']) . '; height: ' . (is_int ($arguments['height']) ? $arguments['height'] . 'px' : $arguments['height']) . ';">';
+		$widgetHtml .= $geocoderHtml;
+		$widgetHtml .= "\n\t" . '<div id="' . $widgetId . '_map" class="mapdiv" data-initiallocation="' . "{$arguments['defaultLocationZoom']}/{$arguments['defaultLocationLatitude']}/{$arguments['defaultLocationLongitude']}" . '" data-maxfeatures="' . (int) $arguments['max'] . '" data-propertieseditable="' . (int) $arguments['propertiesEditable'] . '"></div>';
+		$widgetHtml .= "\n" . '</div>';
+		
+		# If popupHtml is defined, add as hidden template so that the JS can pick it up and clone to the popup
+		if ($arguments['popupHtml']) {
+			$widgetHtml .= "\n" . '<div id="' . $widgetId . '_popuptemplate" class="popuptemplate">';
+			$widgetHtml .= "\n" . $arguments['popupHtml'];
+			$widgetHtml .= "\n" . '</div>';
+		}
+		
+		# Check for element problems
+		$problems = $widget->getElementProblems (isSet ($elementProblems) ? $elementProblems : false);
+		
+		# Get the posted data
+		if ($this->formPosted) {
+			$data['rawcomponents'] = json_encode (json_decode ($this->form[$arguments['name']]), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);		// Reformat for consistency
+			$data['compiled'] = 'Location on map';
+			//$data['presented'] = $widgetHtml;		// #!# Would need more work to implement, as jQuery code will get omitted
+		}
+		
+		# Add the widget to the master array for eventual processing
+		$this->elements[$arguments['name']] = array (
+			'type' => __FUNCTION__,
+			'html' => $arguments['prepend'] . $widgetHtml . $arguments['append'],
+			'title' => $arguments['title'],
+			'description' => $arguments['description'],
+			'restriction' => (isSet ($restriction) && $arguments['editable'] ? $restriction : false),
+			'problems' => $widget->getElementProblems (isSet ($elementProblems) ? $elementProblems : false),
+			'required' => $arguments['required'],
+			'requiredButEmpty' => $widget->requiredButEmpty (),
+			'suitableAsEmailTarget' => false,
+			'output' => $arguments['output'],
+			'discard' => $arguments['discard'],
+			'editable' => $arguments['editable'],
+			'data' => (isSet ($data) ? $data : NULL),
+			'datatype' => ($arguments['datatype'] ? $arguments['datatype'] : "`{$arguments['name']}` " . 'TEXT') . ($arguments['required'] ? ' NOT NULL' : '') . " COMMENT '" . (addslashes ($arguments['title'])) . "'",
+			'after' => $arguments['after'],
+		);
+	}
+	
+	
+	# Function to create the CSS for the map
+	private function mapCss ($arguments)
+	{
+		# Assemble the div, converting spaces to dots
+		$div = implode ('.', explode (' ', $this->settings['div']));
+		
+		# Define the CSS
+		$css = "
+			<style type=\"text/css\">
+				.{$div} .mapinput {display: none;}
+				.{$div} .mapcontainer {position: relative;}	/* Width/height is set on the element itself */
+				.{$div} .mapcontainer .mapdiv {display: block; width: 100%; height: 100%;}
+				.{$div} .mapcontainer .mapdiv a {text-decoration: none;}
+				.{$div} .mapcontainer .mapgeocoder {position: absolute; top: 10px; left: 55px; z-index: 450;}		/* Z-indexes at: https://leafletjs.com/reference.html#map-mappane */
+				.{$div} .mapcontainer .mapgeocoder input {width: 300px;}
+				.{$div} .ui-front {z-index: 999 !important;}
+				.{$div} .ui-autocomplete li.ui-menu-item, .ui-autocomplete li.ui-menu-item a {width: 100%; padding: 0; font-size: 0.9em; padding-bottom: 10px;}
+				.{$div} .ui-autocomplete li.ui-menu-item a span {color: gray;}
+				.{$div} .popuptemplate {display: none;}
+				.{$div} .mapremovelocationparagraph {display: inline;}
+			</style>
+		";
+		
+		# Return the CSS
+		return $css;
+	}
+	
+	
+	# Function to create the JS for the map(s)
+	private function mapJs ($arguments)
+	{
+		# Assemble the div, converting spaces to dots
+		$div = implode ('.', explode (' ', $this->settings['div']));
+		
+		# Define the JS, which will be wrapped in jQuery document ready
+		$js = "
+			ultimateFormMap ();
+			
+			function ultimateFormMap () {
+				
+				// Create each map with a matching div input on the page; see: https://stackoverflow.com/a/71349246/180733
+				$('.{$div} .mapinput').each (function() {
+					
+					// Create a closure, so that this.id is fixed for each handler, to avoid crosstalk; see: https://stackoverflow.com/a/21472993/180733
+					(function (widgetId) {		// this.id passed in
+						
+						// Determine the map ID
+						var mapId = widgetId + '_map';		// e.g. form_location1_map
+						
+						// Settings
+						var _settings = {
+							geocoderApiBaseUrl: 'https://api.cyclestreets.net/v2/geocoder',
+							geocoderApiKey: '" . htmlspecialchars ($arguments['geocoderApiKey']) . "',		// Obtain at https://www.cyclestreets.net/api/apply/
+							autocompleteBbox: '" . htmlspecialchars ($arguments['geocoderAutocompleteBbox']) . "',
+						};
+						
+						// Determine if the widget is editable
+						var isEditable = !($('#' + widgetId).is ('[readonly]'));
+						
+						// Get the initial location from the div
+						var initialLocation = $('#' + mapId).data ('initiallocation').split ('/');		// Zoom, lat, lon
+						
+						// Determine number of markers
+						var maxFeatures = $('#' + mapId).data ('maxfeatures');
+						
+						// Determine whether faeture properties are editable
+						var propertiesEditable = $('#' + mapId).data ('propertieseditable');
+						
+						// Create the map
+						var map = L.map (mapId).setView ([ initialLocation[1], initialLocation[2] ], initialLocation[0]);
+						L.tileLayer ('" . htmlspecialchars ($arguments['tileUrl']) . "', {
+							attribution: '" . $arguments['tileCopyrightHtml'] . "',
+							maxZoom: " . $arguments['tileMaxZoom'] . "
+						}).addTo (map);
+						
+						// Set required and minimum zoom for map marker
+						var requiredZoom = 16;
+						var maximumZoom = 18;
+						
+						// Add geocoder
+						var geocoderId = widgetId + '_geocoder';		// e.g. form_location1_geocoder
+						autocomplete.addTo ('input#' + geocoderId, {
+							sourceUrl: _settings.geocoderApiBaseUrl + '?key=' + _settings.geocoderApiKey + '&bounded=1&bbox=' + _settings.autocompleteBbox,
+							select: function (event, ui) {
+								var bbox = ui.item.feature.properties.bbox.split(',');
+								map.fitBounds ([ [bbox[1], bbox[0]], [bbox[3], bbox[2]] ]);
+								event.preventDefault();
+							}
+						});
+						
+						// Get initial data state
+						var geojson;
+						var initialData = $('#' + widgetId).val ();
+						if (initialData) {
+							geojson = JSON.parse (initialData);
+						} else {
+							geojson = {type: 'FeatureCollection', features: []};
+						}
+						
+						// Define initial GeoJSON data (e.g. initial state or after unsuccessful form result)
+						var markerLayer = L.geoJSON (geojson, {
+							
+							onEachFeature: function (feature, /* layer as */ marker) {
+								
+								// Set as draggable, and update the form value on update
+								marker.options.draggable = isEditable;
+								marker.on ('drag', function (e) {
+									updateFormValue ();
+								});
+								
+								// Enable auto-pan
+								marker.options.autoPan = true;
+								
+								// Bind popup
+								marker.bindPopup (popupHtml (feature));
+							}
+						}).addTo (map);
+						
+						// Set the bounds of the content, limited to the required zoom (to avoid a single location being very close)
+						if (markerLayer.getLayers ().length) {
+							map.fitBounds (markerLayer.getBounds (), {maxZoom: requiredZoom});
+						}
+						
+						// Add additional markers by clicking on the map (unless editing disabled)
+						if (isEditable) {
+							map.on ('click', function (e) {
+								
+								// NB Ideally we would treat a map click away from an open popup as an implicit close, but this cannot be detected as this is the built-in behaviour and thus too late to capture
+								
+								// Require high zoom level to ensure accuracy
+								var currentZoom = map.getZoom ();
+								if (currentZoom < requiredZoom) {
+									map.flyTo (e.latlng, (currentZoom + 2));
+									return;
+								}
+								
+								// Handle max features
+								if (maxFeatures) {
+									
+									// If a singleton, treat as implicit delete
+									if (maxFeatures == 1) {
+										markerLayer.clearLayers ();		// I.e. clear all layers before adding below
+									} else {
+										
+										// If the current number of markers has reached the limit, prevent addition; we cannot do any implicit delete as we do not know which to delete
+										var currentTotal = markerLayer.getLayers ().length;
+										if (currentTotal == maxFeatures) {
+											alert ('You have reached the maximum number of locations; please delete an existing location.');
+											return false;
+										}
+									}
+								}
+								
+								// Create the marker and set location
+								var marker = new L.marker (e.latlng, {
+									draggable: isEditable,
+									autoPan: true
+								});
+								marker.feature = {		// Create skeleton GeoJSON structure, which will get populated
+									type: 'Feature',
+									properties: {},
+									geometry: {}
+								};
+								marker.bindPopup (popupHtml (marker.feature));
+								marker.on ('drag', function (e) {
+									updateFormValue ();
+								});
+								markerLayer.addLayer (marker);
+								
+								// Update form
+								updateFormValue ();
+							});
+						}
+						
+						// Function to create the popup HTML
+						function popupHtml (feature)
+						{
+							// Start with deletion button
+							var popupHtml = popupDeletion (feature);
+							
+							// Prepend content from an HTML template if present, cloning it into the template
+							$(popupHtml).prepend (popupContent (feature));
+							
+							// Return the popup HTML
+							return popupHtml;
+						}
+						
+						// Function to handle popup deletion
+						function popupDeletion (feature, popupHtml)
+						{
+							// Obtain (or create) the object's internalId, so we can use this in a clickable deletion link within this popup
+							var internalId = L.Util.stamp (feature);
+							
+							// Define the delete popup content, with its own removal handler
+							var confirmRemove = (propertiesEditable);	// Require confirmation if there is property editing, as accidental deletion could be quite destructive
+							var paragraph = document.createElement ('p');
+							paragraph.className = 'small comment mapremovelocationparagraph';
+							paragraph.innerHTML = '<a href=\"#\" class=\"mapremovelocation\" data-internalid=\"' + internalId + '\">&#x1f5d1; Remove this location?' + (confirmRemove ? '&hellip;' : '') + '</a>';
+							paragraph.onclick = function (e) {
+								e.preventDefault ();
+								
+								// Confirm deletion
+								if (confirmRemove) {
+									if (!window.confirm ('Are you sure?')) {return;}
+								}
+								
+								// Identify the clicked item, which we can use to identify the marker from this feature
+								var clickedId = parseInt (e.target.dataset.internalid);	// See data-internalid above
+								
+								// Remove the matching marker
+								markerLayer.eachLayer (function (marker) {
+									thisMarkerInternalId = L.Util.stamp (marker.feature)
+									if (thisMarkerInternalId == clickedId) {
+										markerLayer.removeLayer (marker);
+									}
+								});
+								
+								// Update the form value, now that the marker has been deleted
+								updateFormValue ();
+							};
+							
+							// Create a div
+							var div = document.createElement ('div');
+							div.className = 'popupcontent';
+							
+							// Add the paragraph to the div
+							div.appendChild (paragraph);
+							
+							// Return the popup content div
+							return div;
+						}
+						
+						// Function to create the popup content
+						function popupContent (feature)
+						{
+							// Get the internal ID of this feature
+							var internalId = L.Util.stamp (feature);
+							
+							// Start the popup content
+							var popupContent;
+							
+							// If no template, auto-generate a table (if properties present)
+							var templateSelector = '#' + widgetId + '_popuptemplate';
+							if (!$(templateSelector).length) {
+								
+								// If no properties, add no content
+								if ($.isEmptyObject (feature.properties)) {return '';}
+								
+								// Render a table
+								popupContent = '<table>';
+								$.each (feature.properties, function (key, value) {
+									popupContent += '<tr><td>' + htmlspecialchars (key) + ':</td><td>' + htmlspecialchars (value) + '</td></tr>';
+								});
+								popupContent += '</table>';
+								
+								// Return the table
+								return popupContent;
+							}
+							
+							// Define a path parser, so that the template can define properties.foo which would obtain feature.properties.foo; see: https://stackoverflow.com/a/22129960
+							Object.resolve = function (path, obj) {
+								return path.split ('.').reduce (function (prev, curr) {
+									return (prev ? prev[curr] : undefined);
+								}, obj || self);
+							};
+							
+							// Get the template, which can include placeholders such as '{properties.id}'
+							template = $(templateSelector).html ();
+							
+							// Substitute template placeholders; see: https://stackoverflow.com/a/378000
+							popupContent = template.replace (/\{[^{}]+\}/g, function (path) {
+								var field = path.replace (/[{}]+/g, '');	// '{properties.id}' will have field 'properties.id'
+								var value = Object.resolve (field, feature) || '';
+								
+								// Convert the value to an editable input; these are not in a <form> to avoid a form within a form
+								if (propertiesEditable) {
+									value = '<input name=\"' + htmlspecialchars (field) + '\" value=\"' + htmlspecialchars (value) + '\" data-internalid=\"' + internalId + '\" class=\"mappropertiesinput_' + internalId + '\" />';
+								}
+								
+								// Return the value / input field with value
+								return value;
+							});
+							
+							// If the properties are editable, register a handler to manage changes to the input(s)
+							// #!# propertiesEditable is not being isolated between map instances - there is a general crosstalk issue here
+							if (propertiesEditable) {
+								
+								// Prevent return within the map properties inputs
+								$(document).on ('keydown', '.mappropertiesinput_' + internalId, function (e) {	// late binding
+									if (e.keyCode == 13) {
+										return false;
+									}
+								});
+								
+								// Function to assign a value within an object based on a string path; see: https://stackoverflow.com/a/13719799/180733
+								function objectAssignPathValue (obj, path, value) {
+									if (typeof path === 'string') {
+										path = path.split ('.');
+									}
+									if (path.length > 1) {
+										var e = path.shift ();
+										objectAssignPathValue (obj[e] = (Object.prototype.toString.call (obj[e]) === '[object Object]' ? obj[e] : {}), path, value);
+									} else {
+										obj[path[0]] = value;
+									}
+								}
+								
+								// On change (i.e. move away from element and it has changed), scan the form and write each value into the feature value
+								$(document).on ('change', '.mappropertiesinput_' + internalId, function (e) {		// late binding
+									
+									// We need to loop through each property field, to ensure a comlete set is written to the feature
+									// #!# This ought to be run on the popup creation, to ensure that a newly-created marker always has the properties set
+									$('.mappropertiesinput_' + internalId).each (function (index, input) {
+										
+										// Update the feature, by taking the path represented as the input name (e.g. 'properties.name') as a path string, and setting the value
+										var path = $(input).prop ('name');
+										var value = $(input).val ();
+										objectAssignPathValue (feature, path, value);
+									});
+									
+									// Feature seems to be a reference, so the form value can be updated directly rather than having to find which feature it is
+									updateFormValue ();
+								});
+							}
+							
+							// Return the table
+							return popupContent;
+						}
+						
+						// Function to make data entity-safe
+						function htmlspecialchars (string)
+						{
+							if (typeof string !== 'string') {return string;}
+							return string.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+						}
+						
+						// Capture value on marker location selection to form
+						function updateFormValue ()
+						{
+							// If no markers, set the form value to empty (as distinct from than a GeoJSON structure with zero features)
+							if (!markerLayer.getLayers ().length) {
+								$('#' + widgetId).val ('');
+								return;
+							}
+							
+							// Get the data
+							var geojson = markerLayer.toGeoJSON ();		// Default precision value is 6 decimal places
+							
+							// Strip any internal _leaflet_id references
+							$.each (geojson.features, function (index, feature) {
+								if (geojson.features[index].hasOwnProperty ('_leaflet_id')) {
+									delete geojson.features[index]._leaflet_id;
+								}
+							});
+							
+							// Stringify and write to the form value
+							$('#' + widgetId).val (JSON.stringify (geojson));
+						}
+						
+					}) (this.id);	// End of closure for this map
+					
+				});		// End foreach map ID
+			}
+		";
+		
+		# Return the JS
+		return $js;
 	}
 	
 	
@@ -770,7 +1313,7 @@ class form
 			'tabindex'				=> false,	# Tabindex if required; replace with integer between 0 and 32767 to create
 			'after'					=> false,	# Placing the widget after a specific other widget
 			'autocomplete'			=> false,	# URL of data provider
-			'autocompleteOptions'	=> false,	# Autocomplete options; see: http://jqueryui.com/demos/autocomplete/#remote (this is the new plugin)
+			'autocompleteOptions'	=> false,	# Autocomplete options; see: https://jqueryui.com/autocomplete/#remote (this is the new plugin)
 			'autocompleteTokenised'	=> false,	# URL of data provider
 			'entities'				=> true,	# Convert HTML in value (useful only for editable=false)
 			'displayedValue'		=> false,	# When using editable=false, optional text that should be displayed instead of the value; can be made into HTML using entities=false
@@ -930,7 +1473,7 @@ class form
 			if ($arguments['maxlength']) {
 				$widgetHtml .= '<div' . $this->nameIdHtml ($arguments['name'], false, false, false, $idOnly = true, '__info') . ' class="charactersremaininginfo"></div>';
 			}
-			$widgetHtml .= '<textarea' . $this->nameIdHtml ($arguments['name']) . " cols=\"{$arguments['cols']}\" rows=\"{$arguments['rows']}\"" . ($arguments['maxlength'] ? " maxlength=\"{$arguments['maxlength']}\"" : '') . ($arguments['wrap'] ? " wrap=\"{$arguments['wrap']}\"" : '') . ($arguments['autofocus'] ? ' autofocus="autofocus"' : '') . ($arguments['placeholder'] != '' ? " placeholder=\"{$arguments['placeholder']}\"" : '') . $widget->tabindexHtml () . '>' . htmlspecialchars ($this->form[$arguments['name']]) . '</textarea>';
+			$widgetHtml .= '<textarea' . $this->nameIdHtml ($arguments['name']) . " cols=\"{$arguments['cols']}\" rows=\"{$arguments['rows']}\"" . ($arguments['maxlength'] ? " maxlength=\"{$arguments['maxlength']}\"" : '') . ($arguments['wrap'] ? " wrap=\"{$arguments['wrap']}\"" : '') . ($arguments['autofocus'] ? ' autofocus="autofocus"' : '') . ($this->settings['enableNativeRequired'] && $arguments['required'] ? ' required="required"' : '') . ($arguments['placeholder'] != '' ? " placeholder=\"{$arguments['placeholder']}\"" : '') . $widget->tabindexHtml () . '>' . htmlspecialchars ($this->form[$arguments['name']]) . '</textarea>';
 		} else {
 			if ($arguments['displayedValue']) {
 				$widgetHtml  = ($arguments['entities'] ? htmlspecialchars ($arguments['displayedValue']) : $arguments['displayedValue']);
@@ -1026,6 +1569,8 @@ class form
 			'editorFileBrowser'					=> $this->settings['richtextEditorFileBrowser'],	// Path (must have trailing slash), or false to disable
 			'editorFileBrowserStartupPath'		=> '/',
 			'editorFileBrowserACL'				=> false,
+			'templates'							=> $this->settings['richtextTemplates'],
+			'snippets'							=> $this->settings['richtextSnippets'],
 			'width'								=> $this->settings['richtextWidth'],			// Same as config.width
 			'height'							=> $this->settings['richtextHeight'],			// Same as config.height
 			'config.width'						=> false,										// Takes precedence if 'width' also specified
@@ -1035,7 +1580,16 @@ class form
 			'config.bodyId'						=> false,										// Apply value of <body id="..."> to editing window
 			'config.bodyClass'					=> false,										// Apply value of <body class="..."> to editing window
 			'config.format_tags'				=> 'p;h1;h2;h3;h4;h5;h6;pre',
-			'config.stylesSet'					=> "[ { name: 'Warning (paragraph)', element: 'p', attributes: { 'class' : 'warning' } } ]",
+			'config.stylesSet'					=> "[
+				{name: 'No paragraph style', element: 'p', attributes: {'class': ''}},
+				{name: 'Warning style (paragraph)', element: 'p', attributes: {'class': 'warning'}},
+				{name: 'Success style (paragraph)', element: 'p', attributes: {'class': 'success'}},
+				{name: 'Comment text (paragraph)', element: 'p', attributes: {'class': 'comment'}},
+				{name: 'Heavily-faded text (paragraph)', element: 'p', attributes: {'class': 'faded'}},
+				{name: 'Right-aligned (paragraph)', element: 'p', attributes: {'class': 'alignright'}},
+				{name: 'Signature (paragraph)', element: 'p', attributes: {'class': 'signature'}},
+				{name: 'Smaller text (paragraph)', element: 'p', attributes: {'class': 'small'}}
+			]",
 			'config.protectedSource'			=> "[ '/<\?[\s\S]*?\?>/g' ]",					// Protect PHP code
 			'config.disableNativeSpellChecker'	=> false,								// Disables the built-in spell checker if the browser provides one
 			'config.allowedContent'				=> true,										// http://docs.ckeditor.com/#!/api/CKEDITOR.config-cfg-allowedContent
@@ -1049,6 +1603,7 @@ class form
 			'removeComments'		=> true,
 			'replacements'			=> array (),	// Regexp replacements to add before standard replacements are done
 			'after'					=> false,	# Placing the widget after a specific other widget
+			'noClickHere'				=> true,	# Disallow 'click here' and 'here' as link text
 		);
 		
 		# Create a new form widget
@@ -1104,8 +1659,6 @@ class form
 				$arguments['config.height'] = ($arguments['config.height'] ? $arguments['config.height'] : $arguments['height']);
 			}
 			
-			#!# Need support for unsavedDataProtection; see: http://stackoverflow.com/a/12457674
-			
 			#!# Enable native support for protectedSource
 			
 			#!# Image caption and dragging in Chrome: http://ckeditor.com/addon/image2
@@ -1126,20 +1679,23 @@ class form
 					# pureContent - cut-down, predominantly semantic toolbar
 					'pureContent' => "
 						[
-							['Source'],
 							['Templates'],
+							['divs'],
 							['Cut','Copy','Paste','PasteText','PasteWord','-',],
 							['Undo','Redo','-','Find','Replace','-','SelectAll'],
 							['Scayt'],
 							['Maximize'],
+							['Source'],
 							['About'],
 							'/',
 							['BulletedList','NumberedList','-','Outdent','Indent','Blockquote'],
 							['Subscript','Superscript','SpecialChar'],
 							['HorizontalRule'],
-							['ShowBlocks','CreateDiv'],
+							['ShowBlocks','CreateDiv','Iframe'],
 							['Table'],
 							['Link','Unlink','Anchor'],
+							['Html5video'],
+							['Youtube'],
 							['Image'],
 							'/',
 							['Format'],
@@ -1151,19 +1707,22 @@ class form
 					# pureContent plus formatting - cut-down, predominantly semantic toolbar, plus formatting
 					'pureContentPlusFormatting' => "
 						[
-							['Source'],
 							['Templates'],
+							['divs'],
 							['Cut','Copy','Paste','PasteText','PasteWord','-',],
 							['Undo','Redo','-','Find','Replace','-','SelectAll'],
 							['Scayt'],
+							['Source'],
 							['About'],
 							'/',
 							['BulletedList','NumberedList','-','Outdent','Indent','Blockquote'],
 							['Subscript','Superscript','SpecialChar'],
 							['HorizontalRule'],
-							['ShowBlocks','CreateDiv'],
+							['ShowBlocks','CreateDiv','Iframe'],
 							['Table'],
 							['Link','Unlink','Anchor'],
+							['Html5video'],
+							['Youtube'],
 							['Image'],
 							'/',
 							['Format'],
@@ -1197,11 +1756,11 @@ class form
 					# Basic, plus image
 					'BasicImage' => "
 						[
-							['Source'],
 							['Bold','Italic'],
 							['BulletedList','NumberedList'],
 							['Link','Unlink'],
 							['Image'],
+							['Source'],
 							['About']
 						]
 					",
@@ -1209,11 +1768,11 @@ class form
 					# A slightly more extensive version of the basic toolbar
 					'BasicLonger' => "
 						[
-							['Source'],
 							['Format'],
 							['Bold','Italic','RemoveFormat'],
 							['BulletedList','NumberedList'],
 							['Link','Unlink'],
+							['Source'],
 							['About']
 						]
 					",
@@ -1221,11 +1780,11 @@ class form
 					# A slightly more extensive version of the basic toolbar, plus formatting
 					'BasicLongerFormat' => "
 						[
-							['Source'],
 							['Format','Styles'],
 							['Bold','Italic','RemoveFormat'],
 							['BulletedList','NumberedList'],
 							['Link','Unlink'],
+							['Source'],
 							['About']
 						]
 					",
@@ -1238,8 +1797,41 @@ class form
 				}
 			}
 			
-			# Debugging; requires the devtools plugin to be installed; see: http://ckeditor.com/addon/devtools and http://docs.ckeditor.com/#!/guide/dev_howtos_dialog_windows
-			// $arguments['config.extraPlugins'] = 'devtools';
+			# Start extra plugins
+			$extraPlugins = array ();
+			
+			# Debugging; requires the devtools plugin to be installed; see: https://ckeditor.com/cke4/addon/devtools and https://ckeditor.com/docs/ckeditor4/latest/guide/dev_howtos_dialog_windows.html
+			//$extraPlugins[] = 'devtools';
+			
+			# HTML5 video; see: https://ckeditor.com/cke4/addon/html5video
+			$extraPlugins[] = 'html5video,widget,widgetselection,clipboard,lineutils';
+			
+			# YouTube; see: https://ckeditor.com/cke4/addon/youtube
+			$extraPlugins[] = 'youtube';
+			// videodetector: Basically doesn't work well, adding a rogue button in
+			
+			# Auto-embed - resolve URLs like YouTube videos and Twitter postings to HTML
+			$extraPlugins[] = 'embed,autoembed';
+			$arguments['config.embed_provider'] = '//ckeditor.iframe.ly/api/oembed?url={url}&callback={callback}';
+			if ($this->settings['richtextAutoembedKey']) {
+				$arguments['config.embed_provider'] .= '&api_key=' . $this->settings['richtextAutoembedKey'];
+			}
+			
+			# Templates (full-page)
+			if ($arguments['templates']) {
+				$arguments['config.templates_files'] = array ($arguments['templates']);
+			}
+			
+			# Widgets (HTML snippets)
+			if ($arguments['snippets']) {
+				$extraPlugins[] = 'htmlbuttons';
+				$arguments['config.htmlbuttons'] = $this->richtextSnippetsConfig ($arguments['snippets']);
+			} else {
+				$arguments['config.toolbar'] = str_replace ("['divs'],", '', $arguments['config.toolbar']);		// Remove from definition
+			}
+			
+			# Add the extra plugins
+			$arguments['config.extraPlugins'] = implode (',', $extraPlugins);
 			
 			# Construct the CKEditor arguments; see: http://docs.ckeditor.com/#!/api/CKEDITOR.editor
 			$editorConfig = array ();
@@ -1254,10 +1846,18 @@ class form
 					} else if (in_array ($editorConfigKey, array ('toolbar', 'stylesSet', ))) {
 						$editorConfig[$editorConfigKey] .= $argumentValue;	// Native JS string
 					} else if (is_array ($argumentValue)) {
+						$editorConfig[$editorConfigKey] .= json_encode ($argumentValue, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
+
+/*
 						foreach ($argumentValue as $index => $argumentSubValue) {
-							$argumentValue[$index] = "'" . $argumentSubValue . "'";	// Quote each value
+							if (is_array ($argumentSubValue)) {
+								$argumentValue[$index] = json_encode ($argumentSubValue);
+							} else {
+								$argumentValue[$index] = "'" . $argumentSubValue . "'";	// Quote each value
+							}
 						}
 						$editorConfig[$editorConfigKey] .= '[' . implode (', ', $argumentValue) . ']';
+*/
 					} else {
 						$editorConfig[$editorConfigKey] .= '"' . str_replace ('"', '\\"', $argumentValue) . '"';	// Appears as quoted string
 					}
@@ -1265,11 +1865,21 @@ class form
 			}
 			
 			# Define default dialog box settings; see: http://stackoverflow.com/questions/12464395/ and http://docs.ckeditor.com/#!/guide/dev_howtos_dialog_windows
+			# Use the devtools plugin (see above) to determine the internal names
 			$dialogBoxSettings = "
 				// Dialog box configuration
 				CKEDITOR.on( 'dialogDefinition', function( ev ) {
 					var dialogName = ev.data.name;
 					var dialogDefinition = ev.data.definition;
+					
+					// Link dialog
+					if (dialogName == 'link') {
+						var infoTab = dialogDefinition.getContents('info');
+						
+						// Remove the e-mail type; see: https://ckeditor.com/old/forums/Support/Remove-options-link-drop-down
+						var linkOptions = infoTab.get('linkType');
+						linkOptions['items'] = [ ['Website (URL)', 'url'], ['Link to anchor in the text', 'anchor'], ['Phone', 'tel'] ];
+					}
 					
 					// Table dialog
 					if ( dialogName == 'table' ) {
@@ -1284,8 +1894,8 @@ class form
 						infoTab.get( 'txtCellPad' )[ 'default' ] = '';	// Default cellpadding
 						
 						// Advanced tab - set class=lines
-						var advanced = dialogDefinition.getContents( 'advanced' );
-						advanced.get( 'advCSSClasses' )[ 'default' ] = '" . $arguments['editorDefaultTableClass'] . "';	// Default class
+						var advancedTab = dialogDefinition.getContents( 'advanced' );
+						advancedTab.get( 'advCSSClasses' )[ 'default' ] = '" . $arguments['editorDefaultTableClass'] . "';	// Default class
 					}
 					
 					// Image dialog
@@ -1304,6 +1914,24 @@ class form
 						dialogDefinition.removeContents( 'Upload' );
 					}
 					
+					/*
+					// Image dialog
+					if ( dialogName == 'image2' ) {
+						
+						// Info tab - improve 'Browse server' button, and remove legacy hspace/vspace
+						var infoTab = dialogDefinition.getContents( 'info' );
+						infoTab.get('src')['label'] = 'Select image:';
+						infoTab.get( 'browse' )[ 'label' ] = 'Add new image or browse existing...';	// Rename 'Browse server'
+						//infoTab.get( 'browse' )[ 'className' ] = 'cke_dialog_ui_button_ok';	// Make button more obvious
+						infoTab.get( 'browse' )[ 'style' ] = 'background: yellow !important;';	// Make button more obvious
+						infoTab.get( 'alt' )[ 'label' ] = '<strong>Alternative text</strong> (for accessibility / Google Images)';	// Clearer label
+						infoTab.get( 'alt' )[ 'validate' ] = CKEDITOR.dialog.validate.notEmpty('Please provide alternative text describing this image, for accessibility reasons.');	// Require alternative text
+						
+						// Upload tab - remove entirely
+						dialogDefinition.removeContents( 'Upload' );
+					}
+					*/
+					
 					// Link dialog
 					if ( dialogName == 'link' ) {
 						
@@ -1315,11 +1943,34 @@ class form
 						// Upload tab - remove entirely
 						dialogDefinition.removeContents( 'upload' );
 					}
+					
+					// HTML5 video
+					if (dialogName == 'html5video') {
+						var infoTab = dialogDefinition.getContents( 'info' );
+						infoTab.get ('controls')['default'] = true;		// #!# Doesn't actually seem to work
+						infoTab.get ('width')['default'] = 600;
+						infoTab.get ('align')['default'] = 'none';
+						var advancedTab = dialogDefinition.getContents( 'advanced' );
+						advancedTab.get ('allowdownload')['default'] = 'yes';
+						
+						// Upload tab - remove entirely
+						dialogDefinition.removeContents( 'Upload' );
+					}
+					
+					// YouTube plugin
+					if (dialogName == 'youtube') {
+						var youtubeTab = dialogDefinition.getContents( 'youtubePlugin' );
+						youtubeTab.get ('chkRelated')['default'] = false;
+						youtubeTab.get ('chkPrivacy')['default'] = true;
+						dialogDefinition.onFocus = function () {		// https://stackoverflow.com/a/21905673/180733
+							this.getContentElement( 'youtubePlugin', 'txtUrl' ).focus();
+						}
+					}
 				});
 			";
 			
 			# Add HTML filtering to deal with <img> tags emitting style=".." rather than height/width/border=".."; see: http://stackoverflow.com/a/11927911
-#!# Border support also needed
+			#!# Border support also needed
 			$htmlFilterSettings = "
 				// Fix <img> tags to use height/width/border rather than style
 				CKEDITOR.on('instanceReady', function (ev) {
@@ -1382,27 +2033,29 @@ class form
 				$arguments['config.height'] .= 'px';
 			}
 			
+			# Assemble the widget ID for use in script registration
+			$widgetId = $this->cleanId ($this->settings['name'] ? "{$this->settings['name']}[{$arguments['name']}]" : $arguments['name']);
+			
 			# Start the widget HTML
 			$widgetHtml  = '
 			<!-- WYSIWYG editor; replace the <textarea> with a CKEditor instance -->
 			<textarea' . $this->nameIdHtml ($arguments['name']) . " style=\"width: {$arguments['config.width']}; height: {$arguments['config.height']}\"" . ($arguments['autofocus'] ? ' autofocus="autofocus"' : '') . '>' . htmlspecialchars ($elementValue) . '</textarea>
-			<script src="' . $arguments['editorBasePath'] . 'ckeditor.js"></script>
-			<script>
+			';
+			$this->jsCssAssets['CKEditor'] = '<script src="' . $arguments['editorBasePath'] . 'ckeditor.js"></script>';
+			$this->jQueryCode[__FUNCTION__ . $widgetId] = '
 				var editor = CKEDITOR.replace("' . $id . '", {
 					' . implode (",\n\t\t\t\t\t", $editorConfig) . '
 				});
 				' . $dialogBoxSettings . '
 				' . $htmlFilterSettings . '
-			</script>
 			';
 			
 			# Add the file manager if required; see: http://docs.cksource.com/CKFinder_2.x/Developers_Guide/PHP/CKEditor_Integration and http://docs.cksource.com/ckfinder_2.x_api/symbols/CKFinder.config.html
 			if ($arguments['editorFileBrowser']) {
+				
 				#!# startupFolderExpanded is not clear; see ticket: http://ckeditor.com/forums/Support/Documentation-suggestion-startupFolderExpanded-is-unclear
-				$widgetHtml .= '
-				<!-- File manager -->
-				<script src="' . $arguments['editorFileBrowser'] . 'ckfinder.js"></script>
-				<script>
+				$this->jsCssAssets['CKFinder'] = '<script src="' . $arguments['editorFileBrowser'] . 'ckfinder.js"></script>';
+				$this->jQueryCode[__FUNCTION__ . $widgetId] .= '
 					// File manager settings
 					CKFinder.setupCKEditor( editor, {
 						basePath: "' . $arguments['editorFileBrowser'] . '",
@@ -1411,7 +2064,6 @@ class form
 						startupFolderExpanded: true,
 						rememberLastFolder: true
 					});
-				</script>
 				';
 				
 				# Use the ACL functionality if required, by writing it into the session
@@ -1429,6 +2081,15 @@ class form
 		
 		# Re-assign back the value
 		$this->form[$arguments['name']] = $elementValue;
+		
+		# Disallow 'Click here' and variants
+		if ($arguments['noClickHere']) {
+			if ($elementValue) {
+				if (substr_count (strtolower ($elementValue), '>here<') || substr_count (strtolower ($elementValue), '>click here<')) {
+					$elementProblems['noClickHere'] = "Please do not use 'click here' or similar - this is not accessible (as people scan pages); please rewrite the link text to be self-explanatory.";
+				}
+			}
+		}
 		
 		# Get the posted data
 		if ($this->formPosted) {
@@ -1510,7 +2171,7 @@ class form
 				'clean' => true,	// Note that this also removes style="clear: ..." from e.g. a <p> tag
 				'enclose-text'	=> true,
 				'drop-proprietary-attributes' => true,
-				'drop-font-tags' => true,
+				//'drop-font-tags' => true,		// Deprecated and now removed; see: https://api.html-tidy.org/tidy/quickref_5.4.0.html#drop-font-tags
 				'drop-empty-paras' => true,
 				'hide-comments' => $arguments['removeComments'],
 				'join-classes' => true,
@@ -1574,6 +2235,7 @@ class form
 				'<h([1-6]+) id="Heading([0-9]+)">'      => '<h\\1>',    // Headings from R2Net converter
 				' class="MsoNormal"' => '',	// WordHTML
 				' class="MsoNormal c([0-9]+)"' => '',	// WordHTML
+				'<li>\s*<p>(.*?)</p>\s*</li>' => '<li>\1</li>',	// Remove paragraph breaks directly within a list item; note ungreedy *? modifier
 			);
 		}
 		
@@ -1627,6 +2289,36 @@ class form
 	}
 	
 	
+	# Function to compile richtext snippets configuration
+	private function richtextSnippetsConfig ($snippets)
+	{
+		# Construct the list of items for the drop-down
+		$items = array ();
+		$i = 0;
+		foreach ($snippets as $title => $html) {
+			$items[] = array (
+				'name'	=> 'item' . $i++,
+				'title'	=> $title,
+				'html'	=> $html,
+				'icon'	=> false,	// Doesn't actually work anyway
+			);
+		}
+		
+		# Assemble the configuration, containing all the items
+		$configuration = array (	// Array of individual buttons; we create only one with nested items
+			array (
+				'name'	=> 'divs',	// NB This seems to be a hard-coded name when used as a container for other buttons
+				'icon'	=> 'puzzle.png',
+				'title'	=> 'Insert items',
+				'items' => $items,
+			),
+		);
+		
+		# Return the configuration
+		return $configuration;
+	}
+	
+	
 	/**
 	 * Create a select (drop-down) box widget
 	 * @param array $arguments Supplied arguments - see template
@@ -1665,8 +2357,10 @@ class form
 			'onchangeSubmit'		=> false,	# Whether to submit the form onchange
 			'copyTo'				=> false,	# Whether to copy the value, onchange, to another form widget if that widget's value is currently empty
 			'autocomplete'			=> false,	# URL of data provider
-			'autocompleteOptions'	=> false,	# Autocomplete options; see: http://jqueryui.com/demos/autocomplete/#remote (this is the new plugin)
+			'autocompleteOptions'	=> false,	# Autocomplete options; see: https://jqueryui.com/autocomplete/#remote (this is the new plugin)
 			'entities'				=> true,	# Convert HTML in label to entity equivalents
+			'data'					=> array (),	# Values for data-* attributes
+			'tolerateInvalid'		=> false,	# Whether to tolerate an invalid default value, and reset the value to empty
 		);
 		
 		# Create a new form widget
@@ -1724,14 +2418,22 @@ class form
 				}
 			}
 			
-			# If a string (i.e. a URL), make sure the values list is empty, and when confirmed, 
+			# If a string (i.e. a URL), make sure the values list is empty, and when confirmed, fill with an arbitrary fixed set including the existing default
 			if (is_string ($arguments['autocomplete'])) {
 				if ($arguments['values'] === false) {
 					$autocompleteAutovaluesMode = true;
 					
 					# Create an array of arbitrary values to emulate a fixed supplied set
+					#!# Purpose of this is really not clear
 					$createValues = 200;	// Arbitrarily high number of (arbitrary) values to create; this is a little poor but it is otherwise hard to work out how many to create; it basically needs always to be at least one more than the current number of widgets being displayed
 					$arguments['values'] = array_fill (0, $createValues, $arbitraryValue = true);	// Create an arbitrary value(s) list, to ensure that the widget(s) get(s) created
+					
+					# Ensure the existing value is present
+					if ($arguments['default']) {
+						foreach ($arguments['default'] as $default) {
+							$arguments['values'][$default] = $default;
+						}
+					}
 					
 				} else {
 					$this->formSetupErrors['autocompleteValuesMismatch'] = "Autocomplete from an external data source is enabled for {$arguments['name']}. The values list must therefore be set to false, but this is not the case.";
@@ -1842,7 +2544,7 @@ class form
 		}
 		
 		# Ensure that all initial values are in the array of values
-		$this->ensureDefaultsAvailable ($arguments);
+		$this->ensureDefaultsAvailable ($arguments, $warningHtml /* returned by reference */);
 		
 		# Emulate the need for the field to be 'required', i.e. the minimum number of fields is greater than 0
 		$required = ($arguments['required'] > 0);
@@ -1930,7 +2632,8 @@ class form
 						}
 						foreach ($arguments['valuesWithNull'] as $availableValue => $visible) {
 							$isSelected = $this->select_isSelected ($arguments['expandable'], $elementValue, $subwidget, $availableValue);
-							$subwidgetHtml[$subwidget] .= "\n\t\t\t\t" . '<option value="' . htmlspecialchars ($availableValue) . '"' . ($isSelected ? ' selected="selected"' : '') . $this->nameIdHtml ($subwidgetName, false, $availableValue, true, $idOnly = true) . '>' . str_replace ('  ', '&nbsp;&nbsp;', htmlspecialchars ($visible)) . '</option>';
+							$attributesHtml = $this->dataAttributes ($arguments['data'], $availableValue);
+							$subwidgetHtml[$subwidget] .= "\n\t\t\t\t" . '<option value="' . htmlspecialchars ($availableValue) . '"' . ($isSelected ? ' selected="selected"' : '') . $this->nameIdHtml ($subwidgetName, false, $availableValue, true, $idOnly = true) . $attributesHtml . '>' . str_replace ('  ', '&nbsp;&nbsp;', htmlspecialchars ($visible)) . '</option>';
 						}
 					} else {
 						
@@ -1940,12 +2643,14 @@ class form
 								$subwidgetHtml[$subwidget] .= "\n\t\t\t\t<optgroup label=\"{$key}\">";
 								foreach ($mainValue as $availableValue => $visible) {
 									$isSelected = $this->select_isSelected ($arguments['expandable'], $elementValue, $subwidget, $availableValue);
-									$subwidgetHtml[$subwidget] .= "\n\t\t\t\t\t" . '<option value="' . htmlspecialchars ($availableValue) . '"' . ($isSelected ? ' selected="selected"' : '') . '>' . str_replace ('  ', '&nbsp;&nbsp;', htmlspecialchars ($visible)) . '</option>';
+									$attributesHtml = $this->dataAttributes ($arguments['data'], $availableValue);
+									$subwidgetHtml[$subwidget] .= "\n\t\t\t\t\t" . '<option value="' . htmlspecialchars ($availableValue) . '"' . ($isSelected ? ' selected="selected"' : '') . $attributesHtml . '>' . str_replace ('  ', '&nbsp;&nbsp;', htmlspecialchars ($visible)) . '</option>';
 								}
 								$subwidgetHtml[$subwidget] .= "\n\t\t\t\t</optgroup>";
 							} else {
 								$isSelected = $this->select_isSelected ($arguments['expandable'], $elementValue, $subwidget, $key);
-								$subwidgetHtml[$subwidget] .= "\n\t\t\t\t" . '<option value="' . htmlspecialchars ($key) . '"' . ($isSelected ? ' selected="selected"' : '') . '>' . str_replace ('  ', '&nbsp;&nbsp;', htmlspecialchars ($mainValue)) . '</option>';
+								$attributesHtml = $this->dataAttributes ($arguments['data'], $key);
+								$subwidgetHtml[$subwidget] .= "\n\t\t\t\t" . '<option value="' . htmlspecialchars ($key) . '"' . ($isSelected ? ' selected="selected"' : '') . $attributesHtml . '>' . str_replace ('  ', '&nbsp;&nbsp;', htmlspecialchars ($mainValue)) . '</option>';
 							}
 						}
 					}
@@ -1987,6 +2692,9 @@ class form
 			# Re-assign the values back to the 'submitted' form value
 			$elementValue = array_keys ($presentableDefaults);
 		}
+		
+		# If a warning has been generated, show this
+		$widgetHtml .= $this->showWarning ($warningHtml);
 		
 		# Support copyTo - sets the value of another field to the selected option's visible text if it is currently empty or changed again
 		$this->copyTo ($arguments);
@@ -2062,6 +2770,35 @@ class form
 			'groupValidation' => 'compiled',
 			'after' => $arguments['after'],
 		);
+	}
+	
+	
+	# Function to render a warning
+	private function showWarning ($warningHtml)
+	{
+		# Show the warning if present
+		if (!$warningHtml) {return false;}
+		return '<br /><span class="warning"><strong>&#9888; Warning:</strong> ' . $warningHtml . '</span>';
+	}
+	
+	
+	# Helper function for generating data-* attributes HTML
+	private function dataAttributes ($data, $availableValue)
+	{
+		# If not present, end
+		if (!isSet ($data[$availableValue])) {return false;}
+		
+		# Loop through each attribute set
+		$attributesHtml = array ();
+		foreach ($data[$availableValue] as $key => $value) {
+			$attributesHtml[] = 'data-' . htmlspecialchars ($key) . '="' . htmlspecialchars ($value) . '"';
+		}
+		
+		# Compile the HTML
+		$html = ' ' . implode (' ', $attributesHtml);
+		
+		# Return the HTML
+		return $html;
 	}
 	
 	
@@ -2178,28 +2915,30 @@ class form
 	{
 		# Specify available arguments as defaults or as NULL (to represent a required argument)
 		$argumentDefaults = array (
-			'name'					=> NULL,	# Name of the element
-			'editable'				=> true,	# Whether the widget is editable (if not, a hidden element will be substituted but the value displayed)
-			'values'				=> array (),# Simple array of selectable values
-			'valuesNamesAutomatic'	=> false,	# Whether to create automatic value names based on the value itself (e.g. 'option1' would become 'Option 1')
-			'disabled'				=> array (),# Whether individual radiobuttons are disabled, either true for all (except for a default one), or false for none, or an array of the values that are disabled
-			'title'					=> '',		# Introductory text
-			'description'			=> '',		# Description text
-			'append'				=> '',		# HTML appended to the widget
-			'prepend'				=> '',		# HTML prepended to the widget
-			'output'				=> array (),# Presentation format
-			'required'				=> false,	# Whether required or not
-			'autofocus'				=> false,	# HTML5 autofocus (true/false)
-			'default'				=> array (),# Pre-selected item
+			'name'					=> NULL,		# Name of the element
+			'editable'				=> true,		# Whether the widget is editable (if not, a hidden element will be substituted but the value displayed)
+			'values'				=> array (),	# Simple array of selectable values
+			'valuesNamesAutomatic'	=> false,		# Whether to create automatic value names based on the value itself (e.g. 'option1' would become 'Option 1')
+			'disabled'				=> array (),	# Whether individual radiobuttons are disabled, either true for all (except for a default one), or false for none, or an array of the values that are disabled
+			'title'					=> '',			# Introductory text
+			'description'			=> '',			# Description text
+			'append'				=> '',			# HTML appended to the widget
+			'prepend'				=> '',			# HTML prepended to the widget
+			'output'				=> array (),		# Presentation format
+			'required'				=> false,		# Whether required or not
+			'autofocus'				=> false,		# HTML5 autofocus (true/false)
+			'default'				=> array (),	# Pre-selected item
 			'linebreaks'			=> $this->settings['linebreaks'],	# Whether to put line-breaks after each widget: true = yes (default) / false = none / array (1,2,5) = line breaks after the 1st, 2nd, 5th items
-			'forceAssociative'		=> false,	# Force the supplied array of values to be associative
+			'forceAssociative'		=> false,		# Force the supplied array of values to be associative
 			'nullText'				=> $this->settings['nullText'],	# Override null text for a specific widget (if false, the master value is assumed)
-			'discard'				=> false,	# Whether to process the input but then discard it in the results
-			'datatype'				=> false,	# Datatype used for database writing emulation (or caching an actual value)
+			'discard'				=> false,		# Whether to process the input but then discard it in the results
+			'datatype'				=> false,		# Datatype used for database writing emulation (or caching an actual value)
 			'truncate'				=> $this->settings['truncate'],	# Override truncation setting for a specific widget
-			'tabindex'				=> false,	# Tabindex if required; replace with integer between 0 and 32767 to create
-			'after'					=> false,	# Placing the widget after a specific other widget
-			'entities'				=> true,	# Convert HTML in label to entity equivalents
+			'tabindex'				=> false,		# Tabindex if required; replace with integer between 0 and 32767 to create
+			'after'					=> false,		# Placing the widget after a specific other widget
+			'entities'				=> true,		# Convert HTML in label to entity equivalents
+			'titles'				=> array (),	# Title attribute texts, as array (value => string, ...)
+			'tolerateInvalid'		=> false,		# Whether to tolerate an invalid default value, and reset the value to empty
 		);
 		
 		# Create a new form widget
@@ -2273,7 +3012,7 @@ class form
 		}
 		
 		# Ensure that all initial values are in the array of values
-		$this->ensureDefaultsAvailable ($arguments);
+		$this->ensureDefaultsAvailable ($arguments, $warningHtml /* returned by reference */);
 		
 		# If the field is not a required field (and therefore there is a null text field), ensure that none of the values have an empty string as the value (which is reserved for the null)
 		#!# Policy question: should empty values be allowed at all? If so, make a special constant for a null field but which doesn't have the software name included
@@ -2309,8 +3048,13 @@ class form
 			foreach ($arguments['values'] as $value => $visible) {
 				$elementId = $this->cleanId ($this->settings['name'] ? "{$this->settings['name']}[{$arguments['name']}_{$value}]" : "{$arguments['name']}_{$value}");
 				
+				# Determine whether to include a title attribute
+				$title = ($arguments['titles'] && isSet ($arguments['titles'][$value]) ? $arguments['titles'][$value] : false);
+				$titleHtml = ($title ? ' title="' . htmlspecialchars ($title) . '"' : '');
+				
 				#!# Dagger hacked in - fix properly for other such characters; consider a flag somewhere to allow entities and HTML tags to be incorporated into the text (but then cleaned afterwards when printed/e-mailed)
-				$subelementsWidgetHtml[$value] = '<input type="radio"' . $this->nameIdHtml ($arguments['name'], false, $value) . ' value="' . htmlspecialchars ($value) . '"' . ($value == $elementValue ? ' checked="checked"' : '') . (($arguments['autofocus'] && $firstItem) ? ' autofocus="autofocus"' : '') . (in_array ($value, $arguments['disabled'], true) ? ' disabled="disabled"' : '') . $widget->tabindexHtml ($subwidgetIndex - 1) . " /><label for=\"" . $elementId . '">' . ($arguments['entities'] ? htmlspecialchars ($visible) : $visible) . '</label>';
+				$subelementsWidgetHtml[$value]  = '<input type="radio"' . $this->nameIdHtml ($arguments['name'], false, $value) . ' value="' . htmlspecialchars ($value) . '"' . ($value == $elementValue ? ' checked="checked"' : '') . (($arguments['autofocus'] && $firstItem) ? ' autofocus="autofocus"' : '') . (in_array ($value, $arguments['disabled'], true) ? ' disabled="disabled"' : '') . $titleHtml . $widget->tabindexHtml ($subwidgetIndex - 1) . ' />';
+				$subelementsWidgetHtml[$value] .= '<label for="' . $elementId . '"' . $titleHtml . '>' . ($arguments['entities'] ? htmlspecialchars ($visible) : $visible) . '</label>';
 				$widgetHtml .= "\n\t\t\t" . $subelementsWidgetHtml[$value];
 				$firstItem = false;
 				
@@ -2332,6 +3076,9 @@ class form
 				}
 			}
 		}
+		
+		# If a warning has been generated, show this
+		$widgetHtml .= $this->showWarning ($warningHtml);
 		
 		# Re-assign back the value
 		$this->form[$arguments['name']] = $elementValue;
@@ -2411,6 +3158,7 @@ class form
 			'separatorSurround'		=> false,	# Whether, for the compiled and presented output types, if there are any output values, the separator should also be used to surround the values (e.g. |value1|value2|value3| rather than value1|value2|value3 for separator = '|')
 			'forceAssociative'		=> false,	# Force the supplied array of values to be associative
 			'labels'				=> true,	# Whether to generate labels
+			'labelsSurround'			=> $this->settings['labelsSurround'],	# Whether to use the surround method of label HTML formatting
 			'linebreaks'			=> $this->settings['linebreaks'],	# Whether to put line-breaks after each widget: true = yes (default) / false = none / array (1,2,5) = line breaks after the 1st, 2nd, 5th items
 			'columns'				=> false,	# Split into columns
 			'discard'				=> false,	# Whether to process the input but then discard it in the results
@@ -2419,6 +3167,7 @@ class form
 			'tabindex'				=> false,	# Tabindex if required; replace with integer between 0 and 32767 to create
 			'after'					=> false,	# Placing the widget after a specific other widget
 			'entities'				=> true,	# Convert HTML in label to entity equivalents
+			'tolerateInvalid'		=> false,	# Whether to tolerate an invalid default value, and reset the value to empty
 		);
 		
 		# Create a new form widget
@@ -2486,7 +3235,7 @@ class form
 		if ($arguments['maximum'] && $arguments['required'] && ($arguments['maximum'] < $arguments['required'])) {$this->formSetupErrors['checkboxesMaximumMismatch'] = "In the <strong>{$arguments['name']}</strong> element, A maximum and a minimum number of checkboxes have both been specified but this maximum (<strong>{$arguments['maximum']}</strong>) is less than the minimum (<strong>{$arguments['required']}</strong>) required.";}
 		
 		# Ensure that all initial values are in the array of values
-		$this->ensureDefaultsAvailable ($arguments);
+		$this->ensureDefaultsAvailable ($arguments, $warningHtml /* returned by reference */);
 		
 		# Start a tally to check the number of checkboxes checked
 		$checkedTally = 0;
@@ -2534,7 +3283,11 @@ class form
 				
 				# Create the HTML; note that spaces (used to enable the 'label' attribute for accessibility reasons) in the ID will be replaced by an underscore (in order to remain valid XHTML)
 //				//$widgetHtml .= "\n\t\t\t" . '<input type="checkbox" name="' . ($this->settings['name'] ? "{$this->settings['name']}[{$arguments['name']}]" : $arguments['name']) . "[{$value}]" . '" id="' . $elementId . '" value="true"' . $stickynessHtml . ' />' . ($arguments['labels'] ? '<label for="' . $elementId . '">' . htmlspecialchars ($visible) . '</label>' : '');
-				$subelementsWidgetHtml[$value] = '<input type="checkbox"' . $this->nameIdHtml ($arguments['name'], false, $value, true) . ' value="true"' . $stickynessHtml . (($arguments['autofocus'] && $subwidgetIndex == 1)  ? ' autofocus="autofocus"' : '') . $widget->tabindexHtml ($subwidgetIndex - 1) . $disabled . ' />' . ($arguments['labels'] ? '<label for="' . $elementId . '">' . ($arguments['entities'] ? htmlspecialchars ($visible) : $visible) . '</label>' : '');
+				$label = ($arguments['entities'] ? htmlspecialchars ($visible) : $visible);
+				$subelementsWidgetHtml[$value] = '<input type="checkbox"' . $this->nameIdHtml ($arguments['name'], false, $value, true) . ' value="true"' . $stickynessHtml . (($arguments['autofocus'] && $subwidgetIndex == 1)  ? ' autofocus="autofocus"' : '') . $widget->tabindexHtml ($subwidgetIndex - 1) . $disabled . ' />' . ($arguments['labels'] && !$arguments['labelsSurround'] ? '<label for="' . $elementId . '">' . $label . '</label>' : '');
+				if ($arguments['labels'] && $arguments['labelsSurround']) {
+					$subelementsWidgetHtml[$value] = '<label>' . "\n\t\t\t\t\t" . $subelementsWidgetHtml[$value] . "\n\t\t\t\t\t" . '<span>' . $label . '</span>' . "\n\t\t\t\t" . '</label>';
+				}
 				$widgetHtml .= "\n\t\t\t\t" . ($splitIntoColumns ? "\t\t" : '') . $subelementsWidgetHtml[$value];
 				
 				# Add a line/column breaks when required
@@ -2597,6 +3350,9 @@ class form
 		if (isSet ($restriction)) {
 			$restriction = implode (';<br />', $restriction);
 		}
+		
+		# If a warning has been generated, show this
+		$widgetHtml .= $this->showWarning ($warningHtml);
 		
 		# Re-assign back the value
 		$this->form[$arguments['name']] = $elementValue;
@@ -2770,8 +3526,9 @@ class form
 		# Obtain the value of the form submission (which may be empty)  (ensure that a full date and time array exists to prevent undefined offsets in case an incomplete set has been posted)
 		$value = (isSet ($this->form[$arguments['name']]) ? $this->form[$arguments['name']] : array ());
 		$fields = array ('time', 'day', 'month', 'year', );
+		if (is_null ($value) || $value == '') {$value = array ();}
 		foreach ($fields as $field) {
-			if (!isSet ($value[$field])) {
+			if (!array_key_exists ($field, $value)) {
 				$value[$field] = '';
 			}
 		}
@@ -2925,7 +3682,7 @@ class form
 				$minDate = (($arguments['min'] && preg_match ('/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/', $arguments['min'], $matches)) ? "new Date({$matches[1]}, " . ($matches[2] - 1) . ', ' . (int) $matches[3] . ')' : 'null');	// e.g. 2012-07-22 becomes new Date(2012, 6, 22)
 				$maxDate = (($arguments['min'] && preg_match ('/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/', $arguments['max'], $matches)) ? "new Date({$matches[1]}, " . ($matches[2] - 1) . ', ' . (int) $matches[3] . ')' : 'null');
 				
-				# Add jQuery UI javascript for the date picker; see: http://jqueryui.com/demos/datepicker/
+				# Add jQuery UI javascript for the date picker; see: https://jqueryui.com/datepicker/
 				$this->enableJqueryUi ();
 				$widgetId = $this->cleanId ($this->settings['name'] ? "{$this->settings['name']}[{$arguments['name']}]" : $arguments['name']);
 				# NB This has to be done in Javascript rather than PHP because the main part of this is client-side testing of actual browser support rather than just a browser number
@@ -2943,7 +3700,7 @@ class form
 					}
 				}
 				if(!html5Support) {
-					var dateDefaultDate_{$arguments['name']} = " . ($elementValue['year'] ? "new Date({$elementValue['year']}, {$elementValue['month']} - 1, {$elementValue['day']})" : 'null') . ";	// http://stackoverflow.com/questions/1953840/datepickersetdate-issues-in-jquery
+					var dateDefaultDate_{$arguments['name']} = " . ($elementValue['year'] ? "new Date({$elementValue['year']}, {$elementValue['month']} - 1, {$elementValue['day']})" : 'null') . ";	// https://stackoverflow.com/questions/1953840/datepickersetdate-issues-in-jquery
 					$(function() {
 						$('#{$widgetId}').datepicker({
 							changeMonth: true,
@@ -2973,7 +3730,7 @@ class form
 					});
 				}";
 				
-				# Enable autosubmit if required; see: http://stackoverflow.com/questions/11532433 for the HTML5 picker, and http://stackoverflow.com/questions/6471959 for the jQuery picker
+				# Enable autosubmit if required; see: http://stackoverflow.com/questions/11532433 for the HTML5 picker, and https://stackoverflow.com/questions/6471959/ for the jQuery picker
 				if ($arguments['pickerAutosubmit']) {
 					$this->jQueryCode[__FUNCTION__ . $widgetId] .= "\n
 				// Date picker autosubmit (HTML/jQuery picker)
@@ -3140,7 +3897,8 @@ class form
 			'append'				=> '',		# HTML appended to the widget
 			'prepend'				=> '',		# HTML prepended to the widget
 			'output'				=> array (),# Presentation format
-			'directory'				=> NULL,	# Path to the file; any format acceptable
+			'directory'				=> NULL,	# Path on disk to the file; any format acceptable
+			'previewLocationPrefix'	=> '',		# Path in URL terms to the folder, to be prefixed to the filename, e.g. foo.jpg could become /url/path/for/foo.jpg
 			'subfields'				=> 1,		# The number of widgets within the widget set (i.e. available file slots)
 			'required'				=> 0,		# The minimum number which must be selected (defaults to 0)
 			'size'					=> 30,		# Visible size (optional; defaults to 30)
@@ -3161,14 +3919,21 @@ class form
 			'flatten'				=> false,	# Whether to flatten the rawcomponents (i.e. default in 'processing' mode) result if only a single subfield is specified
 			'tabindex'				=> false,	# Tabindex if required; replace with integer between 0 and 32767 to create
 			'after'					=> false,	# Placing the widget after a specific other widget
-			'progressbar'			=> false,	# Whether to enable a progress bar (assumed to be in /uploader, or in specified subdirectory)
+			'progressbar'			=> false,	# Whether to enable a progress bar; if so, give the AJAX endpoint providing the data; requires the PECL uploadprogress module
 			'thumbnail'				=> false,	# Enable HTML5 thumbnail preview; either true (to auto-create a container div), or jQuery-style selector, specifying an existing element
+			'thumbnailExpandable'	=> false,	# Whether the thumbnail preview can be expanded in size; at present this merely opens the image in a new window
+			'draganddrop'			=> false,	# Whether to convert the element to be styled as a drag and drop zone
 		);
 		
 		# Create a new form widget
 		$widget = new formWidget ($this, $suppliedArguments, $argumentDefaults, __FUNCTION__);
 		
 		$arguments = $widget->getArguments ();
+		
+		# Automatically enable thumbnail when using drag and drop
+		if ($arguments['draganddrop']) {
+			$arguments['thumbnail'] = true;
+		}
 		
 		# Deal with handling of default file specification
 		if ($arguments['default']) {
@@ -3214,21 +3979,6 @@ class form
 		if ($arguments['unzip'] && !extension_loaded ('zip')) {
 			$this->formSetupErrors['uploadUnzipUnsupported'] = 'Unzipping of zip files upon upload was requested but the unzipping module is not available on this server.';
 			$arguments['unzip'] = false;
-		}
-		
-		# Disallow progressbar with more than one subfield
-		if ($arguments['progressbar']) {
-			if ($arguments['subfields'] > 1) {
-				$this->formSetupErrors['uploadProgressbarSubfields'] = 'Only one subfield is allowed in an upload widget with a progressbar.';
-			}
-			if ($arguments['progressbar'] === true) {
-				$arguments['progressbar'] = '/uploader/';
-			}
-			$uploaderProgram = $_SERVER['DOCUMENT_ROOT'] . $arguments['progressbar'] . '/SolmetraUploader.php';
-			if (!file_exists ($uploaderProgram)) {
-				$this->formSetupErrors['uploadProgressbarSubfields'] = 'The upload widget is set to have a progressbar, but the third-party program for this is not installed.';
-				$arguments['progressbar'] = false;
-			}
 		}
 		
 		# Ensure the initial value(s) is an array, even if only an empty one, converting if necessary, and lowercase (and then unique) the extensions lists, ensuring each starts with .
@@ -3317,20 +4067,147 @@ class form
 			$elementProblems['subfieldsMismatch'] = 'You appear to have submitted more files than there are fields available.';
 		}
 		
-		# Loop through the number of fields required to create the widget
+		# Start the widget HTML
 		$widgetHtml = '';
+		
+		# Add progress bar support if required; currently supported for single upload only
+		if ($arguments['progressbar']) {
+			
+			# Disallow progressbar with more than one subfield
+			if ($arguments['subfields'] > 1) {
+				$this->formSetupErrors['uploadProgressbarSubfields'] = 'Only one subfield is allowed in an upload widget with a progressbar.';
+			}
+			
+			# This must be before the input field itself
+			$uploadProgressIdentifier = bin2hex (random_bytes (16));
+			$widgetHtml .= "\n\t\t\t" . '<input type="hidden" name="UPLOAD_IDENTIFIER" value="' . $uploadProgressIdentifier . '">';
+		}
+		
+		# Convert to drag and drop zone if required; this merely styles the input box and does not use HTML5 Drag and Drop; see: https://codepen.io/TheLukasWeb/pen/qlGDa
+		if ($arguments['draganddrop']) {
+			$thumbnailText = 'Click here to pick photo, or drag and drop into this box.';
+			$widgetHtml .= "
+				<style type=\"text/css\">
+					form tr.upload div.draganddrop {
+						width: calc({$this->settings['uploadThumbnailWidth']}px + 4px + 4px);
+						height: calc({$this->settings['uploadThumbnailHeight']}px + 4px + 4px);
+						border: 4px dashed gray;
+					}
+					form tr.upload p {
+						width: {$this->settings['uploadThumbnailWidth']}px;
+						height: {$this->settings['uploadThumbnailHeight']}px;
+						text-align: center;
+						padding: 15px;
+						color: gray;
+					}
+					form tr.upload div input {
+						position: absolute;
+						margin: 0;
+						padding: 0;
+						width: {$this->settings['uploadThumbnailWidth']}px;
+						height: {$this->settings['uploadThumbnailHeight']}px;
+						outline: none;
+						opacity: 0;
+					}
+				</style>
+			";
+		}
+		
+		# If thumbnail viewing is enabled, parse the argument and assemble the HTML5/JS code
+		if ($arguments['thumbnail']) {
+			$thumbnailHtmlBySubfield = array ();
+			
+			# Enable jQuery
+			#!# Actually this is currently enabling jQuery as well as jQueryUI
+			$this->enableJqueryUi ();
+			
+			# Define the thumbnailing code; this is done once globally
+			$this->jQueryCode[__FUNCTION__] = "\n" . $this->thumbWrapperJs ();
+			
+			# For each subfield, add a thumbnail preview, creating the div if required
+			$this->jQueryCode[__FUNCTION__  . $arguments['name']] = '';	// Indexed by element to ensure that multiple upload instances do not overwrite
+			for ($subfield = 0; $subfield < $arguments['subfields']; $subfield++) {
+				$thumbnailHtml = '';
+				
+				# Get the widget ID
+				$elementId = $this->cleanId ($this->settings['name'] ? "{$this->settings['name']}[{$arguments['name']}_{$subfield}]" : "{$arguments['name']}_{$subfield}");
+				
+				# Assign the thumbnail ID
+				$selector = $arguments['thumbnail'];
+				if ($arguments['thumbnail'] === true) {
+					$thumbnailDivId = $elementId . '_thumbnailpreview';
+					$selector = '#' . $thumbnailDivId;
+				}
+				
+				# Create the div if set to boolean true; otherwise the named selector that the client code has created on its page will be used
+				#!# Named selector will fail if multiple subfields, as they will all be the same
+				if ($arguments['thumbnail'] === true) {
+					
+					# Open div to contain the thumbnail
+					$thumbnailHtml .= "\n\t\t\t\t<div id=\"{$thumbnailDivId}\" style=\"width: {$this->settings['uploadThumbnailWidth']}px; height: {$this->settings['uploadThumbnailHeight']}px;\">";
+					
+					# Determine whether there is a default image, so that this can be set below
+					$createDefaultImage = ($arguments['default'] && isSet ($arguments['default'][$subfield]));
+					
+					# Add default image, or text
+					if ($createDefaultImage) {
+						$thumbnailImage = "<img src=\"{$arguments['previewLocationPrefix']}{$arguments['default'][$subfield]['name']}\" style=\"max-width: 100%; max-height: 100%;\" />";
+						if ($arguments['thumbnailExpandable']) {
+							$thumbnailImage = "<a href=\"{$arguments['previewLocationPrefix']}{$arguments['default'][$subfield]['name']}\" target=\"_blank\">" . $thumbnailImage . '</a>';
+						}
+						$thumbnailHtml .= $thumbnailImage;
+					} else {
+						
+						# Set the thumbnail text
+						if (!isSet ($thumbnailText)) {
+							$thumbnailText = '(Thumbnail will appear here.)';
+						}
+						$thumbnailHtml .= "\n\t\t\t\t\t<p class=\"comment\">{$thumbnailText}</p>";
+					}
+					
+					# Complete div
+					$thumbnailHtml .= "\n\t\t\t\t</div>\n";
+				}
+				
+				# Add JS handler to set the thumbnail on file selection
+				$this->jQueryCode[__FUNCTION__  . $arguments['name']] .= "\n" . "
+				$(document).ready (function () {
+					$('#{$elementId}').change (function () {
+						thumbWrapper (this.files, '{$selector}');
+					});
+				});
+				";
+				
+				# Register the thumbnail HTML for this subfield
+				$thumbnailHtmlBySubfield[$subfield] = $thumbnailHtml;
+			}
+		}
+		
+		
+		# Loop through the number of fields required to create the widget
 		if ($arguments['subfields'] > 1) {$widgetHtml .= "\n\t\t\t";}
 		for ($subfield = 0; $subfield < $arguments['subfields']; $subfield++) {
 			
 			# Where default file(s) are/is expected, show - for the current subfield - the filename for each file (or that there is no file)
 			if ($arguments['default']) {
-				$widgetHtml .= '<p class="currentfile' . ($subfield > 0 ? ' currentfilenext' : '') . '">' . (isSet ($arguments['default'][$subfield]) ? 'Current file: <span class="filename">' . htmlspecialchars (basename ($arguments['default'][$subfield]['name'])) . '</span>' : '<span class="comment">(No current file)</span>') . "</p>\n\t\t\t";
+				if (!$arguments['thumbnail']) {		// In thumbnail mode, default is instead shown in thumbnail box, below
+					$widgetHtml .= '<p class="currentfile' . ($subfield > 0 ? ' currentfilenext' : '') . '">' . (isSet ($arguments['default'][$subfield]) ? 'Current file: <span class="filename">' . htmlspecialchars (basename ($arguments['default'][$subfield]['name'])) . '</span>' : '<span class="comment">(No current file)</span>') . "</p>\n\t\t\t";
+				}
 			}
 			
 			# Define the widget's core HTML; note that MAX_FILE_SIZE as mentioned in the PHP manual is bogus (non-standard and seemingly not supported by any browsers), so is not supported here - doing so would also require MAX_FILE_SIZE as a disallowed form name, and would expose to the user the size of the PHP ini setting
 			// $widgetHtml .= '<input type="hidden" name="MAX_FILE_SIZE" value="' . application::convertSizeToBytes (ini_get ('upload_max_filesize')) . '" />';
 			if ($arguments['editable']) {
+				if ($arguments['draganddrop']) {
+					$widgetHtml .= "\n\t\t\t" . '<div class="draganddrop">' . "\n\t\t\t\t";
+				}
 				$widgetHtml .= '<input' . $this->nameIdHtml ($arguments['name'], false, $subfield, true) . " type=\"file\" size=\"{$arguments['size']}\"" . (($arguments['autofocus'] && $subfield == 0) ? ' autofocus="autofocus"' : '') . $widget->tabindexHtml ($subfield) . ($mimeTypes ? ' accept="' . implode (', ', $mimeTypes) . '"' : '') . ' />';
+				if ($arguments['thumbnail']) {
+					$widgetHtml .= "\n" . $thumbnailHtmlBySubfield[$subfield];
+				}
+				if ($arguments['draganddrop']) {
+					$widgetHtml .= "\n\t\t\t" . '</div>' . "\n\t\t\t";
+				}
 				$widgetHtml .= (($subfield != ($arguments['subfields'] - 1)) ? "<br />\n\t\t\t" : (($arguments['subfields'] == 1) ? '' : "\n\t\t"));
 			} else {
 				if ($arguments['default'] && isSet ($arguments['default'][$subfield])) {
@@ -3339,135 +4216,33 @@ class form
 			}
 		}
 		
-		# Add progress bar support if required; this has only been tested so far with a single widget having this flag and with single upload
+		# Progress bar handler
 		if ($arguments['progressbar']) {
-			
-			# Load the uploader
-			require_once ($uploaderProgram);
-			$solmetraUploader = new SolmetraUploader (
-				$arguments['progressbar'] . '/',				// a base path to Flash Uploader's directory (relative to the page)
-				$arguments['progressbar'] . '/upload.php',	// path to a file that handles file uploads (relative to uploader.swf) [optional]
-				$_SERVER['DOCUMENT_ROOT'] . $arguments['progressbar'] . '/config.php'	// path to a server-side config file (relative to the page) [optional]
-			);
-			
-			# Populate (emulate) $_FILES; NB We don't use $solmetraUploader->gatherUploadedFiles ();	as that populates the _FILES array differently to the (silly) array arrangement that PHP has
-			$elementValue = false;
-			$_FILES = array ();
-			$file = $solmetraUploader->getUploadedFiles ();
-			if ($file) {
-				$elementValue = array ($file[$arguments['name']]);
-				foreach ($file[$arguments['name']] as $key => $value) {	// Loop through the attributes (name,type,size,tmp_name,error) for the file
-					$_FILES[$arguments['name']][$key][] = $value;
-				}
-			}
-			
-			# Create the HTML
-			$widgetHtml  = '<script type="text/javascript" src="' . $arguments['progressbar'] . '/SolmetraUploader.js"></script>';
-			$widgetHtml .= $solmetraUploader->getInstance ($arguments['name']);
-		}
-		
-		# If thumbnail viewing is enabled, parse the argument and create the HTML5 code
-		if ($arguments['thumbnail']) {
-			if ($arguments['subfields'] == 1) {		// Currently only supported when single subfield due to callback problem below
-				$subfield = 0;
-				
-				# If set to boolean true, auto-create the div; otherwise the named selector will be used
-				$createDivJs = 'false';
-				$thumbnailDivId = false;
-				if ($arguments['thumbnail'] === true) {
-					$thumbnailDivId = 'thumbnailpreview';
-					$arguments['thumbnail'] = '#' . $thumbnailDivId;
-					$createDivJs = 'true';
-				}
-				
-				# Get the widget ID
-				$elementId = $this->cleanId ($this->settings['name'] ? "{$this->settings['name']}[{$arguments['name']}_{$subfield}]" : "{$arguments['name']}_{$subfield}");
-				
-				# Enable jQuery
-				#!# Actually this is currently enabling jQuery as well as jQueryUI
-				$this->enableJqueryUi ();
-				
-				# Add the Javascript
-				#!# Need to find a way to pass $arguments['thumbnail'] into the callback in the Javascript, so that multiple subfields are possible
-				$this->jQueryCode[__FUNCTION__] = "\n" . "
-				$(document).ready(function() {
-					
-					if ({$createDivJs}) {
-						$('<div />', {id: '{$thumbnailDivId}', width: '{$this->settings['uploadThumbnailWidth']}px', height: '{$this->settings['uploadThumbnailHeight']}px'}).insertAfter( $('#{$elementId}') );
-						$('{$arguments['thumbnail']}').html( '<p class=\"comment\">(Thumbnail willl appear here.)</p>' );
-					}
-					
-					$('#{$elementId}').change(function() {
-						thumb(this.files);
-					});
-					
-					function thumb(files) {
-						
-						if (files == null || files == undefined) {
-							$('{$arguments['thumbnail']}').html( '<p><em>Unable to show a thumbnail, as this web browser is too old to support this.</em></p>' );
-							return false;
-						}
-						
-						for (var i = 0; i < files.length; i++) {
-							var file = files[i];
-							var imageType = /image.*/;
-							
-							if (!file.type.match(imageType)) {
-								continue;
-							}
-							
-							var reader = new FileReader();
-							
-							if (reader != null) {
-								reader.onload = GetThumbnail;
-								reader.readAsDataURL(file);
-							}
-						}
-					}
-					
-					function GetThumbnail(e) {
-						
-						var thumbnailCanvas = document.createElement('canvas');
-						var img = new Image();
-						img.src = e.target.result;
-						
-						img.onload = function () {
-							
-							var originalImageWidth = img.width;
-							var originalImageHeight = img.height;
-							
-							thumbnailCanvas.id = 'myTempCanvas';
-							thumbnailCanvas.width  = $('{$arguments['thumbnail']}').width();
-							thumbnailCanvas.height = $('{$arguments['thumbnail']}').height();
-							
-							// Scale the thumbnail to fit the box
-							if (originalImageWidth >= originalImageHeight) {
-								scaledWidth = Math.min(thumbnailCanvas.width, originalImageWidth);	// Ensure width is no greater than the available size
-								scaleFactor = (scaledWidth / originalImageWidth);
-								scaledHeight = Math.round(scaleFactor * originalImageHeight);	// Scale to same proportion, and round
-							} else {
-								scaledHeight = Math.min(thumbnailCanvas.height, originalImageHeight);
-								scaleFactor = (scaledHeight / originalImageHeight);
-								scaledWidth = Math.round(scaleFactor * originalImageWidth);
-							}
-							
-							if (thumbnailCanvas.getContext) {
-								var canvasContext = thumbnailCanvas.getContext('2d');
-								canvasContext.drawImage(img, 0, 0, scaledWidth, scaledHeight);
-								var dataURL = thumbnailCanvas.toDataURL();
-								
-								if (dataURL != null && dataURL != undefined) {
-									var nImg = document.createElement('img');
-									nImg.src = dataURL;
-									$('{$arguments['thumbnail']}').html(nImg);
-								} else {
-									$('{$arguments['thumbnail']}').html( '<p><em>Unable to read the image.</em></p>' );
+			$progressbarId = $this->cleanId ($arguments['name'] . '__progressbar');
+			$widgetHtml .= "\n\t\t\t<br />\n\t\t\t" . '<div id="' . $progressbarId . '"><progress max="100" value="0"></progress> <span></span></div>';
+			$widgetHtml .= "\n\t\t\t<style type=\"text/css\">#{$progressbarId} {display: none;}</style>";		// Hidden by default; shown using show() below on submit
+			$widgetHtml .= "\n\t\t\t";
+			$this->jQueryCode[__FUNCTION__] = "\n" . "
+				$(function () {		// document ready
+					$('#{$progressbarId}').closest ('form').submit (function (e) {
+						var updateProgressbar = function () {
+							$.get ('{$arguments['progressbar']}/{$uploadProgressIdentifier}', function (data) {
+								if (data != null) {
+									var progress = (data.bytes_uploaded / data.bytes_total) * 100;
+									progress = progress.toFixed (0);
+									$('#{$progressbarId} progress').val (progress);
+									$('#{$progressbarId} span').text (progress + '%');
+									if (progress < 100) {
+										setTimeout (updateProgressbar, 1000);	// Iterate
+									}
 								}
-							}
-						}
-					}
-				});";
-			}
+							});
+						};
+						$('#{$progressbarId}').show ();
+						setTimeout (updateProgressbar, 1000);
+					});
+				});
+			";
 		}
 		
 		# Loop through the number of fields required to perform checks
@@ -3489,7 +4264,9 @@ class form
 				} else {
 					
 					# If the file is not valid, add it to a list of invalid subfields
-					if (!application::filenameIsValid ($elementValue[$subfield]['name'], $arguments['disallowedExtensions'], $arguments['allowedExtensions'])) {
+					$allowedExtensions = $arguments['allowedExtensions'];
+					if (in_array ('.jpg', $allowedExtensions) && !in_array ('.jpeg', $allowedExtensions)) {$allowedExtensions[] = '.jpeg';}		// Treat .jpeg as an alias for .jpg, but avoid listing it explicitly
+					if (!application::filenameIsValid ($elementValue[$subfield]['name'], $arguments['disallowedExtensions'], $allowedExtensions)) {
 						$filenameInvalidSubfields[] = $elementValue[$subfield]['name'];
 					}
 				}
@@ -3601,6 +4378,113 @@ class form
 	}
 	
 	
+	# Thumbnail wrapper JS
+	private function thumbWrapperJs ()
+	{
+		# Create the JS
+		$js = "
+		function thumbWrapper (files, selector) {
+			
+			thumb (files);
+			
+			function thumb(files) {
+				
+				if (files == null || files == undefined) {
+					$(selector).html( '<p><em>Unable to show a thumbnail, as this web browser is too old to support this.</em></p>' );
+					return false;
+				}
+				
+				for (var i = 0; i < files.length; i++) {
+					var file = files[i];
+					var imageType = /image.*/;
+					
+					if (!file.type.match(imageType)) {
+						continue;
+					}
+					
+					var reader = new FileReader();
+					
+					if (reader != null) {
+						reader.onload = GetThumbnail;
+						reader.readAsDataURL(file);
+					}
+				}
+			}
+			
+			function GetThumbnail(e) {
+				
+				var thumbnailCanvas = document.createElement('canvas');
+				var img = new Image();
+				img.src = e.target.result;
+				
+				img.onload = function () {
+					
+					var originalImageWidth = img.width;
+					var originalImageHeight = img.height;
+					
+					thumbnailCanvas.id = 'myTempCanvas';
+					thumbnailCanvas.width  = $(selector).width();
+					thumbnailCanvas.height = $(selector).height();
+					
+					// Scale the thumbnail to fit the box
+					if (originalImageWidth >= originalImageHeight) {
+						scaledWidth = Math.min(thumbnailCanvas.width, originalImageWidth);	// Ensure width is no greater than the available size
+						scaleFactor = (scaledWidth / originalImageWidth);
+						scaledHeight = Math.round(scaleFactor * originalImageHeight);	// Scale to same proportion, and round
+					} else {
+						scaledHeight = Math.min(thumbnailCanvas.height, originalImageHeight);
+						scaleFactor = (scaledHeight / originalImageHeight);
+						scaledWidth = Math.round(scaleFactor * originalImageWidth);
+					}
+					
+					if (thumbnailCanvas.getContext) {
+						var canvasContext = thumbnailCanvas.getContext('2d');
+						canvasContext.drawImage(img, 0, 0, scaledWidth, scaledHeight);
+						var dataURL = thumbnailCanvas.toDataURL();
+						
+						if (dataURL != null && dataURL != undefined) {
+							var nImg = document.createElement('img');
+							nImg.src = dataURL;
+							$(selector).html(nImg);
+						} else {
+							$(selector).html( '<p><em>Unable to read the image.</em></p>' );
+						}
+					}
+				}
+			}
+		}";
+		
+		# Return the JS
+		return $js;
+	}
+	
+	
+	# AJAX endpoint function to provide progress upload, which calling code can use
+	# See: https://github.com/php/pecl-php-uploadprogress
+	# See: https://www.automatem.co.nz/blog/the-state-of-upload-progress-measurement-on-ubuntu-16-04-php7.html
+	#!# This fails in Safari for some reason, giving access control errors even on the same domain
+	public static function progressbar ()
+	{
+		# End if not supported
+		if (!function_exists ('uploadprogress_get_info')) {
+			echo "ERROR: The PECL uploadprogress module is not installed.";
+			application::sendHeader (500);
+			return false;
+		}
+		
+		# End if ID not supplied
+		if (!isSet ($_GET['id']) || !preg_match ('/^([0-9a-f]{32})$/', $_GET['id'])) {return false;}
+		
+		# Get the data
+		$data = uploadprogress_get_info ($_GET['id']);
+		
+		# Send the response as JSON
+		$json = json_encode ($data, JSON_PRETTY_PRINT);
+		header ('Content-Type: application/json');
+		echo $json;
+	}
+	
+	
 	/**
 	 * Function to pass hidden data over
 	 * @param array $arguments Supplied arguments - see template
@@ -3617,6 +4501,9 @@ class form
 			'discard'				=> false,	# Whether to process the input but then discard it in the results
 			'datatype'				=> false,	# Datatype used for database writing emulation (or caching an actual value)
 		);
+		
+		# Hidden elements are not editable
+		$argumentDefaults['editable'] = false;
 		
 		# Create a new form widget
 		$widget = new formWidget ($this, $suppliedArguments, $argumentDefaults, __FUNCTION__);
@@ -3766,7 +4653,7 @@ class form
 	# Function to inject a jQuery library loading
 	function addJQueryLibrary ($id, $code)
 	{
-		$this->jQueryLibraries[$id] = $code;
+		$this->jsCssAssets[$id] = $code;
 	}
 	
 	
@@ -3783,15 +4670,15 @@ class form
 		# Add the libraries, ensuring that the loading respects the protocol type (HTTP/HTTPS) of the current page, to avoid mixed content warnings
 		# Need to keep this in sync with a compatible jQuery version
 		if ($this->settings['jQueryUi']) {
-			$this->jQueryLibraries['jQueryUI'] = '
-				<script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
-				<link href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css" rel="stylesheet" type="text/css"/>
+			$this->jsCssAssets['jQueryUI'] = '
+				<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js" integrity="sha256-xLD7nhI62fcsEZK2/v8LsBcb4lG7dgULkuXoXB/j91c=" crossorigin="anonymous"></script>
+				<link href="https://code.jquery.com/ui/1.13.2/themes/smoothness/jquery-ui.css" rel="stylesheet" type="text/css"/>
 			';
 		}
 	}
 	
 	
-	# Function to add jQuery-based autocomplete; see: http://jqueryui.com/demos/autocomplete/#remote - this is the new jQueryUI plugin, not the old one; see also: http://www.learningjquery.com/2010/06/autocomplete-migration-guide
+	# Function to add jQuery-based autocomplete; see: https://jqueryui.com/autocomplete/#remote - this is the new jQueryUI plugin, not the old one; see also: https://learningjquery.com/2010/06/autocomplete-migration-guide
 	function autocompleteJQuery ($id, $data, $options = array (), $subwidgets = false)
 	{
 		# Ensure that jQuery UI is loaded
@@ -3845,11 +4732,11 @@ class form
 	function autocompleteTokenisedJQuery ($id, $jsonUrl, $optionsJsString = '', $singleLine = true)
 	{
 		# Add the main function
-		$this->jQueryLibraries[__FUNCTION__] = "\n\t\t\t" . '<script type="text/javascript" src="' . ($this->settings['scripts'] ? $this->settings['scripts'] : 'https://raw.github.com/chadisfaction/jQuery-Tokenizing-Autocomplete-Plugin/master/src/') . 'jquery.tokeninput.js"></script>';
+		$this->jsCssAssets[__FUNCTION__] = "\n\t\t\t" . '<script type="text/javascript" src="' . ($this->settings['scripts'] ? $this->settings['scripts'] : 'https://raw.github.com/chadisfaction/jQuery-Tokenizing-Autocomplete-Plugin/master/src/') . 'jquery.tokeninput.js"></script>';
 		
 		# Add the stylesheet
 		$uniqueFunctionId = __FUNCTION__ . ($singleLine ? '_singleline' : '_multiline');
-		$this->jQueryLibraries[$uniqueFunctionId] = "\n\t\t\t" . '<link rel="stylesheet" href="' . ($this->settings['scripts'] ? $this->settings['scripts'] : 'https://raw.github.com/chadisfaction/jQuery-Tokenizing-Autocomplete-Plugin/master/styles/') . ($singleLine ? 'token-input-facebook' : 'token-input') . '.css" type="text/css" />';
+		$this->jsCssAssets[$uniqueFunctionId] = "\n\t\t\t" . '<link rel="stylesheet" href="' . ($this->settings['scripts'] ? $this->settings['scripts'] : 'https://raw.github.com/chadisfaction/jQuery-Tokenizing-Autocomplete-Plugin/master/styles/') . ($singleLine ? 'token-input-facebook' : 'token-input') . '.css" type="text/css" />';
 		
 		# Compile the options; they are listed at https://raw.github.com/chadisfaction/jQuery-Tokenizing-Autocomplete-Plugin/master/src/jquery.tokeninput.js ; note that the final item in a list must not have a comma at the end
 		$functionOptions = array ();
@@ -3937,7 +4824,7 @@ class form
 	
 	
 	# Function to ensure that all initial values are in the array of values
-	function ensureDefaultsAvailable ($arguments)
+	function ensureDefaultsAvailable ($arguments, &$warningHtml = false)
 	{
 		# Convert to an array (for this local function only) if not already
 		if (!is_array ($arguments['default'])) {
@@ -3958,8 +4845,20 @@ class form
 		
 		# Construct the warning message
 		if (isSet ($missingValues)) {
+			
+			# Construct the message
 			$totalMissingValues = count ($missingValues);
-			$this->formSetupErrors['defaultMissingFromValuesArray'] = "In the <strong>{$arguments['name']}</strong> element, the default " . ($totalMissingValues > 1 ? 'values ' : 'value ') . '<em>' . htmlspecialchars (implode (', ', $missingValues)) . '</em>' . ($totalMissingValues > 1 ? ' were' : ' was') . ' not found in the list of available items for selection by the user.';
+			$message = "the default " . ($totalMissingValues > 1 ? 'values ' : 'value ') . '<em>' . htmlspecialchars (implode (', ', $missingValues)) . '</em>' . ($totalMissingValues > 1 ? ' were' : ' was') . ' not found in the list of available items';
+			
+			# If tolerating invalid values, show a warning to the user
+			if ($arguments['tolerateInvalid']) {
+				$warningHtml = ucfirst ($message) . '. As such, the value for this field has been reset, but you should review it.';
+			}
+			
+			# Flag the error to the admin
+			$errorKey = 'defaultMissingFromValuesArray' . '_' . $arguments['name'];		// Name appended to avoid hiding if multiple widget throw the same error
+			if ($arguments['tolerateInvalid']) {$errorKey = '_' . $errorKey;}	// Prefix with _ to indicate warning
+			$this->formSetupErrors[$errorKey] = "In the <strong>{$arguments['name']}</strong> element, " . $message . ' for selection by the user.';
 		}
 	}
 	
@@ -4036,6 +4935,9 @@ class form
 	 */
 	function mergeFilesIntoPost ()
 	{
+		# In _GET mode, do nothing
+		if ($this->method == 'get') {return;}
+		
 		# PHP's _FILES array is (stupidly) arranged differently depending on whether you are using 'formname[elementname]' or just 'elementname' as the element name - see "HTML array feature" note at www.php.net/features.file-upload
 		if ($this->settings['name']) {	// i.e. <input name="formname[widgetname]"
 			
@@ -4139,6 +5041,7 @@ class form
 	/**
 	 * Output the result as an e-mail
 	 */
+	#!# Needs ability to reply-to directory, rather than via a field
 	function setOutputEmail ($recipient, $administrator = '', $subjectTitle = 'Form submission results', $chosenElementSuffix = NULL, $replyToField = NULL, $displayUnsubmitted = true)
 	{
 		# Flag that this method is required
@@ -4147,7 +5050,7 @@ class form
 		# Flag whether to display as empty (rather than absent) those widgets which are optional and have had nothing submitted
 		$this->configureResultEmailShowUnsubmitted = $displayUnsubmitted;
 		
-		# If the recipient is an array, split it into a recipient as the first and cc: as the remainder:
+		# If the recipient is an array, split it into a recipient as the first and cc: as the remainder
 		if (is_array ($recipient)) {
 			$recipientList = $recipient;
 			$recipient = array_shift ($recipientList);
@@ -4175,21 +5078,24 @@ class form
 	function _setTitle ($title)
 	{
 		# Assign the subject title, replacing a match for {fieldname} with the contents of the fieldname, which must be an 'input' widget type
-		if (preg_match_all ('/\{([^\}]+)\}/', $title, $matches)) {
-			#!# Add more when tested
-			$supportedWidgetTypes = array ('input', 'email', 'url', 'tel', 'search', 'number', 'range', 'color', 'select', 'radiobuttons');
-			foreach ($matches[1] as $element) {
+		if ($this->formPosted) {	// This only needs to be run when the form is posted; otherwise the replacement by output type will give an offset as there will be no output type when initially showing the form
+			if (preg_match_all ('/\{([^\}]+)\}/', $title, $matches)) {
 				
-				# Extract any output format specifier
-				$placeholder = $element;	// Cache this, as $element may get overwritten
-				$outputFormat = 'presented';
-				if (substr_count ($element, '|')) {
-					list ($element, $outputFormat) = explode ('|', $element, 2);
-				}
-				
-				# Replace this element placeholder in the string
-				if (isSet ($this->elements[$element]) && (in_array ($this->elements[$element]['type'], $supportedWidgetTypes))) {
-					$title = str_replace ('{' . $placeholder . '}', $this->elements[$element]['data'][$outputFormat], $title);
+				#!# Add more when tested
+				$supportedWidgetTypes = array ('input', 'email', 'url', 'tel', 'search', 'number', 'range', 'color', 'select', 'radiobuttons');
+				foreach ($matches[1] as $element) {
+					
+					# Extract any output format specifier
+					$placeholder = $element;	// Cache this, as $element may get overwritten
+					$outputFormat = 'presented';
+					if (substr_count ($element, '|')) {
+						list ($element, $outputFormat) = explode ('|', $element, 2);
+					}
+					
+					# Replace this element placeholder in the string
+					if (isSet ($this->elements[$element]) && (in_array ($this->elements[$element]['type'], $supportedWidgetTypes))) {
+						$title = str_replace ('{' . $placeholder . '}', $this->elements[$element]['data'][$outputFormat], $title);
+					}
 				}
 			}
 		}
@@ -5107,6 +6013,7 @@ class form
 		
 		# If the form is not posted or contains problems, display it and flag that it has been displayed
 		$elementProblems = $this->getElementProblems ();
+		#!# Form saving bypassing validation can be problematic if, e.g. "You submitted more characters (174) than are allowed (130)" occurs, and the database then tries to save this, resulting in truncation; form save should still error on invalid data submitted (e.g. too long) but not absent values
 		if ($this->formSave) {$elementProblems = false;}	// A form save bypasses validation
 		if (!$this->formPosted || $elementProblems || $formRefreshed || ($this->settings['reappear'] && $this->formPosted && !$elementProblems)) {
 			
@@ -5399,21 +6306,48 @@ class form
 		$this->_checkGroupValidations ();
 		
 		# If there are any form setup errors - a combination of those just defined and those assigned earlier in the form processing, show them
+		$errorTexts = array ();
+		$warningTexts = array ();
 		if (!empty ($this->formSetupErrors)) {
-			$setupErrorText = application::showUserErrors ($this->formSetupErrors, $parentTabLevel = 1, (count ($this->formSetupErrors) > 1 ? 'Various errors were' : 'An error was') . " found in the setup of the form. The website's administrator needs to correct the configuration before the form will work:", false, $this->settings['errorsCssClass']);
+			
+			# Split the setup errors into errors and warnings
+			foreach ($this->formSetupErrors as $errorKey => $error) {
+				$errorText = "\n- " . strip_tags ($error);
+				if (substr ($errorKey, 0, 1) == '_') {
+					$warningTexts[] = $errorText;
+				} else {
+					$errorTexts[] = $errorText;
+				}
+			}
+			
+			# Show the setup errors/warnings
+			$introductionMessageComponents = array ();
+			if ($errorTexts) {
+				$introductionMessageComponents[] = (count ($errorTexts) > 1 ? 'various errors' : 'an error');
+			}
+			if ($warningTexts) {
+				$introductionMessageComponents[] = (count ($warningTexts) > 1 ? 'various warnings' : 'a warning');
+			}
+			$introductionMessage = ucfirst (implode (' and ', $introductionMessageComponents)) . ' ' . (count ($this->formSetupErrors) > 1 ? 'were' : 'was') . ' found in the setup of the form.' . ($warningTexts && !$errorTexts /* Form not shown if any errors, so don't point to warnings in that scenario */ ? ' Please see the warning(s) below.' : '') . ($errorTexts ? " The website's administrator needs to correct the error before the form will work." : '');
+			$setupErrorText = application::showUserErrors ($this->formSetupErrors, $parentTabLevel = 1, $introductionMessage, false, $this->settings['errorsCssClass']);
 			$this->html .= $setupErrorText;
 			
 			# E-mail the errors to the admin if wanted
-			foreach ($this->formSetupErrors as $error) {
-				$errorTexts[] = "\n- " . strip_tags ($error);
-			}
 			if ($this->settings['mailAdminErrors']) {
 				$administrator = (application::validEmail ($this->settings['mailAdminErrors']) ? $this->settings['mailAdminErrors'] : $_SERVER['SERVER_ADMIN']);
+				$message  = "The webform at \n" . $_SERVER['_PAGE_URL'] . "\nreports the following ultimateForm setup misconfiguration:\n";
+				if ($errorTexts) {
+					$message .= "\n\nERRORS:\n" . implode ("\n", $errorTexts);
+				}
+				if ($warningTexts) {
+					$message .= "\n\nWARNINGS:\n" . implode ("\n", $warningTexts);
+				}
+				$message .= "\n\n\nIP:    {$_SERVER['REMOTE_ADDR']}\nUser:  {$_SERVER['REMOTE_USER']}";
 				application::utf8Mail (
 					$administrator,
-					'Form setup error',
-					wordwrap ("The webform at \n" . $_SERVER['_PAGE_URL'] . "\nreports the following ultimateForm setup misconfiguration:\n\n" . implode ("\n", $errorTexts)),
-					$additionalHeaders = 'From: Website feedback <' . $administrator . ">\r\n"
+					'Form setup ' . ($errorTexts ? 'error' : 'warning'),
+					wordwrap ($message),
+					$additionalHeaders = "From: {$this->settings['emailName']} <" . $administrator . ">\r\n"
 				);
 			}
 		}
@@ -5421,8 +6355,8 @@ class form
 		# Set that the form has effectively been displayed
 		$this->formDisplayed = true;
 		
-		# Return true (i.e. form set up OK) if the errors array is empty
-		return (empty ($this->formSetupErrors));
+		# Return true (i.e. form set up OK) if the errors (i.e. excluding warnings) array is empty
+		return (empty ($errorTexts));
 	}
 	
 	
@@ -5672,16 +6606,46 @@ class form
 		$messageText = ($this->settings['unsavedDataProtection'] === true ? 'Leaving this page will cause edits to be lost. Press the submit button on the page if you wish to save your data.' : $this->settings['unsavedDataProtection']);
 		
 		# Create the jQuery code
+		#!# Custom text return status is now deprecated: https://chromestatus.com/feature/5349061406228480
 		$this->jQueryCode[__FUNCTION__] = "
-			function removeCheck() { window.onbeforeunload = null; }
-			$(document).ready(function() {
-			    $('#" . $formId . " :input').one('change', function() {
-			        window.onbeforeunload = function() {
-			            return '" . $messageText . "';
+			
+			// Navigate-away protection for general widgets
+			function removeCheck () { window.onbeforeunload = null; }
+			$(document).ready (function () {
+			    $('#{$formId} :input').one ('change', function () {
+			        window.onbeforeunload = function () {
+			            return '{$messageText}';
 			        }
 			    });
-			    $('#" . $formId . " input[type=submit]').click(function() { removeCheck() });
+			    $('#{$formId} input[type=submit]').click (function () { removeCheck () });
 			});
+			
+			// Navigate-away protection for Richtext widgets; see: https://stackoverflow.com/a/25050155
+			if (typeof CKEDITOR !== 'undefined') {
+				var i;
+				var editable = {};
+				for (instanceName in CKEDITOR.instances) {
+					
+					// GUI-based changes
+					CKEDITOR.instances[instanceName].on ('change', function () {
+						window.onbeforeunload = function () {
+							return '{$messageText}';
+						}
+					});
+					
+					// Source-based changes
+					CKEDITOR.instances[instanceName].on ('mode', function () {
+						if (this.mode == 'source') {
+							editable[instanceName] = CKEDITOR.instances[instanceName].editable ();
+							editable[instanceName].attachListener (editable[instanceName], 'input', function () {
+								window.onbeforeunload = function () {
+									return '{$messageText}';
+								}
+							});
+						}
+					});
+				}
+			}
 		";
 	}
 	
@@ -5933,7 +6897,7 @@ class form
 		#!# Accesskey string needs to detect the user's platform and browser type, as Shift+Alt is not always correct, and on a Mac does not exist
 		if (!$this->formDisabled) {
 			$submitButtonText = $this->settings['submitButtonText'] . ((!empty ($this->settings['submitButtonAccesskey']) && $this->settings['submitButtonAccesskeyString']) ? '&nbsp; &nbsp;[Shift+Alt+' . $this->settings['submitButtonAccesskey'] . ']' : '');
-			$formButtonHtml = '<input type="' . (!$this->settings['submitButtonImage'] ? 'submit' : "image\" src=\"{$this->settings['submitButtonImage']}\" name=\"submit\" alt=\"{$submitButtonText}") . '" value="' . $submitButtonText . '"' . (!empty ($this->settings['submitButtonAccesskey']) ? " accesskey=\"{$this->settings['submitButtonAccesskey']}\""  : '') . (is_numeric ($this->settings['submitButtonTabindex']) ? " tabindex=\"{$this->settings['submitButtonTabindex']}\"" : '') . ' class="button' . (isSet ($this->multipleSubmitReturnHandlerClass) ? " {$this->multipleSubmitReturnHandlerClass}" : '') . '" />';
+			$formButtonHtml = '<input type="' . (!$this->settings['submitButtonImage'] ? 'submit' : "image\" src=\"{$this->settings['submitButtonImage']}\" name=\"submit\" alt=\"{$submitButtonText}") . '" value="' . $submitButtonText . '"' . (!empty ($this->settings['submitButtonAccesskey']) ? " accesskey=\"{$this->settings['submitButtonAccesskey']}\""  : '') . (is_numeric ($this->settings['submitButtonTabindex']) ? " tabindex=\"{$this->settings['submitButtonTabindex']}\"" : '') . ' class="' . ($this->settings['submitButtonClass']) . (isSet ($this->multipleSubmitReturnHandlerClass) ? " {$this->multipleSubmitReturnHandlerClass}" : '') . '" />';
 			if ($this->settings['refreshButton']) {
 				$refreshButtonText = $this->settings['refreshButtonText'] . (!empty ($this->settings['refreshButtonAccesskey']) ? '&nbsp; &nbsp;[Shift+Alt+' . $this->settings['refreshButtonAccesskey'] . ']' : '');
 				#!# Need to deny __refresh as a reserved form name
@@ -6019,16 +6983,17 @@ class form
 	function loadJavascriptCode ()
 	{
 		# End if no jQuery use
-		if (!$this->jQueryLibraries && !$this->jQueryCode && !$this->javascriptCode) {return false;}
+		if (!$this->jsCssAssets && !$this->jQueryCode && !$this->javascriptCode) {return false;}
 		
 		# Start the HTML
 		$html  = '';
 		
 		# Add the library if required
-		if ($this->jQueryLibraries || $this->jQueryCode) {
+		#!# Rework this function so that the subresource integrity can be included in the <script> URL
+		if ($this->jsCssAssets || $this->jQueryCode) {
 			if ($this->settings['jQuery']) {
 				if ($this->settings['jQuery'] === true) {	// If not a URL, use the default, respecting HTTP/HTTPS to avoid mixed content warnings
-					$this->settings['jQuery'] = '//code.jquery.com/jquery.min.js';
+					$this->settings['jQuery'] = 'https://code.jquery.com/jquery-3.6.1.min.js';
 				}
 				if ($this->settings['jQuery']) {
 					$html .= "\n<script type=\"text/javascript\" src=\"{$this->settings['jQuery']}\"></script>";
@@ -6037,19 +7002,21 @@ class form
 		}
 		
 		# Add plugin libraries
-		foreach ($this->jQueryLibraries as $key => $htmlCode) {
+		foreach ($this->jsCssAssets as $key => $htmlCode) {
 			$html .= "\n" . $htmlCode;
 		}
 		
 		# Add each client function
 		if ($this->jQueryCode || $this->javascriptCode) {
 			$html .= "\n<script type=\"text/javascript\">";
+			$html .= "\n\t" . '$(function() {';
 			foreach ($this->jQueryCode as $key => $jsCode) {
 				$html .= "\n" . $jsCode;
 			}
 			foreach ($this->javascriptCode as $key => $jsCode) {
 				$html .= "\n" . $jsCode;
 			}
+			$html .= "\n\t" . '});';
 			$html .= "\n</script>\n\n";
 		}
 		
@@ -6146,7 +7113,8 @@ class form
 	 * @access private
 	 */
 	#!# The whole problems area needs refactoring
-	function getElementProblems ()
+	#!# Replace external access with new function returning bool hasElementProblems ()
+	public function getElementProblems ()
 	{
 		# If the form is not posted, end here
 		if (!$this->formPosted) {return false;}
@@ -6530,6 +7498,20 @@ class form
 				'database'			=> array ('presented'),
 			),
 			
+			'map' => array (
+				'_descriptions' => array (
+					'rawcomponents'	=> 'GeoJSON string',
+					'compiled'		=> 'Textual summary of submitted map data',
+					//'presented'		=> 'Show as visual map',
+				),
+				'file'				=> array ('rawcomponents', 'compiled'),
+				'email'				=> array ('compiled', 'rawcomponents'),
+				'confirmationEmail'	=> array ('compiled', 'rawcomponents'),
+				'screen'			=> array (/* 'presented', */ 'compiled', 'rawcomponents'),
+				'processing'		=> array ('rawcomponents', 'compiled'),
+				'database'			=> array ('rawcomponents', 'compiled'),
+			),
+			
 			'radiobuttons' => array (
 				'_descriptions' => array (
 					'rawcomponents'	=> 'An array with every defined element being assigned as itemName => boolean true/false',
@@ -6871,7 +7853,7 @@ class form
 		
 		# Add support for "Visible name <name@email>" rather than just "name@email"
 		$sender = ($outputType == 'email' ? $this->configureResultEmailAdministrator : $this->configureResultConfirmationEmailAdministrator);
-		$emailName = 'Website feedback';
+		$emailName = $this->settings['emailName'];
 		$emailAddress = $sender;
 		if (preg_match ('/^(.+)<([^>]+)>$/', $sender, $matches)) {
 			$emailName = $matches[1];
@@ -6981,6 +7963,7 @@ class form
 			$message .= 'Content-type: text/plain; charset="UTF-8"' . $eol;
 			$message .= "Content-Transfer-Encoding: 8bit" . $eol;
 			$message .= $eol;
+			#!# The note about files being saved on the webserver will not be correct if $this->settings['attachmentsDeleteIfMailed'] is off
 			$message .= wordwrap ($introductoryText . "\n\n" . ($totalAttachments == 1 ? 'There is also an attachment.' : "There are also {$totalAttachments} attachments. Please take care when opening them.") . ($totalAttachmentsDifference ? ' ' . ($totalAttachmentsDifference == 1 ? 'One other submitted file was too large to e-mail, so it has' : "{$totalAttachmentsDifference} other submitted files were too large to e-mail, so they have") . " been saved on the webserver. Please contact the webserver's administrator to retrieve " . ($totalAttachmentsDifference == 1 ? 'it' : 'them') . '.' : '') . "\n\n\n\n" . implode ("\n\n\n", $resultLines)) . "{$eol}{$eol}{$eol}" . $eol;
 			$message .= '--' . $mimeBoundary;
 			
@@ -7160,21 +8143,24 @@ class form
 				
 				# Overwrite the filename if being forced; this always maintains the file extension
 				if ($arguments['forcedFileName']) {
+					$forcedFilename = $arguments['forcedFileName'];
+					if (is_array ($arguments['forcedFileName'])) {
+						$forcedFilename = $arguments['forcedFileName'][$subfield];
+					}
 					
 					# If the forced filename is prefixed with a %, look for a field of that name, and use its value (e.g. '%id' will use a forcedFileName that is the value of the submitted 'id' element)
 					#!# Currently this doesn't check whether %id is sensible, in terms of a missing/non-required/array-type field (and ideally with a suitable regexp)
-					if (preg_match ('/^%(.+)$/', $arguments['forcedFileName'], $matches)) {
+					if (preg_match ('/^%(.+)$/', $forcedFilename, $matches)) {
 						$matchField = $matches[1];
 						if (isSet ($this->elements[$matchField])) {
 							if (is_string ($this->form[$matchField])) {		// #!# Support only at present for string types; there needs to be a standard way for elements to give a serialised string representation of their output
 								$forcedFilename = $this->form[$matchField];
 								$forcedFilename = str_replace (array ('/', '\\'), '_', $forcedFilename);	// Prevent any kind of directory traversal attacks
-								$arguments['forcedFileName'] = $forcedFilename;
 							}
 						}
 					}
 					
-					$attributes['name'] = $arguments['forcedFileName'] . $fileExtension;
+					$attributes['name'] = $forcedFilename . $fileExtension;
 				}
 				
 				# If appendExtension is set, add that on to the filename
@@ -7208,13 +8194,7 @@ class form
 				
 				# Attempt to upload the file to the (now finalised) destination
 				$destination = $arguments['directory'] . $filename;
-				if ($arguments['progressbar']) {
-					$uploadedFileMoved = true;	// The progressbar will have already moved the file into place
-					#!# Error handling needed
-					rename ($attributes['tmp_name'], $destination);
-				} else {
-					$uploadedFileMoved = move_uploaded_file ($attributes['tmp_name'], $destination);
-				}
+				$uploadedFileMoved = move_uploaded_file ($attributes['tmp_name'], $destination);
 				if (!$uploadedFileMoved) {
 					
 					# Create an array of any failed file uploads
@@ -7404,6 +8384,7 @@ class form
 		$argumentDefaults = array (
 			'database' => NULL,
 			'table' => NULL,
+			'schema' => array (),		// Directly supply the schema, rather than using the database/table or callback method
 			'callback' => array (),		// array (object, dataBindingCallbackMethod), with object containing function dataBindingCallback () returning $fields;
 			'attributes' => array (),
 			'data' => array (),
@@ -7420,7 +8401,7 @@ class form
 			'lookupFunctionParameters' => array (),
 			'lookupFunctionAppendTemplate' => false,
 			'truncate' => 40,
-			'size' => 40,	#!# This default should use the top-level size setting
+			'size' => $this->settings['size'],		# Visible size (optional; defaults to 60)
 			'changeCase' => true,	// Convert 'fieldName' field names in camelCase style to 'Standard text'
 			'commentsAsDescription' => false,	// Whether to use column comments for the description field rather than for the title field
 			'prefix'	=> false,	// What to prefix all field names with (plus _ implied)
@@ -7435,8 +8416,8 @@ class form
 			'notNullExceptFields' => array (),	// Assume all elements are treated as NOT NULL (even if the database structure says they are nullable), except for these specified elements (or single element as string)
 		);
 		
-		# If a callback is supplied, set database and table to be optional
-		if (isSet ($suppliedArguments['callback']) && ($suppliedArguments['callback'])) {
+		# If a direct schema or callback is supplied, set database and table to be optional
+		if ((isSet ($suppliedArguments['schema']) && ($suppliedArguments['schema'])) || (isSet ($suppliedArguments['callback']) && ($suppliedArguments['callback']))) {
 			$argumentDefaults['database']	= false;
 			$argumentDefaults['table']		= false;
 		}
@@ -7465,7 +8446,7 @@ class form
 		
 		# Ensure there is a database connection or exit here (errors will already have been thrown)
 		if (!$this->databaseConnection) {
-			if (!$callback) {	// Unless using callback
+			if (!$schema && !$callback) {	// Unless using schema/callback
 				if ($this->databaseConnection === NULL) {	// rather than === NULL, which means no connection requested
 					$this->formSetupErrors['dataBindingNoDatabaseConnection'] = 'Data binding has been requested, but no valid database connection has been set up in the main settings.';
 				}
@@ -7524,7 +8505,9 @@ Work-in-progress implementation for callback; need to complete: (i) form setup c
 		$notNullExceptFields	= application::ensureArray ($notNullExceptFields);
 		
 		# Get the database fields
-		if ($callback) {
+		if ($schema) {
+			$fields = $schema;	// Copy directly
+		} else if ($callback) {
 			$fields = $callbackObject->{$callbackMethod} ();
 		} else {
 			$fields = $this->databaseConnection->getFields ($database, $table);
@@ -7664,7 +8647,7 @@ Work-in-progress implementation for callback; need to complete: (i) form setup c
 				}
 				
 				# Richtext fields - text fields with html/richtext in fieldname; NB if changing the regexp, also change this in the addSettingsTableConfig method in frontControllerApplication.php
-				if (preg_match ('/(html|richtext)/i', $fieldName) && (strtolower ($fieldAttributes['Type']) == 'text')) {
+				if (preg_match ('/(html|richtext)/i', $fieldName) && (in_array (strtolower ($fieldAttributes['Type']), array ('text', 'tinytext', 'mediumtext', 'longtext')))) {
 					$forceType = 'richtext';
 					
 					# Use basic toolbar set for fieldnames containing 'basic/mini/simple'
@@ -7674,10 +8657,10 @@ Work-in-progress implementation for callback; need to complete: (i) form setup c
 				}
 				
 				# Website fields - for fieldnames containing 'url/website/http'
-				if (preg_match ('/(website|http)/i', $fieldName) || $fieldName == 'url') {
+				if (preg_match ('/(website|http)/i', $fieldName) || preg_match ('/.+Url$/', $fieldName) || $fieldName == 'url') {
 					$forceType = 'url';
 					$standardAttributes['regexp'] = '^(http|https)://';
-					$standardAttributes['description'] = 'Must begin http://';	// ' or https://' not added to this description just to keep it simple
+					$standardAttributes['description'] = 'Must begin https://';	// ' or http://' not added to this description just to keep it simple
 				}
 				
 				# Upload fields - fieldname containing photograph/upload or starting/ending with file/document
@@ -7817,8 +8800,16 @@ Work-in-progress implementation for callback; need to complete: (i) form setup c
 			# If the textAsVarchar option is on, convert the type to VARCHAR(255)
 			if ($textAsVarchar && (strtolower ($fieldAttributes['Type']) == 'text')) {$fieldAttributes['Type'] = 'VARCHAR(255)';}
 			
-			# Take the type and convert it into a form widget type
+			# Obtain the type
 			$type = $fieldAttributes['Type'];
+			
+			# Handle INT types without display width attribute, mapping them to older types, e.g. map INT to INT(11)
+			if (in_array ($type, array ('int', 'mediumint', 'smallint', 'bigint'))) {$type = 'int(11)';}
+			if (in_array ($type, array ('int unsigned', 'mediumint unsigned', 'smallint unsigned', 'bigint unsigned'))) {$type = 'int(11) unsigned';}
+			if ($type == 'tinyint' || $type == 'tinyint unsigned') {$type = 'int(1)';}		// Essentially boolean
+			if ($type == 'year') {$type = 'year(4)';}
+			
+			# Take the type and convert it into a form widget type
 			switch (true) {
 				
 				# Skipping of this element
@@ -7838,7 +8829,7 @@ Work-in-progress implementation for callback; need to complete: (i) form setup c
 					break;
 				
 				# Hidden fields - deny editability
-				case ($fieldAttributes['Type'] == '_hidden'):
+				case ($type == '_hidden'):
 					$this->input ($standardAttributes + array (
 						'editable' => false,
 						'_visible--DONOTUSETHISFLAGEXTERNALLY' => false,
@@ -8327,7 +9318,6 @@ class formWidget
 		if (!$this->settings['autofocus']) {return false;}
 		
 		# End if this current widget is not editable, as that will never have autofocus
-		#!# Undefined index: editable generated from __timestamp
 		if (!$this->arguments['editable']) {return false;}
 		
 		# End if there is an editable, non-heading widget already defined
@@ -8468,12 +9458,12 @@ class formWidget
 		$this->form->enableJqueryUi ();
 		
 		# Add the main function
-		$this->form->jQueryLibraries[__FUNCTION__]  = "\n\t\t\t" . '<script type="text/javascript" src="' . $this->settings['scripts'] . 'tag-it/js/tag-it.js"></script>';	// https://rawgithub.com/aehlke/tag-it/master/js/tag-it.js
+		$this->form->jsCssAssets[__FUNCTION__]  = "\n\t\t\t" . '<script type="text/javascript" src="' . $this->settings['scripts'] . 'tag-it/js/tag-it.js"></script>';	// https://rawgithub.com/aehlke/tag-it/master/js/tag-it.js
 		
 		# Add the stylesheets
-		$this->form->jQueryLibraries[__FUNCTION__] .= "\n\t\t\t" . '<link rel="stylesheet" href="' . ($this->settings['scripts'] ? $this->settings['scripts'] : 'http://ajax.googleapis.com/ajax/libs') . '/jqueryui/1/themes/flick/jquery-ui.css" type="text/css" />';
-		$this->form->jQueryLibraries[__FUNCTION__] .= "\n\t\t\t" . '<link rel="stylesheet" href="' . $this->settings['scripts'] . 'tag-it/css/jquery.tagit.css" type="text/css" />';	// https://rawgithub.com/aehlke/tag-it/master/css/jquery.tagit.css
-		$this->form->jQueryLibraries[__FUNCTION__] .= "\n\t\t\t" . '<link rel="stylesheet" href="' . $this->settings['scripts'] . 'tag-it/css/tagit.ui-zendesk.css" type="text/css" />';	// https://rawgithub.com/aehlke/tag-it/master/css/tagit.ui-zendesk.css
+		$this->form->jsCssAssets[__FUNCTION__] .= "\n\t\t\t" . '<link rel="stylesheet" href="' . ($this->settings['scripts'] ? $this->settings['scripts'] : 'http://ajax.googleapis.com/ajax/libs') . '/jqueryui/1/themes/flick/jquery-ui.css" type="text/css" />';
+		$this->form->jsCssAssets[__FUNCTION__] .= "\n\t\t\t" . '<link rel="stylesheet" href="' . $this->settings['scripts'] . 'tag-it/css/jquery.tagit.css" type="text/css" />';	// https://rawgithub.com/aehlke/tag-it/master/css/jquery.tagit.css
+		$this->form->jsCssAssets[__FUNCTION__] .= "\n\t\t\t" . '<link rel="stylesheet" href="' . $this->settings['scripts'] . 'tag-it/css/tagit.ui-zendesk.css" type="text/css" />';	// https://rawgithub.com/aehlke/tag-it/master/css/tagit.ui-zendesk.css
 		
 		# Options
 		$functionOptions = array ();
@@ -8705,6 +9695,7 @@ class formWidget
 		if ($this->arguments['disallow'] !== false) {
 			
 			# If the disallow text is presented as an array, convert the key and value to the disallow patterns and descriptive text; otherwise 
+			#!# This should be changed to allow multiple checks, as they may have different error messages required
 			if (is_array ($this->arguments['disallow'])) {
 				foreach ($this->arguments['disallow'] as $disallowRegexp => $disallowErrorMessage) {
 					break;

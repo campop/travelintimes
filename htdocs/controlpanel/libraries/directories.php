@@ -1,11 +1,11 @@
 <?php
 
 # Class to create various directory manipulation -related static methods
-# Version 1.1.3
+# Version 1.2.3
 
 # Licence: GPL
 # (c) Martin Lucas-Smith, University of Cambridge
-# More info: http://download.geog.cam.ac.uk/projects/directories/
+# More info: https://download.geog.cam.ac.uk/projects/directories/
 
 
 #!# These functions need a good tidy-up - there is a lot of duplication of similar functions each with different quirks, some of which work recursively and others not; these should be all combined into a single super-function with options
@@ -99,7 +99,7 @@ class directories
 	
 	
 	# Function to get the file list
-	public static function getFileListing ($hiddenFiles = array ('.ht*'), $caseSensitiveMatching = true, $showOnly = array (), $sortByKey = 'name', $includeDirectories = true)
+	public static function getFileListing ($hiddenFiles = array ('.ht*'), $caseSensitiveMatching = true, $showOnly = array (), $sortByKey = 'name', $includeDirectories = true, $includeDirectoriesRequireEmpty = false)
 	{
 		# Obtain the current directory, chopping off the query string
 		$currentDirectory = $_SERVER['REQUEST_URI'];
@@ -114,13 +114,24 @@ class directories
 		# Loop through each file
 		foreach ($files as $file => $attributes) {
 			
-			# Remove directories if required
-			if (!$includeDirectories) {
-				if ($attributes['type'] == 'dir') {
+			# Handle directory flags
+			if ($attributes['type'] == 'dir') {
+				
+				# Remove directories if required
+				if (!$includeDirectories) {
 					unset ($files[$file]);
+					continue;
+				}
+				
+				# If including directories, if required, require them to be empty
+				if ($includeDirectoriesRequireEmpty) {
+					$directory = $currentDirectory . $file  . '/';
+					if ($directoryContents = directories::listFiles ($directory)) {
+						unset ($files[$file]);
+						continue;
+					}
 				}
 			}
-			
 			
 			# If a list of areas is given, show only those allowed
 			if ($showOnly) {
@@ -136,14 +147,19 @@ class directories
 		# Sort the list alphabetically
 		if ($files) {
 			switch ($sortByKey) {
+				
 				case 'name':
-					$comparisonFunction = "return strcasecmp (\$a['{$sortByKey}'], \$b['{$sortByKey}']);";
+					uasort ($files, function ($a, $b) {
+						return strcasecmp ($a['name'], $b['name']);
+					});
 					break;
+				
 				case 'time':
-					$comparisonFunction = "return (\$a['{$sortByKey}'] < \$b['{$sortByKey}']);";
+					uasort ($files, function ($a, $b) {
+						return ($a['time'] < $b['time']);
+					});
 					break;
 			}
-			uasort ($files, create_function ('$a, $b', $comparisonFunction));
 		}
 		
 		# Return the list
@@ -228,7 +244,7 @@ class directories
 		# Show photo thumbnails if required
 		if ($includeGallery) {
 			require_once ('image.php');
-			$html .= image::gallery (true, false, $size = 250);
+			$html .= image::gallery (true, false, $size = 250, '/images/generator', false, $hiddenFiles /* will only pick up direct filenames in this list */);
 		}
 		
 		# Return the HTML
@@ -420,9 +436,11 @@ class directories
 			'mov' => 'quicktime.gif',
 			'mpa' => 'media.gif',
 			'mpeg' => 'media.gif',
-			'mp4' => 'quicktime.jpg',
+			'mp3' => 'wav.gif',
+			'mp4' => 'mp4.png',
 			'msg' => 'msg.gif',
 			'mtw' => 'minitab.gif',
+			'm4a' => 'm4a.png',
 			'odb' => 'odb.gif',
 			'odp' => 'odp.gif',
 			'ods' => 'ods.gif',
@@ -485,7 +503,7 @@ class directories
 	
 	# Function to get directory structure (but not contents)
 	#!# This could be tidied up - there is code for excluding files (as distinct from directories), but these are never added in the first place
-	public static function tree ($directory, $exclude = array ()/*, $onlyInclude = array ()*/)
+	public static function tree ($directory /* must be slash-terminated */, $exclude = array ()/*, $onlyInclude = array ()*/)
 	{
 		# Make sure it's a directory
 		if (!is_dir ($directory)) {return array ();}
