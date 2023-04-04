@@ -54,6 +54,12 @@ table.lines {border-collapse: collapse;}
 .mapboxgl-ctrl-bottom-right .mapboxgl-ctrl-group.local {padding: 0;}
 .mapboxgl-ctrl-top-right {margin-right: 325px;}
 .mapboxgl-ctrl-bottom-right .mapboxgl-ctrl-attrib {margin-right: 300px /* This should be 320px, but minus 20px of extra margin from the bottom corner that is being added */; white-space: nowrap;}
+#routeplanning #resultstabspanel p.location {font-weight: bold; font-size: 1.3em; margin-bottom: 20px;}
+#routeplanning #resultstabspanel ul.journeyStats {display: block;}
+#routeplanning #resultstabspanel ul.journeyStats li {display: inline-block; margin-right: 15px;}
+#routeplanning #resultstabspanel ul.journeyStats p {display: inline; color: #603; font-weight: bold; font-size: 1.2em;}
+#routeplanning .elevation-chart-container, #routeplanning span.elevation, #routeplanning a.elevation-scrubber {display: none;}
+#routeplanning table.itinerary {margin-top: 20px;}
 
 /* Isochrones */
 #isochrones p.loading {font-weight: bold; color: red;}

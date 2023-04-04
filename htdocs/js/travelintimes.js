@@ -89,6 +89,7 @@ var travelintimes = (function ($) {
 		
 		// Routing strategies, in order of appearance in the UI
 		defaultStrategy: 'year1830',
+		multiplexedStrategies: false,
 		strategies: [
 			{
 				id: 'roman',
@@ -96,6 +97,7 @@ var travelintimes = (function ($) {
 				baseUrl: '/routing/5000/route/v1/driving',
 				parameters: {},
 				lineColour: '#505160',
+				gpx: false,
 				attribution: 'Routing by Campop',
 				isochroneUrl: '/isochrones/4000'
 			},
@@ -105,6 +107,7 @@ var travelintimes = (function ($) {
 				baseUrl: '/routing/5001/route/v1/driving',
 				parameters: {},
 				lineColour: 'green',
+				gpx: false,
 				attribution: 'Routing by Campop',
 				isochroneUrl: '/isochrones/4001'
 			},
@@ -114,6 +117,7 @@ var travelintimes = (function ($) {
 				baseUrl: '/routing/5002/route/v1/driving',
 				parameters: {},
 				lineColour: 'yellow',
+				gpx: false,
 				attribution: 'Routing by Campop',
 				isochroneUrl: '/isochrones/4002'
 			},
@@ -123,6 +127,7 @@ var travelintimes = (function ($) {
 				baseUrl: '/routing/5003/route/v1/driving',
 				parameters: {},
 				lineColour: 'orange',
+				gpx: false,
 				attribution: 'Routing by Campop',
 				isochroneUrl: '/isochrones/4003'
 			},
@@ -132,6 +137,7 @@ var travelintimes = (function ($) {
 				baseUrl: 'https://api.mapbox.com/directions/v5/mapbox/driving',
 				parameters: {access_token: '%mapboxApiKey'},
 				lineColour: 'brown',
+				gpx: false,
 				attribution: new Date().getFullYear().toString() + ' routing using OpenStreetMap data',
 				isochroneUrl: false
 			}
@@ -574,22 +580,34 @@ var travelintimes = (function ($) {
 			// Define the journey planner module config
 			var config = {
 				title: 'Travel in times - Historic journey planner',
-				cyclestreetsApiKey: _settings.geocoderApiKey,
+				apiKey: _settings.geocoderApiKey,
 				autocompleteBbox: _settings.autocompleteBbox,
 				images: {
+					
+					// Waypoints
 					start: '/js/lib/routing-ui/images/itinerarymarkers/start.png',
 					waypoint: '/js/lib/routing-ui/images/itinerarymarkers/waypoint.png',
-					finish: '/js/lib/routing-ui/images/itinerarymarkers/finish.png'
+					finish: '/js/lib/routing-ui/images/itinerarymarkers/finish.png',
+					
+					// Results tabs panel icons
+					distance: '/js/lib/routing-ui/images/resultscontainer/icon-cyclist.svg',
+					time: '/js/lib/routing-ui/images/resultscontainer/icon-clock.svg',
+					calories: '/js/lib/routing-ui/images/resultscontainer/icon-flame.svg',
+					co2: '/js/lib/routing-ui/images/resultscontainer/icon-leaf.svg',
+					gpx: '/js/lib/routing-ui/images/resultscontainer/icon-jp-red.svg'
 				},
 				initialRoute: _settings.initialRoute,
 				defaultStrategy: _settings.defaultStrategy,
+				multiplexedStrategies: _settings.multiplexedStrategies,
 				strategies: _settings.strategies,
 				showAllRoutes: false,
-				maxZoomToSegment: _settings.maxZoomToSegment
+				maxZoomToSegment: _settings.maxZoomToSegment,
+				createPlanningControls: true,
+				showToolBox: false
 			};
 			
 			// Delegate to separate class
-			routing.initialise (config, _map, false);
+			routing.initialise (config, _map, false, false);
 		},
 		
 		
@@ -651,7 +669,11 @@ var travelintimes = (function ($) {
 					path: 'plan/' + strategy,
 					plan: strategy,
 					lengthMetres: osrm.routes[0].length,
-					timeSeconds: osrm.routes[0].time
+					timeSeconds: osrm.routes[0].time,
+					elevationProfile: {
+						cumulativeMetres: {},	// #!# Not yet implemented
+						elevationsMetres: {}	// #!# Not yet implemented
+					}
 				},
 				geometry: osrm.routes[0].geometry	// Already in GeoJSON coordinates format
 			});
@@ -686,7 +708,9 @@ var travelintimes = (function ($) {
 			var plans = {};
 			plans[strategy] = {		// Cannot be assigned directly in the array below; see https://stackoverflow.com/questions/11508463/javascript-set-object-key-by-variable
 				length: osrm.routes[0].distance,
-				time: osrm.routes[0].duration
+				time: osrm.routes[0].duration,
+				kiloCaloriesBurned: null,	// #!# Not yet implemented
+				grammesCO2saved: null		// #!# Not yet implemented
 				// Others not yet added, e.g. signalledJunctions, signalledCrossings, etc.
 			};
 			
