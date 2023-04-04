@@ -145,6 +145,10 @@ var travelintimes = (function ($) {
 		
 		// Isochrone times, in minutes
 		isochrones: {
+			'#fff': 10,		// 1/4 day
+			'#eee': 50,		// 1/4 day
+			'#bbb': 170,		// 1/4 day
+			'#777': 320,		// 1/4 day
 			'maroon': 360,		// 1/4 day
 			'red': 720,			// 1/2 days
 			'orange': 1440,		// 1 day
@@ -744,7 +748,7 @@ var travelintimes = (function ($) {
 			// Create a legend for the isochrones UI control
 			var labelsRows = [];
 			$.each (_settings.isochrones, function (colour, time) {
-				labelsRows.push ('<tr><td>' + '<i style="background-color: ' + colour + ';"></i>' + '</td><td>' + (time / (60*24)) + ' days</td></tr>');
+				labelsRows.push ('<tr><td>' + '<i style="background-color: ' + colour + ';"></i>' + '</td><td>' + ((time / (60)) / 8).toPrecision(2) + ' 8-hour days</td></tr>');
 			});
 			var legendHtml = '<table>' + labelsRows.join ('\n') + '</table>';
 			legendHtml = '<div class="legend">' + legendHtml + '</div>';
