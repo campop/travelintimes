@@ -1,8 +1,8 @@
 // Historic journey planner
-// Some code adapted from work by CycleStreets, GPL2
+// Some code adapted from work by CycleStreets Ltd, GPL3
 
 /*jslint browser: true, white: true, single: true, for: true */
-/*global $, alert, console, window, mapboxgl, FULLTILT, routing, geojsonExtent */
+/*global $, alert, console, window, mapboxgl, FULLTILT, routing, geojsonExtent, Cookies */
 
 
 var travelintimes = (function ($) {

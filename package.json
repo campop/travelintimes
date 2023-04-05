@@ -1,0 +1,16 @@
+{
+  "name": "travelintimes",
+  "version": "1.0.0",
+  "description": "Historic journey planner, including isochrone disease mapping",
+  "main": "index.js",
+  "repository": "git@github.com:campop/travelintimes.git",
+  "author": "Department of Geography, University of Cambridge",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "@mapbox/geojson-extent": "^1.0.1",
+    "jquery": "^3.6.4",
+    "js-cookie": "^3.0.1",
+    "routing-ui": "https://github.com/campop/routing-ui",
+    "vex-js": "^4.1.0"
+  }
+}

@@ -1,1 +1,5 @@
 enginedata/build-*.log
+
+# Dependencies installed with Yarn
+/htdocs/js/lib/
+/yarn-error.log
