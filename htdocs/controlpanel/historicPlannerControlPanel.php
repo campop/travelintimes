@@ -13,6 +13,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 			'useCamUniLookup' => false,
 			'page404' => false,	// Internal
 			'tabUlClass' => 'tabsflat',
+			'useFeedback' => false,
 			'importsSectionsMode' => true,
 			
 			# Datasets
