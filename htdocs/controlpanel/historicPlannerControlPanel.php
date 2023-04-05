@@ -454,7 +454,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 				exec ($command, $pids);		// See: http://stackoverflow.com/a/3111553
 				if ($pids) {
 					$command = "pkill -f '{$service['pkill']}'";
-					exec ($command, $output = array (), $returnStatusValue);
+					exec ($command, $output, $returnStatusValue);
 					#!# Return status does not seem to be handled properly
 					/*
 					if ($returnStatusValue) {
@@ -481,7 +481,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 						'%build' => $this->settings['builds'][$profile],
 					);
 					$command = strtr ($commandBase, $replacements);
-					exec ($command, $output = array (), $returnStatusValue);
+					exec ($command, $output, $returnStatusValue);
 					// var_dump ($command);
 					#!# Return status does not seem to be handled properly
 					/*
