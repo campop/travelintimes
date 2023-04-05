@@ -25,7 +25,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 				'multimodal1830' => 'Multimodal 1830',	// Port 5002
 				'multimodal1911' => 'Multimodal 1911',	// Port 5003
 			),
-			'builds' => array (),	// Array of last known good builds, needed for restarting the engine
+			'builds' => array (),	// If required, forced version of a built dataset; otherwise latest will be used
 		);
 		
 		# Return the defaults
@@ -474,12 +474,28 @@ class historicPlannerControlPanel extends frontControllerApplication
 					# State the engine profile
 					$html .= "\n<p><em>" . ucfirst ($id) . " engine profile {$profile}:</em></p>";
 					
+					# If there is a stated build for this profile, use it, otherwise use the latest version available
+					if (isSet ($this->settings['builds'][$profile])) {
+						$build = $this->settings['builds'][$profile];
+					} else {
+						$directory = "{$this->softwareRoot}/travelintimes/enginedata/{$profile}/";
+						require_once ('directories.php');
+						$folders = directories::listContainedDirectories ($directory);
+						$build = application::array_last_value ($folders) . '/';
+					}
+					
+					# Skip if no build available
+					if (!$build) {
+						$html .= "\n<p class=\"error\">The engine for {$profile} could not be started as there no builds available.</p>";
+						continue;
+					}
+					
 					# Execute the command for this profile
 					$commandBase = $service['command'];
 					$replacements = array (
 						'%port' => $port,
 						'%profile' => $profile,
-						'%build' => $this->settings['builds'][$profile],
+						'%build' => $build,
 					);
 					$command = strtr ($commandBase, $replacements);
 					exec ($command, $output, $returnStatusValue);
