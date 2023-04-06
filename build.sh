@@ -140,11 +140,16 @@ cd $softwareRoot/osrm-backend/build/
 ./osrm-contract "${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osrm}" --turn-penalty-file "${SCRIPTDIRECTORY}/${buildDirectory}/penalties.csv"
 cd -
 
+# Create/recreate a symlink, so that there is a consistent path that a service can use
+symlink="${SCRIPTDIRECTORY}/enginedata/port${port}"
+rm -f "${symlink}"
+ln -s "${SCRIPTDIRECTORY}/${buildDirectory}" "${symlink}"
+
 # Start the router process in the background, killing any previous instantiation if running
 # E.g. $softwareRoot/osrm-backend/build/osrm-routed converted/Transportations.osrm &
 if pgrep -f "osrm-routed -p ${port}"; then pkill -f "osrm-routed -p ${port}"; fi
-$softwareRoot/osrm-backend/build/osrm-routed -p $port "${SCRIPTDIRECTORY}/${buildDirectory}/${file/.shp.osm/.osrm}" > "${SCRIPTDIRECTORY}/logs-osrm/osrm-${strategy}.log" &
-echo "Running $softwareRoot/osrm-backend/build/osrm-routed -p $port ${buildDirectory}/${file/.shp.osm/.osrm}"
+$softwareRoot/osrm-backend/build/osrm-routed -p $port "${symlink}/${file/.shp.osm/.osrm}" > "${SCRIPTDIRECTORY}/logs-osrm/osrm-${strategy}.log" &
+echo "Running $softwareRoot/osrm-backend/build/osrm-routed -p $port ${symlink}/${file/.shp.osm/.osrm}"
 
 # Generate a GeoJSON file of the network
 osmtogeojson "${SCRIPTDIRECTORY}/${buildDirectory}/merged.osm" > "${SCRIPTDIRECTORY}/${buildDirectory}/merged.geojson"
