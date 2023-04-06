@@ -145,11 +145,9 @@ symlink="${SCRIPTDIRECTORY}/enginedata/port${port}"
 rm -f "${symlink}"
 ln -s "${SCRIPTDIRECTORY}/${buildDirectory}" "${symlink}"
 
-# Start the router process in the background, killing any previous instantiation if running
-# E.g. $softwareRoot/osrm-backend/build/osrm-routed converted/Transportations.osrm &
-if pgrep -f "osrm-routed -p ${port}"; then pkill -f "osrm-routed -p ${port}"; fi
-$softwareRoot/osrm-backend/build/osrm-routed -p $port "${symlink}/${file/.shp.osm/.osrm}" > "${SCRIPTDIRECTORY}/logs-osrm/osrm-${strategy}.log" &
-echo "Running $softwareRoot/osrm-backend/build/osrm-routed -p $port ${symlink}/${file/.shp.osm/.osrm}"
+# (Re)start the routing service for this port
+sudo /bin/systemctl restart travelintimes-osrm@"${port}"
+echo "Running sudo /bin/systemctl restart travelintimes-osrm@${port}"
 
 # Generate a GeoJSON file of the network
 osmtogeojson "${SCRIPTDIRECTORY}/${buildDirectory}/merged.osm" > "${SCRIPTDIRECTORY}/${buildDirectory}/merged.geojson"

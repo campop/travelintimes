@@ -437,8 +437,7 @@ class historicPlannerControlPanel extends frontControllerApplication
 			$services = array (
 				'routing' => array (
 					'startPort'	=> $this->settings['routingStartPort'],
-					'pkill'		=> 'osrm-routed -p',
-					'command'	=> "{$this->softwareRoot}/osrm-backend/build/osrm-routed -p %port {$this->softwareRoot}/travelintimes/enginedata/%profile/%build/merged.osrm > {$this->softwareRoot}/travelintimes/logs-osrm/osrm-%profile.log &",
+					'command'	=> 'sudo /bin/systemctl restart travelintimes-osrm@%port',		// See: https://github.com/campop/travelintimes-deploy/commit/9837752ed16638faf0b830846ce1f15ad13fbe01
 				),
 				'isochrones' => array (
 					'startPort'	=> $this->settings['isochronesStartPort'],
@@ -450,23 +449,25 @@ class historicPlannerControlPanel extends frontControllerApplication
 			# Restart the engine, for each service
 			foreach ($services as $id => $service) {
 				
-				# Kill any existing process for this service
-				$command = "pgrep -f '{$service['pkill']}'";
-				exec ($command, $pids);		// See: http://stackoverflow.com/a/3111553
-				if ($pids) {
-					$command = "pkill -f '{$service['pkill']}'";
-					exec ($command, $output, $returnStatusValue);
-					#!# Return status does not seem to be handled properly
-					/*
-					if ($returnStatusValue) {
-						$html .= "\n" . '<p class="error">Problem shutting down existing engine process:</p>';
-						$html .= "\n" . application::dumpData ($output, false, $return = true);
-						continue;
+				# Kill any existing process for this service, if required; systemctl services do not require this
+				if (isSet ($service['pkill'])) {
+					$command = "pgrep -f '{$service['pkill']}'";
+					exec ($command, $pids);		// See: http://stackoverflow.com/a/3111553
+					if ($pids) {
+						$command = "pkill -f '{$service['pkill']}'";
+						exec ($command, $output, $returnStatusValue);
+						#!# Return status does not seem to be handled properly
+						/*
+						if ($returnStatusValue) {
+							$html .= "\n" . '<p class="error">Problem shutting down existing engine process:</p>';
+							$html .= "\n" . application::dumpData ($output, false, $return = true);
+							continue;
+						}
+						*/
 					}
-					*/
 				}
 				
-				# Start for each port
+				# Start/restart for each port
 				$port = $service['startPort'] - 1;	// Minus one, as will be immediately incremented to the first
 				foreach ($this->settings['datasets'] as $profile => $label) {
 					$port++;	// E.g. 5000, 5001, 5002, 5003
