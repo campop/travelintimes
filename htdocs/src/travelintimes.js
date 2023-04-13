@@ -848,7 +848,6 @@ var travelintimes = (function ($) {
 						var bounds = geojsonExtent (geojson);
 						_map.fitBounds (bounds, {padding: 20});
 						
-						/*
 						// Enable popups; see: https://stackoverflow.com/questions/45841086/show-popup-on-hover-mapbox
 						var popup = new mapboxgl.Popup({
 							closeButton: false
@@ -864,7 +863,6 @@ var travelintimes = (function ($) {
 							_map.getCanvas().style.cursor = '';
 							popup.remove ();
 						});
-						*/
 					}
 				});
 			});
