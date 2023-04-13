@@ -305,6 +305,7 @@ var travelintimes = (function ($) {
 		// Function to add layer switching
 		// https://www.mapbox.com/mapbox-gl-js/example/setstyle/
 		// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
+		// Would be nice to use https://github.com/el/style-switcher but this is ES6, and lacks hover and event firing support
 		layerSwitcher: function ()
 		{
 			// Add layer switcher UI
@@ -580,7 +581,7 @@ var travelintimes = (function ($) {
 			});
 			
 			// Define the journey planner module config
-			var config = {
+			var routingUiConfig = {
 				title: 'Travel in times - Historic journey planner',
 				apiKey: _settings.geocoderApiKey,
 				autocompleteBbox: _settings.autocompleteBbox,
@@ -609,7 +610,7 @@ var travelintimes = (function ($) {
 			};
 			
 			// Delegate to separate class
-			routing.initialise (config, _map, false, false);
+			routing.initialise (routingUiConfig, _map, false, false);
 		},
 		
 		
