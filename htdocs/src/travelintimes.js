@@ -765,6 +765,18 @@ var travelintimes = (function ($) {
 			// Load route indexes
 			var strategiesIndexes = travelintimes.loadRouteIndexes ();
 			
+			// Set waypoint variable for tracking
+			var startPoint = false;
+			
+			// Define function to remove isochrone layer
+			var layerName = 'isochrone';
+			var removeIsochroneLayer = function () {
+				var mapLayer = _map.getLayer (layerName);
+				if (typeof mapLayer !== 'undefined') {
+					_map.removeLayer (layerName).removeSource (layerName);
+				}
+			}
+			
 			// Add isochrone on map click
 			$('#isochrones #planning').on ('click', 'button', function () {		// Late-binding, as the button may have been reinstated after being taken out the DOM
 				
@@ -778,8 +790,9 @@ var travelintimes = (function ($) {
 					alert ('No start point has been set.');
 					return;
 				}
-				var startPoint = waypoints[0];
+				startPoint = waypoints[0];
 				
+/*
 				// Construct the URL; see: https://github.com/urbica/galton#usage
 				// /isochrones/4000/?lng=-0.6065986342294138&lat=52.126834119853015&radius=1000&deintersect=true&cellSize=10&concavity=2&lengthThreshold=0&units=kilometers&intervals=1200&intervals=3600&intervals=30000
 				var parameters = {
@@ -815,11 +828,7 @@ var travelintimes = (function ($) {
 					success: function (geojson) {
 						
 						// Remove layer if already present
-						var layerName = 'isochrone';
-						var mapLayer = _map.getLayer (layerName);
-						if (typeof mapLayer !== 'undefined') {
-							_map.removeLayer (layerName).removeSource (layerName);
-						}
+						removeIsochroneLayer ();
 						
 						// Define the fill-colour definition, adding the colours for each isochrone definition
 						var fillColour = [
@@ -874,6 +883,21 @@ var travelintimes = (function ($) {
 					}
 				});
 			});
+			
+			
+			// Periodically, check for marker clearance/moves
+			// #!# This should be changed to looking at a state model, or as a callback from routing-ui
+			console.log ('checking');
+			setInterval (function () {
+				
+				// Remove the isochrone layer if there are no waypoints or the startpoint has changed
+				var waypoints = routing.getWaypoints ();
+				if (!waypoints.hasOwnProperty (0) || waypoints[0] != startPoint) {
+					removeIsochroneLayer ();
+					return;
+				}
+				
+			}, 1000);
 		},
 		
 		
