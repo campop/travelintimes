@@ -883,6 +883,11 @@ var travelintimes = (function ($) {
 				
 			}, 1000);
 			
+			// Remove isochrone on strategy selection tab change
+			$('#map').on ('click', 'ul#strategies li', function (e) {		// Late-binding, as the UI is created dynamically after load
+				removeIsochroneLayer ();
+			});
+			
 			// Remove isochrone explicitly on clear
 			$('#isochrones p#clear').click (function (e) {
 				removeIsochroneLayer ();
