@@ -744,10 +744,13 @@ var travelintimes = (function ($) {
 			// Add layer switcher UI
 			var control = this.createControl ('isochrones', 'bottom-left');
 			
+			// Define hours per day
+			var hoursPerDay = 8;
+			
 			// Create a legend for the isochrones UI control
 			var labelsRows = [];
 			$.each (_settings.isochrones, function (colour, time) {
-				labelsRows.push ('<tr><td>' + '<i style="background-color: ' + colour + ';"></i>' + '</td><td>' + ((time / (60)) / 8).toPrecision(2) + ' 8-hour days</td></tr>');
+				labelsRows.push ('<tr><td>' + '<i style="background-color: ' + colour + ';"></i>' + '</td><td>' + ((time / (60)) / hoursPerDay).toPrecision(2) + ' ' + hoursPerDay + '-hour days</td></tr>');
 			});
 			var legendHtml = '<table>' + labelsRows.join ('\n') + '</table>';
 			legendHtml = '<div class="legend">' + legendHtml + '</div>';
@@ -857,7 +860,7 @@ var travelintimes = (function ($) {
 							_map.getCanvas().style.cursor = 'pointer';
 							var feature = e.features[0];
 							popup.setLngLat (e.lngLat)
-								.setText (_settings.strategies[selectedStrategyIndex].label + ': It takes ' + (feature.properties.isomin / (60*24)).toPrecision(2) + ' - ' + (feature.properties.isomax / (60*24)).toPrecision(2) + ' 8-hour days to get to locations in this area, from the start point.')
+								.setText (_settings.strategies[selectedStrategyIndex].label + ': It takes ' + (feature.properties.isomin / (60 * hoursPerDay)).toPrecision(2) + ' - ' + (feature.properties.isomax / (60 * hoursPerDay)).toPrecision(2) + ' ' + hoursPerDay + '-hour days to get to locations in this area, from the start point.')
 								.addTo (_map);
 						});
 						_map.on ('mouseleave', layerName, function (e) {
