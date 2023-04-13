@@ -864,7 +864,7 @@ var travelintimes = (function ($) {
 							_map.getCanvas().style.cursor = 'pointer';
 							var feature = e.features[0];
 							popup.setLngLat (e.lngLat)
-								.setText (_settings.strategies[selectedStrategyIndex].label + ': It would have taken ' + (feature.properties.isomin / (60 * hoursPerDay)).toFixed(2).replace(/\.00$/, '').replace(/\.50$/, '.5') + ' - ' + (feature.properties.isomax / (60 * hoursPerDay)).toFixed(2).replace(/\.00$/, '').replace(/\.50$/, '.5') + ' ' + hoursPerDay + '-hour days to get to locations in this area, from the start point.')
+								.setHTML ('<p><strong>' + _settings.strategies[selectedStrategyIndex].label + '</strong>: It would have taken<br /><strong>' + (feature.properties.isomin / (60 * hoursPerDay)).toFixed(2).replace(/\.00$/, '').replace(/\.50$/, '.5') + ' - ' + (feature.properties.isomax / (60 * hoursPerDay)).toFixed(2).replace(/\.00$/, '').replace(/\.50$/, '.5') + ' &nbsp;' + hoursPerDay + '-hour days</strong><br />to get to locations in this area, from the start point.</p>')
 								.addTo (_map);
 						});
 						_map.on ('mouseleave', layerName, function (e) {
