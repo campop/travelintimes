@@ -856,7 +856,7 @@ var travelintimes = (function ($) {
 							_map.getCanvas().style.cursor = 'pointer';
 							var feature = e.features[0];
 							popup.setLngLat (e.lngLat)
-								.setText ((feature.properties.isomin / (60*24)) + ' days')
+								.setText (_settings.strategies[selectedStrategyIndex].label + ': It takes ' + (feature.properties.isomin / (60*24)).toPrecision(2) + ' - ' + (feature.properties.isomax / (60*24)).toPrecision(2) + ' 8-hour days to get to locations in this area, from the start point.')
 								.addTo (_map);
 						});
 						_map.on ('mouseleave', layerName, function (e) {
