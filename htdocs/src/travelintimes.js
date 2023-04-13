@@ -757,6 +757,7 @@ var travelintimes = (function ($) {
 			// Construct HTML for the isochrones UI control
 			var isochronesHtml  = '<h2>Travel time isochrones (experimental)</h2>';
 			isochronesHtml += '<div id="planning">' + buttonHtml + '</div>';
+			isochronesHtml += '<p id="clear"><a href="#">Clear</a></p>'
 			isochronesHtml += legendHtml;
 			$('#isochrones').append (isochronesHtml);
 			
@@ -773,6 +774,7 @@ var travelintimes = (function ($) {
 				if (typeof mapLayer !== 'undefined') {
 					_map.removeLayer (layerName).removeSource (layerName);
 				}
+				$('#isochrones p#clear').hide ();
 			}
 			
 			// Add isochrone on map click
@@ -836,6 +838,9 @@ var travelintimes = (function ($) {
 							}
 						});
 						
+						// Show the clearance button
+						$('#isochrones p#clear').show ();
+						
 						// Remove the loading indicator and reinstate the button
 						$('#isochrones #planning').html (buttonHtml);
 						
@@ -867,7 +872,6 @@ var travelintimes = (function ($) {
 			
 			// Periodically, check for marker clearance/moves
 			// #!# This should be changed to looking at a state model, or as a callback from routing-ui
-			console.log ('checking');
 			setInterval (function () {
 				
 				// Remove the isochrone layer if there are no waypoints or the startpoint has changed
@@ -878,6 +882,12 @@ var travelintimes = (function ($) {
 				}
 				
 			}, 1000);
+			
+			// Remove isochrone explicitly on clear
+			$('#isochrones p#clear').click (function (e) {
+				removeIsochroneLayer ();
+				e.preventDefault ();
+			});
 		},
 		
 		

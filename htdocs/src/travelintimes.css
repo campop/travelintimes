@@ -62,10 +62,11 @@ table.lines {border-collapse: collapse;}
 #routeplanning table.itinerary {margin-top: 20px;}
 
 /* Isochrones */
-#isochrones #planning {border: 1px solid #ccc; width: auto; height: 3.4em; margin: 10px 2px 20px; border-radius: 4px;}
+#isochrones #planning {border: 1px solid #ccc; width: auto; height: 3.4em; margin: 10px 2px; border-radius: 4px;}
 #isochrones #planning button {width: 100%; height: 100%; padding: 5px;}
 #isochrones #planning p.loading {font-weight: bold; color: red; padding: 5px;}
-#isochrones .legend {width: 170px; text-align: left; line-height: 18px; color: #555;}
+#isochrones p#clear {display: none;}
+#isochrones .legend {margin-top: 20px; width: 170px; text-align: left; line-height: 18px; color: #555;}
 #isochrones .legend table {border-collapse: collapse; width: 100%;}
 #isochrones .legend table td {background-color: transparent; padding: 0;}
 #isochrones .legend table td:first-child {width: 16px;}
