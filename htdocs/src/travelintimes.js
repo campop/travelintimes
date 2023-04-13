@@ -143,6 +143,9 @@ var travelintimes = (function ($) {
 			}
 		],
 		
+		// Travellable hours per day
+		travellableHoursPerDay: 8,
+		
 		// Isochrone times, in minutes
 		isochrones: {
 			'#bbb': 120,		// 1/4 day
@@ -606,7 +609,8 @@ var travelintimes = (function ($) {
 				showAllRoutes: false,
 				maxZoomToSegment: _settings.maxZoomToSegment,
 				createPlanningControls: true,
-				showToolBox: false
+				showToolBox: false,
+				travellableHoursPerDay: _settings.travellableHoursPerDay
 			};
 			
 			// Delegate to separate class
