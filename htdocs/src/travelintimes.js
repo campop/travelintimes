@@ -99,7 +99,7 @@ var travelintimes = (function ($) {
 				lineColour: '#505160',
 				gpx: false,
 				attribution: 'Routing by Campop',
-				isochroneUrl: '/isochrones/4000'
+				isochroneUrl: '/isochrone/?port=5000'
 			},
 			{
 				id: 'year1680',
@@ -109,7 +109,7 @@ var travelintimes = (function ($) {
 				lineColour: 'green',
 				gpx: false,
 				attribution: 'Routing by Campop',
-				isochroneUrl: '/isochrones/4001'
+				isochroneUrl: '/isochrone/?port=5001'
 			},
 			{
 				id: 'year1830',
@@ -119,7 +119,7 @@ var travelintimes = (function ($) {
 				lineColour: 'yellow',
 				gpx: false,
 				attribution: 'Routing by Campop',
-				isochroneUrl: '/isochrones/4002'
+				isochroneUrl: '/isochrone/?port=5002'
 			},
 			{
 				id: 'year1911',
@@ -129,7 +129,7 @@ var travelintimes = (function ($) {
 				lineColour: 'orange',
 				gpx: false,
 				attribution: 'Routing by Campop',
-				isochroneUrl: '/isochrones/4003'
+				isochroneUrl: '/isochrone/?port=5003'
 			},
 			{
 				id: 'year' + new Date().getFullYear().toString(),
@@ -792,26 +792,8 @@ var travelintimes = (function ($) {
 				}
 				startPoint = waypoints[0];
 				
-/*
-				// Construct the URL; see: https://github.com/urbica/galton#usage
-				// /isochrones/4000/?lng=-0.6065986342294138&lat=52.126834119853015&radius=1000&deintersect=true&cellSize=10&concavity=2&lengthThreshold=0&units=kilometers&intervals=1200&intervals=3600&intervals=30000
-				var parameters = {
-					lng: startPoint.lng,
-					lat: startPoint.lat,
-					radius: 1000,
-					deintersect: true,
-					cellSize: 10,
-					concavity: 2,
-					lengthThreshold: 0,
-					units: 'kilometers'
-					// intervals handled specially below
-				};
-				var url = _settings.strategies[selectedStrategyIndex].isochroneUrl + '/?' + $.param (parameters);
-				
-				// Add isochrones, e.g. &intervals=1200&intervals=3600&intervals=30000
-				$.each (_settings.isochrones, function (colour, time) {
-					url += '&intervals=' + time;
-				});
+				// Construct the URL
+				var url = _settings.strategies[selectedStrategyIndex].isochroneUrl + '&lon=' + startPoint.lng + '&lat=' + startPoint.lat;
 				
 				// Show loading indicator
 				var loadingIndicator = '<p class="loading">Loading &hellip;</p>';
@@ -833,7 +815,7 @@ var travelintimes = (function ($) {
 						// Define the fill-colour definition, adding the colours for each isochrone definition
 						var fillColour = [
 							'match',
-							['get', 'time']
+							['get', 'isomin']
 						];
 						$.each (_settings.isochrones, function (colour, time) {
 							fillColour.push (time, colour);		// E.g.: [..., 1200, 'red', 3600, 'orange', ...]
@@ -872,7 +854,7 @@ var travelintimes = (function ($) {
 							_map.getCanvas().style.cursor = 'pointer';
 							var feature = e.features[0];
 							popup.setLngLat (e.lngLat)
-								.setText ((feature.properties.time / (60*24)) + ' days')
+								.setText ((feature.properties.isomin / (60*24)) + ' days')
 								.addTo (_map);
 						});
 						_map.on ('mouseleave', layerName, function (e) {
