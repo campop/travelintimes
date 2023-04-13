@@ -753,9 +753,12 @@ var travelintimes = (function ($) {
 			var legendHtml = '<table>' + labelsRows.join ('\n') + '</table>';
 			legendHtml = '<div class="legend">' + legendHtml + '</div>';
 			
+			// Create a button
+			var buttonHtml = '<button>Create isochrone from start point</button>';
+			
 			// Construct HTML for the isochrones UI control
-			var isochronesHtml  = '<h2>Isochrones</h2>';
-			isochronesHtml += '<p>Click on the map to show travel time isochrones.</p>';
+			var isochronesHtml  = '<h2>Isochrones (experimental)</h2>';
+			isochronesHtml += '<div id="planning">' + buttonHtml + '</div>';
 			isochronesHtml += legendHtml;
 			$('#isochrones').append (isochronesHtml);
 			
@@ -763,17 +766,25 @@ var travelintimes = (function ($) {
 			var strategiesIndexes = travelintimes.loadRouteIndexes ();
 			
 			// Add isochrone on map click
-			_map.on ('click', function (e) {
+			$('#isochrones #planning').on ('click', 'button', function () {		// Late-binding, as the button may have been reinstated after being taken out the DOM
 				
 				// Get the currently-selected strategy from the routing module
 				var selectedStrategy = routing.getSelectedStrategy ();
 				var selectedStrategyIndex = strategiesIndexes[selectedStrategy];
 				
+				// Get the start point, or end
+				var waypoints = routing.getWaypoints ();
+				if (!waypoints.hasOwnProperty (0)) {
+					alert ('No start point has been set.');
+					return;
+				}
+				var startPoint = waypoints[0];
+				
 				// Construct the URL; see: https://github.com/urbica/galton#usage
 				// /isochrones/4000/?lng=-0.6065986342294138&lat=52.126834119853015&radius=1000&deintersect=true&cellSize=10&concavity=2&lengthThreshold=0&units=kilometers&intervals=1200&intervals=3600&intervals=30000
 				var parameters = {
-					lng: e.lngLat.lng,
-					lat: e.lngLat.lat,
+					lng: startPoint.lng,
+					lat: startPoint.lat,
 					radius: 1000,
 					deintersect: true,
 					cellSize: 10,
@@ -791,7 +802,7 @@ var travelintimes = (function ($) {
 				
 				// Show loading indicator
 				var loadingIndicator = '<p class="loading">Loading &hellip;</p>';
-				$('#isochrones').append (loadingIndicator);
+				$('#isochrones #planning').html (loadingIndicator);
 				
 				// Load over AJAX; see: https://stackoverflow.com/a/48655332/180733
 				$.ajax ({
@@ -836,8 +847,8 @@ var travelintimes = (function ($) {
 							}
 						});
 						
-						// Remove the loading indicator
-						$('#isochrones .loading').remove ();
+						// Remove the loading indicator and reinstate the button
+						$('#isochrones #planning').html (buttonHtml);
 						
 						// Zoom out the map
 						var bounds = geojsonExtent (geojson);
