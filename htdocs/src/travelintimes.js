@@ -757,7 +757,7 @@ var travelintimes = (function ($) {
 			var buttonHtml = '<button>Create isochrone from start point</button>';
 			
 			// Construct HTML for the isochrones UI control
-			var isochronesHtml  = '<h2>Isochrones (experimental)</h2>';
+			var isochronesHtml  = '<h2>Travel time isochrones (experimental)</h2>';
 			isochronesHtml += '<div id="planning">' + buttonHtml + '</div>';
 			isochronesHtml += legendHtml;
 			$('#isochrones').append (isochronesHtml);
