@@ -145,15 +145,13 @@ var travelintimes = (function ($) {
 		
 		// Isochrone times, in minutes
 		isochrones: {
-			'#fff': 10,		// 1/4 day
-			'#eee': 50,		// 1/4 day
-			'#bbb': 170,		// 1/4 day
-			'#777': 320,		// 1/4 day
-			'maroon': 360,		// 1/4 day
-			'red': 720,			// 1/2 days
-			'orange': 1440,		// 1 day
-			'green': 4320,		// 3 days
-			'aqua': 10080		// 7 days
+			'#bbb': 120,		// 1/4 day
+			'#777': 240,		// 1/2 day
+			'maroon': 480,		// 1 day
+			'red': 720,			// 1.5 days
+			'orange': 1440,		// 3 day
+			'green': 4320,		// 9 days
+			'aqua': 10080		// 21 days
 		}
 	};
 	

@@ -28,8 +28,7 @@ lat = as.double(args[3])
 library('osrm')
 isochroneSf = osrmIsochrone(
 	loc = c(lon, lat),
-#	breaks = seq(from = 0, to = 10080, length.out = 7),
-	breaks = c(10, 50, 170, 320, 360, 720, 1440, 4320, 10080),
+	breaks = c(0, 120, 240, 480, 720, 1440, 4320, 10080),
 	res = 200,
 	osrm.server = sprintf('http://www.travelintimes.org/routing/%s/', port),
 #	osrm.server = 'http://www.travelintimes.org:5002/',
