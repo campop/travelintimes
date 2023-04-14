@@ -24,7 +24,7 @@ html, body {width: 100%; height: 100%; margin: 0; padding: 0;}
 #mapkeybox img {width: 100%;}
 
 /* Geocoder */
-#geocoder {position: absolute; top: 10px; left: 55px; z-index: 500;}
+#geocoder {position: absolute; top: 15px; left: 10px;}
 #geocoder input {padding: 5px; font-size: 1em; color: #603; width: 250px;}
 #geocoder input.ui-autocomplete-loading {background: white url('images/ui-anim_basic_16x16.gif') right center no-repeat;}
 #geocoder input, .ui-autocomplete {border: 1px solid #eee; box-shadow: 5px 5px 10px 0px rgba(28,28,28,0.5);}
