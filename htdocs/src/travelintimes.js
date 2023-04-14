@@ -94,6 +94,7 @@ var travelintimes = (function ($) {
 			{
 				id: 'roman',
 				label: 'Roman',
+				implementation: 'osrm',
 				baseUrl: '/routing/5000/route/v1/driving',
 				parameters: {},
 				lineColour: '#505160',
@@ -104,6 +105,7 @@ var travelintimes = (function ($) {
 			{
 				id: 'year1680',
 				label: '1680',
+				implementation: 'osrm',
 				baseUrl: '/routing/5001/route/v1/driving',
 				parameters: {},
 				lineColour: 'green',
@@ -114,6 +116,7 @@ var travelintimes = (function ($) {
 			{
 				id: 'year1830',
 				label: '1830',
+				implementation: 'osrm',
 				baseUrl: '/routing/5002/route/v1/driving',
 				parameters: {},
 				lineColour: 'yellow',
@@ -124,6 +127,7 @@ var travelintimes = (function ($) {
 			{
 				id: 'year1911',
 				label: '1911',
+				implementation: 'osrm',
 				baseUrl: '/routing/5003/route/v1/driving',
 				parameters: {},
 				lineColour: 'orange',
@@ -134,6 +138,7 @@ var travelintimes = (function ($) {
 			{
 				id: 'year' + new Date().getFullYear().toString(),
 				label: new Date().getFullYear().toString(),
+				implementation: 'osrm',
 				baseUrl: 'https://api.mapbox.com/directions/v5/mapbox/driving',
 				parameters: {access_token: '%mapboxApiKey'},
 				lineColour: 'brown',
@@ -577,12 +582,6 @@ var travelintimes = (function ($) {
 				}
 			});
 			
-			// Add OSRM implementation callbacks for route request and GeoJSON conversion for each strategy
-			$.each (_settings.strategies, function (index, strategy) {
-				_settings.strategies[index].routeRequest      = travelintimes.routeRequest;
-				_settings.strategies[index].geojsonConversion = travelintimes.osrmToGeojson;
-			});
-			
 			// Define the journey planner module config
 			var routingUiConfig = {
 				title: 'Travel in times - Historic journey planner',
@@ -615,130 +614,6 @@ var travelintimes = (function ($) {
 			
 			// Delegate to separate class
 			routing.initialise (routingUiConfig, _map, false, false);
-		},
-		
-		
-		// Callback function to assemble the route request
-		routeRequest: function (waypointStrings, strategyBaseUrl, strategyParameters)
-		{
-			// Start with the strategy-specific parameters in the strategy definitions above
-			var parameters = $.extend (true, {}, strategyParameters);	// i.e. clone
-			
-			// Add additional parameters
-			parameters.alternatives = 'false';
-			parameters.overview = 'full';
-			parameters.steps = 'true';
-			parameters.geometries = 'geojson';
-			var waypoints = waypointStrings.join (';');
-			
-			// Construct the URL
-			var url = strategyBaseUrl + '/' + waypoints + '?' + $.param (parameters, false);
-			
-			// Return the result
-			return url;
-		},
-		
-		
-		// Callback function to convert an OSRM route result to the CycleStreets GeoJSON format
-		// OSRM format: https://github.com/Project-OSRM/osrm-backend/blob/master/docs/http.md
-		// CycleStreets format: https://www.cyclestreets.net/api/v2/journey.plan/
-		osrmToGeojson: function (osrm, strategy)
-		{
-			// Determine the number of waypoints
-			var totalWaypoints = osrm.waypoints.length;
-			var lastWaypoint = totalWaypoints - 1;
-			
-			// Start the features list
-			var features = [];
-			
-			// First, add each waypoint as a feature
-			var waypointNumber;
-			$.each (osrm.waypoints, function (index, waypoint) {
-				waypointNumber = index + 1;
-				features.push ({
-					type: 'Feature',
-					properties: {
-						path: 'waypoint/' + waypointNumber,
-						number: waypointNumber,
-						markerTag: (waypointNumber == 1 ? 'start' : (waypointNumber == totalWaypoints ? 'finish' : 'intermediate'))
-					},
-					geometry: {
-						type: 'Point',
-						coordinates: waypoint.location	// Already present as [lon, lat]
-					}
-				});
-			});
-			
-			// Next, add the full route, facilitated using overview=full
-			features.push ({
-				type: 'Feature',
-				properties: {
-					path: 'plan/' + strategy,
-					plan: strategy,
-					lengthMetres: osrm.routes[0].length,
-					timeSeconds: osrm.routes[0].time,
-					elevationProfile: {
-						cumulativeMetres: {},	// #!# Not yet implemented
-						elevationsMetres: {}	// #!# Not yet implemented
-					}
-				},
-				geometry: osrm.routes[0].geometry	// Already in GeoJSON coordinates format
-			});
-			
-			// Next, add each step
-			$.each (osrm.routes[0].legs[0].steps, function (index, step) {
-				
-				// Skip final arrival node
-				if (step.maneuver.type == 'arrive') {return 'continue;'}
-				
-				// Add the feature
-				features.push ({
-					type: 'Feature',
-					properties: {
-						path: 'plan/' + strategy + '/street/' + (index + 1),
-						number: (index + 1),
-						name: step.name,
-						lengthMetres: step.distance,
-						timeSeconds: step.duration,
-						ridingSurface: '',				// Not available in OSRM
-						color: '',						// Not available in OSRM
-						travelMode: (step.name.indexOf ('railway') !== -1 ? 'railway' : step.mode),
-						signalledJunctions: step.intersections.length,
-						signalledCrossings: -1,			// Not available in OSRM
-						startBearing: step.maneuver.bearing_before
-					},
-					geometry: step.geometry	// Already in GeoJSON coordinates format
-				});
-			});
-			
-			// Assemble the plan summaries
-			var plans = {};
-			plans[strategy] = {		// Cannot be assigned directly in the array below; see https://stackoverflow.com/questions/11508463/javascript-set-object-key-by-variable
-				length: osrm.routes[0].distance,
-				time: osrm.routes[0].duration,
-				kiloCaloriesBurned: null,	// #!# Not yet implemented
-				grammesCO2saved: null		// #!# Not yet implemented
-				// Others not yet added, e.g. signalledJunctions, signalledCrossings, etc.
-			};
-			
-			// Assemble the GeoJSON structure
-			var geojson = {
-				type: 'FeatureCollection',
-				properties: {
-					id: null,							// Not available in OSRM
-					start: osrm.waypoints[0].name,
-					finish: osrm.waypoints[lastWaypoint].name,
-					waypointCount: totalWaypoints,
-					plans: plans
-				},
-				features: features
-			};
-			
-			//console.log (geojson);
-			//console.log (JSON.stringify (geojson));
-			
-			// Return the result
-			return geojson;
 		},
 		
 		
