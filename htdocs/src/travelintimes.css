@@ -59,7 +59,6 @@ table.lines {border-collapse: collapse;}
 #routeplanning #resultstabspanel ul.journeyStats li {display: inline-block; margin-right: 15px;}
 #routeplanning #resultstabspanel ul.journeyStats p {display: inline; color: #603; font-weight: bold; font-size: 1.2em;}
 #routeplanning .elevation-chart-container, #routeplanning span.elevation, #routeplanning a.elevation-scrubber {display: none;}
-#routeplanning table.itinerary {margin-top: 20px;}
 
 /* Isochrones */
 #isochrones #planning {border: 1px solid #ccc; width: auto; height: 3.4em; margin: 10px 2px; border-radius: 4px;}
