@@ -679,7 +679,7 @@ var travelintimes = (function ($) {
 				var url = _settings.strategies[selectedStrategyIndex].isochroneUrl + '&lon=' + startPoint.lng + '&lat=' + startPoint.lat;
 				
 				// Show loading indicator
-				var loadingIndicator = '<p class="loading"><img src="/images/ui-anim_basic_16x16.gif" /> Loading &hellip;<br />(Takes 5-10 secs)</p>';
+				var loadingIndicator = '<p class="loading"><img src="/images/ui-anim_basic_16x16.gif" /> Loading &hellip;<br />(Takes ~3 secs)</p>';
 				$('#isochrones #planning').html (loadingIndicator);
 				
 				// Load over AJAX; see: https://stackoverflow.com/a/48655332/180733
