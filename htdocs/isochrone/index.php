@@ -15,10 +15,12 @@ if (!$port || !$lon || !$lat) {
 }
 
 # Get the data via pipes, which is most secure
-$geojson = createProcess ('./isochrone.R', "{$port} {$lon} {$lat}");
+#	$geojson = createProcess ('./isochrone.R', "{$port} {$lon} {$lat}");
+$geojson = createProcess ('NODE_PATH=../js/lib/ ./isochrone.node.js', "{$port} {$lon} {$lat}");
 
 # Get the data via shell execution
 #	$command = "./isochrone.R {$port} {$lon} {$lat}";
+#	$command = "NODE_PATH=../js/lib/ ./isochrone.node.js {$port} {$lon} {$lat}";
 #	$geojson = shell_exec ($command);
 
 # Reformat

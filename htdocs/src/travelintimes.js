@@ -698,7 +698,7 @@ var travelintimes = (function ($) {
 						// Define the fill-colour definition, adding the colours for each isochrone definition
 						var fillColour = [
 							'match',
-							['get', 'isomin']
+							['get', 'time']
 						];
 						$.each (_settings.isochrones, function (colour, time) {
 							fillColour.push (time, colour);		// E.g.: [..., 1200, 'red', 3600, 'orange', ...]
@@ -731,6 +731,15 @@ var travelintimes = (function ($) {
 						var bounds = geojsonExtent (geojson);
 						_map.fitBounds (bounds, {padding: 20});
 						
+						// Work out day ranges for each isochrone time value
+						var times = Object.values (_settings.isochrones);
+						var ranges = {};
+						$.each (times, function (index, time) {
+							ranges[time]  = (index == 0 ? '0' : (times[index - 1] / (60 * hoursPerDay)).toFixed(2).replace(/\.00$/, '').replace(/\.50$/, '.5'));
+							ranges[time] += ' - ';
+							ranges[time] += (time / (60 * hoursPerDay)).toFixed(2).replace(/\.00$/, '').replace(/\.50$/, '.5');
+						});
+						
 						// Enable popups; see: https://stackoverflow.com/questions/45841086/show-popup-on-hover-mapbox
 						var popup = new mapboxgl.Popup({
 							closeButton: false
@@ -739,7 +748,7 @@ var travelintimes = (function ($) {
 							_map.getCanvas().style.cursor = 'pointer';
 							var feature = e.features[0];
 							popup.setLngLat (e.lngLat)
-								.setHTML ('<p><strong>' + _settings.strategies[selectedStrategyIndex].label + '</strong>: It would have taken<br /><strong>' + (feature.properties.isomin / (60 * hoursPerDay)).toFixed(2).replace(/\.00$/, '').replace(/\.50$/, '.5') + ' - ' + (feature.properties.isomax / (60 * hoursPerDay)).toFixed(2).replace(/\.00$/, '').replace(/\.50$/, '.5') + ' &nbsp;' + hoursPerDay + '-hour days</strong><br />to get to locations in this area, from the start point.</p>')
+								.setHTML ('<p><strong>' + _settings.strategies[selectedStrategyIndex].label + '</strong>: It would have taken<br /><strong>' + ranges[feature.properties.time] + ' &nbsp;' + hoursPerDay + '-hour days</strong><br />to get to locations in this area, from the start point.</p>')
 								.addTo (_map);
 						});
 						_map.on ('mouseleave', layerName, function (e) {
