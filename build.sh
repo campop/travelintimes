@@ -165,9 +165,9 @@ ndjson-filter 'delete d.id, true' < "${SCRIPTDIRECTORY}/${buildDirectory}/merged
 	| ndjson-filter 'delete d.properties.Name, true' \
 	> "${SCRIPTDIRECTORY}/${buildDirectory}/filtered.ndjson"
 #   Convert back to GeoJSON
-ndjson-reduce < "${SCRIPTDIRECTORY}/${buildDirectory}/filtered.ndjson" | ndjson-map '{type: "FeatureCollection", features: d}' > "${SCRIPTDIRECTORY}/${buildDirectory}/${filtered}.geojson"
-geojson-precision -p 4 "${SCRIPTDIRECTORY}/${buildDirectory}/${filtered}.geojson" "${SCRIPTDIRECTORY}/${buildDirectory}/${filtered}-p4.geojson"
-cp -p "${SCRIPTDIRECTORY}/${buildDirectory}/${filtered}-p4.geojson" "${softwareRoot}/travelintimes/htdocs/geojson/${strategy}.geojson"
+ndjson-reduce < "${SCRIPTDIRECTORY}/${buildDirectory}/filtered.ndjson" | ndjson-map '{type: "FeatureCollection", features: d}' > "${SCRIPTDIRECTORY}/${buildDirectory}/filtered.geojson"
+geojson-precision -p 4 "${SCRIPTDIRECTORY}/${buildDirectory}/filtered.geojson" "${SCRIPTDIRECTORY}/${buildDirectory}/filtered-p4.geojson"
+cp -p "${SCRIPTDIRECTORY}/${buildDirectory}/filtered-p4.geojson" "${softwareRoot}/travelintimes/htdocs/geojson/${strategy}.geojson"
 
 
 exit
