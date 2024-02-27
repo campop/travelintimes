@@ -11,8 +11,6 @@
 	
 	# Require auth throughout
 	<Location $baseUrl/>
-#		Order deny,allow
-#		Deny from all
 #		AuthType Ucam-WebAuth
 #		AADescription "Historic planner control panel"
 #		AAForceInteract On
