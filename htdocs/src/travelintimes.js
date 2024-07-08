@@ -644,14 +644,9 @@ const travelintimes = (function ($) {
 				$('#isochrones #planning').html (loadingIndicator);
 				
 				// Load over AJAX; see: https://stackoverflow.com/a/48655332/180733
-				$.ajax ({
-					dataType: 'json',
-					url: url,
-					error: function (jqXHR, textStatus, errorThrown) {
-						alert ('Sorry, the isochrone for ' + _settings.strategies[selectedStrategyIndex].label + ' could not be loaded: ' + textStatus);
-						console.log (errorThrown);
-					},
-					success: function (geojson) {
+				fetch (url)
+					.then (function (response) {return response.json ();})
+					.then (function (geojson) {
 						
 						// Remove layer if already present
 						removeIsochroneLayer ();
@@ -716,8 +711,12 @@ const travelintimes = (function ($) {
 							_map.getCanvas().style.cursor = '';
 							popup.remove ();
 						});
-					}
-				});
+					})
+					.catch (function (error) {
+						alert ('Sorry, the isochrone for ' + _settings.strategies[selectedStrategyIndex].label + ' could not be loaded: ' + error.message);
+						console.log (error);
+					})
+				;
 			});
 			
 			
