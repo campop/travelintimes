@@ -408,43 +408,6 @@ const travelintimes = (function ($) {
 		},
 		
 		
-		// Function to add a geocoder control
-		geocoder: function (addTo, callbackFunction)
-		{
-			// Geocoder URL; re-use of settings values is supported, represented as placeholders {%cyclestreetsApiBaseUrl}, {%cyclestreetsApiKey}, {%autocompleteBbox}
-			const geocoderApiUrl = travelintimes.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['cyclestreetsApiBaseUrl', 'cyclestreetsApiKey', 'autocompleteBbox']);
-			
-			// Attach the autocomplete library behaviour to the location control
-			autocomplete.addTo (addTo, {
-				sourceUrl: geocoderApiUrl,
-				select: function (event, ui) {
-					const bbox = ui.item.feature.properties.bbox.split(',');
-					_map.setMaxZoom (18);	// Prevent excessive zoom to give context
-					_map.fitBounds([ [bbox[0], bbox[1]], [bbox[2], bbox[3]] ]);	// Note that Mapbox GL JS uses sw,ne rather than ws,en as in Leaflet.js
-					_map.setMaxZoom (_settings.maxZoom);	// Reset
-					if (callbackFunction) {
-						callbackFunction (ui.item);
-					}
-					event.preventDefault();
-				}
-			});
-		},
-		
-		
-		// Helper function to implement settings placeholder substitution in a string
-		settingsPlaceholderSubstitution: function (string, supportedPlaceholders)
-		{
-			// Substitute each placeholder
-			$.each (supportedPlaceholders, function (index, field) {
-				const placeholder = '{%' + field + '}';
-				string = string.replace(placeholder, _settings[field]);
-			});
-			
-			// Return the modified string
-			return string;
-		},
-		
-		
 		// Function to set the map background colour for a layer
 		setMapBackgroundColour: function (tileLayerOptions)
 		{
