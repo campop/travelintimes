@@ -5,13 +5,13 @@
 /*global $, alert, console, window, mapboxgl, FULLTILT, routing, geojsonExtent, Cookies */
 
 
-var travelintimes = (function ($) {
+const travelintimes = (function ($) {
 	
 	'use strict';
 	
 	
 	// Settings
-	var _settings = {
+	const _settings = {
 		
 		// Initial lat/lon/zoom of map and tile layer
 		defaultLocation: {
@@ -164,8 +164,8 @@ var travelintimes = (function ($) {
 	};
 	
 	// Internal class properties
-	var _map = null;
-	var _styles = {};
+	let _map = null;
+	const _styles = {};
 	
 	
 	return {
@@ -298,7 +298,7 @@ var travelintimes = (function ($) {
 		geolocation: function ()
 		{
 			// Create a tracking control
-			var geolocate = new mapboxgl.GeolocateControl({
+			const geolocate = new mapboxgl.GeolocateControl({
 				positionOptions: {
 					enableHighAccuracy: true
 				},
@@ -317,24 +317,23 @@ var travelintimes = (function ($) {
 		layerSwitcher: function ()
 		{
 			// Add layer switcher UI
-			var control = this.createControl ('layerswitcher', 'bottom-left');
+			this.createControl ('layerswitcher', 'bottom-left');
 			
 			// Construct HTML for layer switcher
-			var layerSwitcherHtml = '<ul>';
-			var name;
+			let layerSwitcherHtml = '<ul>';
 			$.each (_styles, function (styleId, style) {
-				name = (_settings.tileUrls[styleId].label ? _settings.tileUrls[styleId].label : travelintimes.ucfirst (styleId));
+				const name = (_settings.tileUrls[styleId].label ? _settings.tileUrls[styleId].label : travelintimes.ucfirst (styleId));
 				layerSwitcherHtml += '<li><input id="' + styleId + '" type="radio" name="layerswitcher" value="' + styleId + '"' + (styleId == _settings.defaultStyle ? ' checked="checked"' : '') + '><label for="' + styleId + '"> ' + name + '</label></li>';
 			});
 			layerSwitcherHtml += '</ul>';
 			$('#layerswitcher').append (layerSwitcherHtml);
 			
 			// Switch to selected layer
-			var layerList = document.getElementById ('layerswitcher');
-			var inputs = layerList.getElementsByTagName ('input');
+			const layerList = document.getElementById ('layerswitcher');
+			const inputs = layerList.getElementsByTagName ('input');
 			function switchLayer (layer) {
-				var layerId = layer.target.id;
-				var style = _styles[layerId];
+				const layerId = layer.target.id;
+				const style = _styles[layerId];
 				_map.setStyle (style);
 				
 				// Set the background colour if required
@@ -343,7 +342,7 @@ var travelintimes = (function ($) {
 				// Fire an event; see: https://javascript.info/dispatch-events
 				travelintimes.styleChanged ();
 			};
-			for (var i = 0; i < inputs.length; i++) {
+			for (let i = 0; i < inputs.length; i++) {
 				inputs[i].onclick = switchLayer;
 			}
 		},
@@ -362,8 +361,8 @@ var travelintimes = (function ($) {
 			}
 			
 			// Fire a custom event that client code can pick up when the style is changed
-			var body = document.getElementsByTagName ('body')[0];
-			var myEvent = new Event ('style-changed', {'bubbles': true});
+			const body = document.getElementsByTagName ('body')[0];
+			const myEvent = new Event ('style-changed', {'bubbles': true});
 			body.dispatchEvent (myEvent);
 		},
 		
@@ -413,13 +412,13 @@ var travelintimes = (function ($) {
 		geocoder: function (addTo, callbackFunction)
 		{
 			// Geocoder URL; re-use of settings values is supported, represented as placeholders {%cyclestreetsApiBaseUrl}, {%cyclestreetsApiKey}, {%autocompleteBbox}
-			var geocoderApiUrl = travelintimes.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['cyclestreetsApiBaseUrl', 'cyclestreetsApiKey', 'autocompleteBbox']);
+			const geocoderApiUrl = travelintimes.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['cyclestreetsApiBaseUrl', 'cyclestreetsApiKey', 'autocompleteBbox']);
 			
 			// Attach the autocomplete library behaviour to the location control
 			autocomplete.addTo (addTo, {
 				sourceUrl: geocoderApiUrl,
 				select: function (event, ui) {
-					var bbox = ui.item.feature.properties.bbox.split(',');
+					const bbox = ui.item.feature.properties.bbox.split(',');
 					_map.setMaxZoom (18);	// Prevent excessive zoom to give context
 					_map.fitBounds([ [bbox[0], bbox[1]], [bbox[2], bbox[3]] ]);	// Note that Mapbox GL JS uses sw,ne rather than ws,en as in Leaflet.js
 					_map.setMaxZoom (_settings.maxZoom);	// Reset
@@ -436,9 +435,8 @@ var travelintimes = (function ($) {
 		settingsPlaceholderSubstitution: function (string, supportedPlaceholders)
 		{
 			// Substitute each placeholder
-			var placeholder;
-			$.each(supportedPlaceholders, function (index, field) {
-				placeholder = '{%' + field + '}';
+			$.each (supportedPlaceholders, function (index, field) {
+				const placeholder = '{%' + field + '}';
 				string = string.replace(placeholder, _settings[field]);
 			});
 			
@@ -451,7 +449,7 @@ var travelintimes = (function ($) {
 		setMapBackgroundColour: function (tileLayerOptions)
 		{
 			// Set, using jQuery, if specified, or clear
-			var backgroundColour = (tileLayerOptions.backgroundColour ? tileLayerOptions.backgroundColour : '');
+			const backgroundColour = (tileLayerOptions.backgroundColour ? tileLayerOptions.backgroundColour : '');
 			$('.mapboxgl-map').css ('background-color', backgroundColour);
 		},
 		
@@ -460,18 +458,18 @@ var travelintimes = (function ($) {
 		placenamesOverlay: function ()
 		{
 			// Register the definition
-			var locationLabelsLayer = {
-				"id": "locationlabels",
-				"type": "raster",
-				"source": {
-					"type": "raster",
-					"tiles": [
+			const locationLabelsLayer = {
+				id: "locationlabels",
+				type: "raster",
+				source: {
+					type: "raster",
+					tiles: [
 						'https://cartodb-basemaps-a.global.ssl.fastly.net/light_only_labels/{z}/{x}/{y}.png',
 						'https://cartodb-basemaps-b.global.ssl.fastly.net/light_only_labels/{z}/{x}/{y}.png',
 						'https://cartodb-basemaps-c.global.ssl.fastly.net/light_only_labels/{z}/{x}/{y}.png',
 					],
-					"tileSize": 256,	// NB Mapbox GL default is 512
-					"attribution": '&copy; OpenStreetMap, &copy; CartoDB'
+					tileSize: 256,	// NB Mapbox GL default is 512
+					attribution: '&copy; OpenStreetMap, &copy; CartoDB'
 				}
 			};
 			
@@ -489,7 +487,7 @@ var travelintimes = (function ($) {
 			autocomplete.addTo ('#geocoder input', {
 				sourceUrl: _settings.geocoderApiBaseUrl + '?key=' + _settings.geocoderApiKey + '&bounded=1&bbox=' + _settings.autocompleteBbox,
 				select: function (event, ui) {
-					var bbox = ui.item.feature.properties.bbox.split(',');
+					const bbox = ui.item.feature.properties.bbox.split (',');
 					_map.fitBounds([ [bbox[0], bbox[1]], [bbox[2], bbox[3]] ], {maxZoom: 13});	// Note that Mapbox GL JS uses sw,ne rather than ws,en as in Leaflet.js
 					event.preventDefault();
 				}
@@ -501,14 +499,14 @@ var travelintimes = (function ($) {
 		welcomeFirstRun: function ()
 		{
 			// End if cookie already set
-			var name = 'welcome';
+			const name = 'welcome';
 			if (Cookies.get(name)) {return;}
 			
 			// Set the cookie
 			Cookies.set(name, '1', {expires: 14});
 			
 			// Define a welcome message
-			var message =
+			const message =
 			   '<p><strong>Welcome to Travel in times, from CAMPOP.</strong></p>'
 			 + '<p>Travelintimes.org is a historic online journey planner, created at the University of Cambridge, that allows users to plan journeys around England and Wales at three dates in time, c.1680, c.1830 and in 1911.</p>'
 			 + '<p>The website allows users to explore the nature of travel in the past and how it improved over the period 1670 to 1911, based on the latest historical research.</p>'
@@ -551,7 +549,7 @@ var travelintimes = (function ($) {
 		pageHandler: function (triggerElement, name)
 		{
 			// Obtain the HTML
-			var html = $('#' + name).html();
+			const html = $('#' + name).html();
 			
 			// Create the dialog box
 			travelintimes.dialogBox (triggerElement, name, html);
@@ -583,7 +581,7 @@ var travelintimes = (function ($) {
 			});
 			
 			// Define the journey planner module config
-			var routingUiConfig = {
+			const routingUiConfig = {
 				title: 'Travel in times - Historic journey planner',
 				apiKey: _settings.geocoderApiKey,
 				autocompleteBbox: _settings.autocompleteBbox,
@@ -621,39 +619,39 @@ var travelintimes = (function ($) {
 		isochrones: function ()
 		{
 			// Add layer switcher UI
-			var control = this.createControl ('isochrones', 'bottom-left');
+			this.createControl ('isochrones', 'bottom-left');
 			
 			// Define hours per day
-			var hoursPerDay = 8;
+			const hoursPerDay = 8;
 			
 			// Create a legend for the isochrones UI control
-			var labelsRows = [];
+			const labelsRows = [];
 			$.each (_settings.isochrones, function (colour, time) {
 				labelsRows.push ('<tr><td>' + '<i style="background-color: ' + colour + ';"></i>' + '</td><td>' + ((time / (60)) / hoursPerDay).toFixed(2).replace(/\.00$/, '').replace(/\.50$/, '.5') + ' ' + hoursPerDay + '-hour days</td></tr>');
 			});
-			var legendHtml = '<table>' + labelsRows.join ('\n') + '</table>';
+			let legendHtml = '<table>' + labelsRows.join ('\n') + '</table>';
 			legendHtml = '<div class="legend">' + legendHtml + '</div>';
 			
 			// Create a button
-			var buttonHtml = '<button>Create travel times isochrones from start point</button>';
+			const buttonHtml = '<button>Create travel times isochrones from start point</button>';
 			
 			// Construct HTML for the isochrones UI control
-			var isochronesHtml  = '<h2>Travel times</h2>';
+			let isochronesHtml  = '<h2>Travel times</h2>';
 			isochronesHtml += '<div id="planning">' + buttonHtml + '</div>';
 			isochronesHtml += '<p id="clear"><a href="#">Clear</a></p>'
 			isochronesHtml += legendHtml;
 			$('#isochrones').append (isochronesHtml);
 			
 			// Load route indexes
-			var strategiesIndexes = travelintimes.loadRouteIndexes ();
+			const strategiesIndexes = travelintimes.loadRouteIndexes ();
 			
 			// Set waypoint variable for tracking
-			var startPoint = false;
+			let startPoint = false;
 			
 			// Define function to remove isochrone layer
-			var layerName = 'isochrone';
-			var removeIsochroneLayer = function () {
-				var mapLayer = _map.getLayer (layerName);
+			const layerName = 'isochrone';
+			const removeIsochroneLayer = function () {
+				const mapLayer = _map.getLayer (layerName);
 				if (typeof mapLayer !== 'undefined') {
 					_map.removeLayer (layerName).removeSource (layerName);
 				}
@@ -664,11 +662,11 @@ var travelintimes = (function ($) {
 			$('#isochrones #planning').on ('click', 'button', function () {		// Late-binding, as the button may have been reinstated after being taken out the DOM
 				
 				// Get the currently-selected strategy from the routing module
-				var selectedStrategy = routing.getSelectedStrategy ();
-				var selectedStrategyIndex = strategiesIndexes[selectedStrategy];
+				const selectedStrategy = routing.getSelectedStrategy ();
+				const selectedStrategyIndex = strategiesIndexes[selectedStrategy];
 				
 				// Get the start point, or end
-				var waypoints = routing.getWaypoints ();
+				const waypoints = routing.getWaypoints ();
 				if (!waypoints.hasOwnProperty (0)) {
 					alert ('No start point has been set.');
 					return;
@@ -676,10 +674,10 @@ var travelintimes = (function ($) {
 				startPoint = waypoints[0];
 				
 				// Construct the URL
-				var url = _settings.strategies[selectedStrategyIndex].isochroneUrl + '&lon=' + startPoint.lng + '&lat=' + startPoint.lat;
+				const url = _settings.strategies[selectedStrategyIndex].isochroneUrl + '&lon=' + startPoint.lng + '&lat=' + startPoint.lat;
 				
 				// Show loading indicator
-				var loadingIndicator = '<p class="loading"><img src="/images/ui-anim_basic_16x16.gif" /> Loading &hellip;<br />(Takes ~3 secs)</p>';
+				const loadingIndicator = '<p class="loading"><img src="/images/ui-anim_basic_16x16.gif" /> Loading &hellip;<br />(Takes ~3 secs)</p>';
 				$('#isochrones #planning').html (loadingIndicator);
 				
 				// Load over AJAX; see: https://stackoverflow.com/a/48655332/180733
@@ -696,7 +694,7 @@ var travelintimes = (function ($) {
 						removeIsochroneLayer ();
 						
 						// Define the fill-colour definition, adding the colours for each isochrone definition
-						var fillColour = [
+						const fillColour = [
 							'match',
 							['get', 'time']
 						];
@@ -728,12 +726,12 @@ var travelintimes = (function ($) {
 						$('#isochrones #planning').html (buttonHtml);
 						
 						// Zoom out the map
-						var bounds = geojsonExtent (geojson);
+						const bounds = geojsonExtent (geojson);
 						_map.fitBounds (bounds, {padding: 20});
 						
 						// Work out day ranges for each isochrone time value
-						var times = Object.values (_settings.isochrones);
-						var ranges = {};
+						const times = Object.values (_settings.isochrones);
+						const ranges = {};
 						$.each (times, function (index, time) {
 							ranges[time]  = (index == 0 ? '0' : (times[index - 1] / (60 * hoursPerDay)).toFixed(2).replace(/\.00$/, '').replace(/\.50$/, '.5'));
 							ranges[time] += ' - ';
@@ -741,12 +739,12 @@ var travelintimes = (function ($) {
 						});
 						
 						// Enable popups; see: https://stackoverflow.com/questions/45841086/show-popup-on-hover-mapbox
-						var popup = new mapboxgl.Popup({
+						const popup = new mapboxgl.Popup({
 							closeButton: false
 						});
 						_map.on ('mousemove', layerName, function (e) {
 							_map.getCanvas().style.cursor = 'pointer';
-							var feature = e.features[0];
+							const feature = e.features[0];
 							popup.setLngLat (e.lngLat)
 								.setHTML ('<p><strong>' + _settings.strategies[selectedStrategyIndex].label + '</strong>: It would have taken<br /><strong>' + ranges[feature.properties.time] + ' &nbsp;' + hoursPerDay + '-hour days</strong><br />to get to locations in this area, from the start point.</p>')
 								.addTo (_map);
@@ -765,7 +763,7 @@ var travelintimes = (function ($) {
 			setInterval (function () {
 				
 				// Remove the isochrone layer if there are no waypoints or the startpoint has changed
-				var waypoints = routing.getWaypoints ();
+				const waypoints = routing.getWaypoints ();
 				if (!waypoints.hasOwnProperty (0) || waypoints[0] != startPoint) {
 					removeIsochroneLayer ();
 					return;
@@ -790,7 +788,7 @@ var travelintimes = (function ($) {
 		loadRouteIndexes: function ()
 		{
 			// Map from strategyId => index
-			var strategiesIndexes = {};
+			const strategiesIndexes = {};
 			$.each (_settings.strategies, function (index, strategy) {
 				strategiesIndexes[strategy.id] = index;
 			});
