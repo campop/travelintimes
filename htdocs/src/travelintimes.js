@@ -174,7 +174,7 @@ const travelintimes = (function ($) {
 		initialise: function (config)
 		{
 			// Obtain the configuration and add to settings
-			$.each (config, function (key, value) {
+			Object.entries (config).forEach (function ([key, value]) {
 				_settings[key] = value;
 			});
 			
@@ -242,7 +242,7 @@ const travelintimes = (function ($) {
 		getStyles: function ()
 		{
 			// Register each tileset
-			$.each (_settings.tileUrls, function (tileLayerId, tileLayerAttributes) {
+			Object.entries (_settings.tileUrls).forEach (function ([tileLayerId, tileLayerAttributes]) {
 				
 				// Vector tiles
 				if (tileLayerAttributes.vectorTiles) {
@@ -321,7 +321,7 @@ const travelintimes = (function ($) {
 			
 			// Construct HTML for layer switcher
 			let layerSwitcherHtml = '<ul>';
-			$.each (_styles, function (styleId, style) {
+			Object.entries (_styles).forEach (function ([styleId, style]) {
 				const name = (_settings.tileUrls[styleId].label ? _settings.tileUrls[styleId].label : travelintimes.ucfirst (styleId));
 				layerSwitcherHtml += '<li><input id="' + styleId + '" type="radio" name="layerswitcher" value="' + styleId + '"' + (styleId == _settings.defaultStyle ? ' checked="checked"' : '') + '><label for="' + styleId + '"> ' + name + '</label></li>';
 			});
@@ -535,7 +535,7 @@ const travelintimes = (function ($) {
 		routing: function ()
 		{
 			// Replace token for modern routing
-			$.each (_settings.strategies, function (index, strategy) {
+			_settings.strategies.forEach (function (strategy, index) {
 				if (strategy.parameters.hasOwnProperty ('access_token')) {
 					if (strategy.parameters.access_token.indexOf ('%mapboxApiKey') !== -1) {
 						_settings.strategies[index].parameters.access_token = strategy.parameters.access_token.replace ('%mapboxApiKey', _settings.mapboxApiKey);
@@ -589,7 +589,7 @@ const travelintimes = (function ($) {
 			
 			// Create a legend for the isochrones UI control
 			const labelsRows = [];
-			$.each (_settings.isochrones, function (colour, time) {
+			Object.entries (_settings.isochrones).forEach (function ([colour, time]) {
 				labelsRows.push ('<tr><td>' + '<i style="background-color: ' + colour + ';"></i>' + '</td><td>' + ((time / (60)) / hoursPerDay).toFixed(2).replace(/\.00$/, '').replace(/\.50$/, '.5') + ' ' + hoursPerDay + '-hour days</td></tr>');
 			});
 			let legendHtml = '<table>' + labelsRows.join ('\n') + '</table>';
@@ -661,7 +661,7 @@ const travelintimes = (function ($) {
 							'match',
 							['get', 'time']
 						];
-						$.each (_settings.isochrones, function (colour, time) {
+						Object.entries (_settings.isochrones).forEach (function ([colour, time]) {
 							fillColour.push (time, colour);		// E.g.: [..., 1200, 'red', 3600, 'orange', ...]
 						});
 						fillColour.push (/* other */ 'gray');
@@ -695,7 +695,7 @@ const travelintimes = (function ($) {
 						// Work out day ranges for each isochrone time value
 						const times = Object.values (_settings.isochrones);
 						const ranges = {};
-						$.each (times, function (index, time) {
+						times.forEach (function (time, index) {
 							ranges[time]  = (index == 0 ? '0' : (times[index - 1] / (60 * hoursPerDay)).toFixed(2).replace(/\.00$/, '').replace(/\.50$/, '.5'));
 							ranges[time] += ' - ';
 							ranges[time] += (time / (60 * hoursPerDay)).toFixed(2).replace(/\.00$/, '').replace(/\.50$/, '.5');
@@ -752,7 +752,7 @@ const travelintimes = (function ($) {
 		{
 			// Map from strategyId => index
 			const strategiesIndexes = {};
-			$.each (_settings.strategies, function (index, strategy) {
+			_settings.strategies.forEach (function (strategy, index) {
 				strategiesIndexes[strategy.id] = index;
 			});
 			
