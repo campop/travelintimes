@@ -2,10 +2,10 @@
 // Some code adapted from work by CycleStreets Ltd, GPL3
 
 /*jslint browser: true, white: true, single: true, for: true */
-/*global $, alert, console, window, mapboxgl, FULLTILT, routing, geojsonExtent, Cookies */
+/*global alert, console, window, mapboxgl, FULLTILT, routing, geojsonExtent, Cookies */
 
 
-const travelintimes = (function ($) {
+const travelintimes = (function () {
 	
 	'use strict';
 	
@@ -326,7 +326,7 @@ const travelintimes = (function ($) {
 				layerSwitcherHtml += '<li><input id="' + styleId + '" type="radio" name="layerswitcher" value="' + styleId + '"' + (styleId == _settings.defaultStyle ? ' checked="checked"' : '') + '><label for="' + styleId + '"> ' + name + '</label></li>';
 			});
 			layerSwitcherHtml += '</ul>';
-			$('#layerswitcher').append (layerSwitcherHtml);
+			document.getElementById ('layerswitcher').innerHTML = layerSwitcherHtml;
 			
 			// Switch to selected layer
 			const layerList = document.getElementById ('layerswitcher');
@@ -411,9 +411,9 @@ const travelintimes = (function ($) {
 		// Function to set the map background colour for a layer
 		setMapBackgroundColour: function (tileLayerOptions)
 		{
-			// Set, using jQuery, if specified, or clear
+			// Set, if specified, or clear
 			const backgroundColour = (tileLayerOptions.backgroundColour ? tileLayerOptions.backgroundColour : '');
-			$('.mapboxgl-map').css ('background-color', backgroundColour);
+			document.querySelector ('.mapboxgl-map').style.backgroundColor = backgroundColour;
 		},
 		
 		
@@ -509,20 +509,20 @@ const travelintimes = (function ($) {
 		
 		
 		// Page handler
-		pageHandler: function (triggerElement, name)
+		pageHandler: function (triggerElement, id)
 		{
 			// Obtain the HTML
-			const html = $('#' + name).html();
+			const html = document.getElementById (id).innerHTML;
 			
 			// Create the dialog box
-			travelintimes.dialogBox (triggerElement, name, html);
+			travelintimes.dialogBox (triggerElement, id, html);
 		},
 		
 		
 		// Dialog box
 		dialogBox: function (triggerElement, name, html)
 		{
-			$(triggerElement).click (function (e) {
+			document.querySelector (triggerElement).addEventListener ('click', function (e) {
 				html = '<div id="' + name + 'box">' + html + '</div>';
 				vex.dialog.buttons.YES.text = 'Close';
 				vex.dialog.alert ({unsafeMessage: html, showCloseButton: true, className: 'vex vex-theme-plain wider'});
@@ -603,7 +603,7 @@ const travelintimes = (function ($) {
 			isochronesHtml += '<div id="planning">' + buttonHtml + '</div>';
 			isochronesHtml += '<p id="clear"><a href="#">Clear</a></p>'
 			isochronesHtml += legendHtml;
-			$('#isochrones').append (isochronesHtml);
+			document.getElementById ('isochrones').innerHTML = isochronesHtml;
 			
 			// Load route indexes
 			const strategiesIndexes = travelintimes.loadRouteIndexes ();
@@ -618,105 +618,107 @@ const travelintimes = (function ($) {
 				if (typeof mapLayer !== 'undefined') {
 					_map.removeLayer (layerName).removeSource (layerName);
 				}
-				$('#isochrones p#clear').hide ();
+				document.querySelector ('#isochrones p#clear').style.display = 'none';
 			}
 			
 			// Add isochrone on map click
-			$('#isochrones #planning').on ('click', 'button', function () {		// Late-binding, as the button may have been reinstated after being taken out the DOM
-				
-				// Get the currently-selected strategy from the routing module
-				const selectedStrategy = routing.getSelectedStrategy ();
-				const selectedStrategyIndex = strategiesIndexes[selectedStrategy];
-				
-				// Get the start point, or end
-				const waypoints = routing.getWaypoints ();
-				if (!waypoints.hasOwnProperty (0)) {
-					alert ('No start point has been set.');
-					return;
+			document.querySelector ('#isochrones #planning').addEventListener ('click', function (event) {
+				if (event.target.closest ('button')) {		// Late-binding, as the UI is created dynamically after load
+					
+					// Get the currently-selected strategy from the routing module
+					const selectedStrategy = routing.getSelectedStrategy ();
+					const selectedStrategyIndex = strategiesIndexes[selectedStrategy];
+					
+					// Get the start point, or end
+					const waypoints = routing.getWaypoints ();
+					if (!waypoints.hasOwnProperty (0)) {
+						alert ('No start point has been set.');
+						return;
+					}
+					startPoint = waypoints[0];
+					
+					// Construct the URL
+					const url = _settings.strategies[selectedStrategyIndex].isochroneUrl + '&lon=' + startPoint.lng + '&lat=' + startPoint.lat;
+					
+					// Show loading indicator
+					const loadingIndicator = '<p class="loading"><img src="/images/ui-anim_basic_16x16.gif" /> Loading &hellip;<br />(Takes ~3 secs)</p>';
+					document.querySelector ('#isochrones #planning').innerHTML = loadingIndicator;
+					
+					// Load over AJAX; see: https://stackoverflow.com/a/48655332/180733
+					fetch (url)
+						.then (function (response) {return response.json ();})
+						.then (function (geojson) {
+							
+							// Remove layer if already present
+							removeIsochroneLayer ();
+							
+							// Define the fill-colour definition, adding the colours for each isochrone definition
+							const fillColour = [
+								'match',
+								['get', 'time']
+							];
+							Object.entries (_settings.isochrones).forEach (function ([colour, time]) {
+								fillColour.push (time, colour);		// E.g.: [..., 1200, 'red', 3600, 'orange', ...]
+							});
+							fillColour.push (/* other */ 'gray');
+							
+							// Add the map layer
+							_map.addLayer ({
+								'id': layerName,
+								'type': 'fill',
+								'source': {
+									'type': 'geojson',
+									'data': geojson
+								},
+								'layout': {},
+								'paint': {
+									// Data-driven styling: https://docs.mapbox.com/mapbox-gl-js/example/data-driven-circle-colors/ and https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-match
+									'fill-color': fillColour,
+									'fill-opacity': 0.5
+								}
+							});
+							
+							// Show the clearance button
+							document.querySelector ('#isochrones p#clear').style.display = 'block';
+							
+							// Remove the loading indicator and reinstate the button
+							document.querySelector ('#isochrones #planning').innerHTML = buttonHtml;
+							
+							// Zoom out the map
+							const bounds = geojsonExtent (geojson);
+							_map.fitBounds (bounds, {padding: 20});
+							
+							// Work out day ranges for each isochrone time value
+							const times = Object.values (_settings.isochrones);
+							const ranges = {};
+							times.forEach (function (time, index) {
+								ranges[time]  = (index == 0 ? '0' : (times[index - 1] / (60 * hoursPerDay)).toFixed(2).replace(/\.00$/, '').replace(/\.50$/, '.5'));
+								ranges[time] += ' - ';
+								ranges[time] += (time / (60 * hoursPerDay)).toFixed(2).replace(/\.00$/, '').replace(/\.50$/, '.5');
+							});
+							
+							// Enable popups; see: https://stackoverflow.com/questions/45841086/show-popup-on-hover-mapbox
+							const popup = new mapboxgl.Popup({
+								closeButton: false
+							});
+							_map.on ('mousemove', layerName, function (e) {
+								_map.getCanvas().style.cursor = 'pointer';
+								const feature = e.features[0];
+								popup.setLngLat (e.lngLat)
+									.setHTML ('<p><strong>' + _settings.strategies[selectedStrategyIndex].label + '</strong>: It would have taken<br /><strong>' + ranges[feature.properties.time] + ' &nbsp;' + hoursPerDay + '-hour days</strong><br />to get to locations in this area, from the start point.</p>')
+									.addTo (_map);
+							});
+							_map.on ('mouseleave', layerName, function (e) {
+								_map.getCanvas().style.cursor = '';
+								popup.remove ();
+							});
+						})
+						.catch (function (error) {
+							alert ('Sorry, the isochrone for ' + _settings.strategies[selectedStrategyIndex].label + ' could not be loaded: ' + error.message);
+							console.log (error);
+						})
+					;
 				}
-				startPoint = waypoints[0];
-				
-				// Construct the URL
-				const url = _settings.strategies[selectedStrategyIndex].isochroneUrl + '&lon=' + startPoint.lng + '&lat=' + startPoint.lat;
-				
-				// Show loading indicator
-				const loadingIndicator = '<p class="loading"><img src="/images/ui-anim_basic_16x16.gif" /> Loading &hellip;<br />(Takes ~3 secs)</p>';
-				$('#isochrones #planning').html (loadingIndicator);
-				
-				// Load over AJAX; see: https://stackoverflow.com/a/48655332/180733
-				fetch (url)
-					.then (function (response) {return response.json ();})
-					.then (function (geojson) {
-						
-						// Remove layer if already present
-						removeIsochroneLayer ();
-						
-						// Define the fill-colour definition, adding the colours for each isochrone definition
-						const fillColour = [
-							'match',
-							['get', 'time']
-						];
-						Object.entries (_settings.isochrones).forEach (function ([colour, time]) {
-							fillColour.push (time, colour);		// E.g.: [..., 1200, 'red', 3600, 'orange', ...]
-						});
-						fillColour.push (/* other */ 'gray');
-						
-						// Add the map layer
-						_map.addLayer ({
-							'id': layerName,
-							'type': 'fill',
-							'source': {
-								'type': 'geojson',
-								'data': geojson
-							},
-							'layout': {},
-							'paint': {
-								// Data-driven styling: https://docs.mapbox.com/mapbox-gl-js/example/data-driven-circle-colors/ and https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-match
-								'fill-color': fillColour,
-								'fill-opacity': 0.5
-							}
-						});
-						
-						// Show the clearance button
-						$('#isochrones p#clear').show ();
-						
-						// Remove the loading indicator and reinstate the button
-						$('#isochrones #planning').html (buttonHtml);
-						
-						// Zoom out the map
-						const bounds = geojsonExtent (geojson);
-						_map.fitBounds (bounds, {padding: 20});
-						
-						// Work out day ranges for each isochrone time value
-						const times = Object.values (_settings.isochrones);
-						const ranges = {};
-						times.forEach (function (time, index) {
-							ranges[time]  = (index == 0 ? '0' : (times[index - 1] / (60 * hoursPerDay)).toFixed(2).replace(/\.00$/, '').replace(/\.50$/, '.5'));
-							ranges[time] += ' - ';
-							ranges[time] += (time / (60 * hoursPerDay)).toFixed(2).replace(/\.00$/, '').replace(/\.50$/, '.5');
-						});
-						
-						// Enable popups; see: https://stackoverflow.com/questions/45841086/show-popup-on-hover-mapbox
-						const popup = new mapboxgl.Popup({
-							closeButton: false
-						});
-						_map.on ('mousemove', layerName, function (e) {
-							_map.getCanvas().style.cursor = 'pointer';
-							const feature = e.features[0];
-							popup.setLngLat (e.lngLat)
-								.setHTML ('<p><strong>' + _settings.strategies[selectedStrategyIndex].label + '</strong>: It would have taken<br /><strong>' + ranges[feature.properties.time] + ' &nbsp;' + hoursPerDay + '-hour days</strong><br />to get to locations in this area, from the start point.</p>')
-								.addTo (_map);
-						});
-						_map.on ('mouseleave', layerName, function (e) {
-							_map.getCanvas().style.cursor = '';
-							popup.remove ();
-						});
-					})
-					.catch (function (error) {
-						alert ('Sorry, the isochrone for ' + _settings.strategies[selectedStrategyIndex].label + ' could not be loaded: ' + error.message);
-						console.log (error);
-					})
-				;
 			});
 			
 			
@@ -734,12 +736,14 @@ const travelintimes = (function ($) {
 			}, 1000);
 			
 			// Remove isochrone on strategy selection tab change
-			$('#map').on ('click', 'ul#strategies li', function (e) {		// Late-binding, as the UI is created dynamically after load
-				removeIsochroneLayer ();
+			document.getElementById ('map').addEventListener ('click', function (event) {
+				if (event.target.closest ('ul#strategies li')) {	// Late-binding, as the UI is created dynamically after load
+					removeIsochroneLayer ();
+				}
 			});
 			
 			// Remove isochrone explicitly on clear
-			$('#isochrones p#clear').click (function (e) {
+			document.querySelector ('#isochrones p#clear').addEventListener ('click', function (e) {
 				removeIsochroneLayer ();
 				e.preventDefault ();
 			});
@@ -760,4 +764,4 @@ const travelintimes = (function ($) {
 		}
 	}
 	
-} (jQuery));
+} ());
