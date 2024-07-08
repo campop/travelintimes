@@ -635,10 +635,10 @@ var travelintimes = (function ($) {
 			legendHtml = '<div class="legend">' + legendHtml + '</div>';
 			
 			// Create a button
-			var buttonHtml = '<button>Create isochrone from start point</button>';
+			var buttonHtml = '<button>Create travel times isochrones from start point</button>';
 			
 			// Construct HTML for the isochrones UI control
-			var isochronesHtml  = '<h2>Travel time isochrones (experimental)</h2>';
+			var isochronesHtml  = '<h2>Travel times</h2>';
 			isochronesHtml += '<div id="planning">' + buttonHtml + '</div>';
 			isochronesHtml += '<p id="clear"><a href="#">Clear</a></p>'
 			isochronesHtml += legendHtml;
