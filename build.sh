@@ -157,12 +157,15 @@ ndjson-cat "${SCRIPTDIRECTORY}/${buildDirectory}/merged.geojson" | ndjson-split 
 #   Filter unwanted properties file
 ndjson-filter 'delete d.id, true' < "${SCRIPTDIRECTORY}/${buildDirectory}/merged.ndjson" \
 	| ndjson-filter 'delete d.properties.id, true' \
+	| ndjson-filter 'delete d.properties.ID, true' \
+	| ndjson-filter 'delete d.properties.OBJECTID, true' \
 	| ndjson-filter 'delete d.properties.timestamp, true' \
 	| ndjson-filter 'delete d.properties.version, true' \
 	| ndjson-filter 'delete d.properties.Shape_Leng, true' \
 	| ndjson-filter 'delete d.properties.Type, true' \
 	| ndjson-filter 'delete d.properties.Mode, true' \
 	| ndjson-filter 'delete d.properties.Name, true' \
+	| ndjson-filter 'delete d.properties.Shape_Le_2, true' \
 	> "${SCRIPTDIRECTORY}/${buildDirectory}/filtered.ndjson"
 #   Convert back to GeoJSON
 ndjson-reduce < "${SCRIPTDIRECTORY}/${buildDirectory}/filtered.ndjson" | ndjson-map '{type: "FeatureCollection", features: d}' > "${SCRIPTDIRECTORY}/${buildDirectory}/filtered.geojson"
