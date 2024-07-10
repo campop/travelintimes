@@ -697,20 +697,9 @@ const travelintimes = (function () {
 								ranges[time] += (time / (60 * hoursPerDay)).toFixed(2).replace(/\.00$/, '').replace(/\.50$/, '.5');
 							});
 							
-							// Enable popups; see: https://stackoverflow.com/questions/45841086/show-popup-on-hover-mapbox
-							const popup = new mapboxgl.Popup({
-								closeButton: false
-							});
-							_map.on ('mousemove', layerName, function (e) {
-								_map.getCanvas().style.cursor = 'pointer';
-								const feature = e.features[0];
-								popup.setLngLat (e.lngLat)
-									.setHTML ('<p><strong>' + _settings.strategies[selectedStrategyIndex].label + '</strong>: It would have taken<br /><strong>' + ranges[feature.properties.time] + ' &nbsp;' + hoursPerDay + '-hour days</strong><br />to get to locations in this area, from the start point.</p>')
-									.addTo (_map);
-							});
-							_map.on ('mouseleave', layerName, function (e) {
-								_map.getCanvas().style.cursor = '';
-								popup.remove ();
+							// Enable hover popups
+							travelintimes.hoverPopups (layerName, function (feature) {
+								return '<p><strong>' + _settings.strategies[selectedStrategyIndex].label + '</strong>: It would have taken<br /><strong>' + ranges[feature.properties.time] + ' &nbsp;' + hoursPerDay + '-hour days</strong><br />to get to locations in this area, from the start point.</p>';
 							});
 						})
 						.catch (function (error) {
@@ -720,7 +709,6 @@ const travelintimes = (function () {
 					;
 				}
 			});
-			
 			
 			// Periodically, check for marker clearance/moves
 			// #!# This should be changed to looking at a state model, or as a callback from routing-ui
@@ -746,6 +734,27 @@ const travelintimes = (function () {
 			document.querySelector ('#isochrones p#clear').addEventListener ('click', function (e) {
 				removeIsochroneLayer ();
 				e.preventDefault ();
+			});
+		},
+		
+		
+		// Function to create hover popups; see: https://stackoverflow.com/questions/45841086/show-popup-on-hover-mapbox
+		hoverPopups: function (layerName, popupHtml /* callback */)
+		{
+			// Enable popups
+			const popup = new mapboxgl.Popup({
+				closeButton: false
+			});
+			_map.on ('mousemove', layerName, function (e) {
+				_map.getCanvas ().style.cursor = 'pointer';
+				const feature = e.features[0];
+				popup.setLngLat (e.lngLat)
+					.setHTML (popupHtml (feature))
+					.addTo (_map);
+			});
+			_map.on ('mouseleave', layerName, function (e) {
+				_map.getCanvas ().style.cursor = '';
+				popup.remove ();
 			});
 		},
 		
