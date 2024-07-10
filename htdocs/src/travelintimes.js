@@ -88,7 +88,7 @@ const travelintimes = (function () {
 		autocompleteBbox: '-6.6577,49.9370,1.7797,57.6924',
 		
 		// Routing strategies, in order of appearance in the UI
-		defaultStrategy: 'year1830',
+		defaultStrategy: 'multimodal1830',
 		multiplexedStrategies: false,
 		strategies: [
 			{
@@ -103,7 +103,7 @@ const travelintimes = (function () {
 				isochroneUrl: '/isochrone/?port=5000'
 			},
 			{
-				id: 'year1680',
+				id: 'multimodal1680',
 				label: '1680',
 				implementation: 'osrm',
 				baseUrl: '/routing/5001/route/v1/driving',
@@ -114,7 +114,7 @@ const travelintimes = (function () {
 				isochroneUrl: '/isochrone/?port=5001'
 			},
 			{
-				id: 'year1830',
+				id: 'multimodal1830',
 				label: '1830',
 				implementation: 'osrm',
 				baseUrl: '/routing/5002/route/v1/driving',
@@ -125,7 +125,7 @@ const travelintimes = (function () {
 				isochroneUrl: '/isochrone/?port=5002'
 			},
 			{
-				id: 'year1911',
+				id: 'multimodal1911',
 				label: '1911',
 				implementation: 'osrm',
 				baseUrl: '/routing/5003/route/v1/driving',
@@ -136,7 +136,7 @@ const travelintimes = (function () {
 				isochroneUrl: '/isochrone/?port=5003'
 			},
 			{
-				id: 'year' + new Date().getFullYear().toString(),
+				id: 'multimodal' + new Date().getFullYear().toString(),
 				label: new Date().getFullYear().toString(),
 				implementation: 'osrm',
 				baseUrl: 'https://api.mapbox.com/directions/v5/mapbox/driving',
