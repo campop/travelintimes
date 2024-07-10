@@ -770,6 +770,26 @@ const travelintimes = (function () {
 			
 			// Return the indexes
 			return strategiesIndexes;
+		},
+		
+		
+		// Function to create an HTML table
+		htmlTable: function (data)
+		{
+			var html = '<table class="lines">';
+			Object.entries (data).forEach (function ([key, value]) {
+				html += '<tr><td>' + travelintimes.htmlspecialchars (key) + '</td><td>' + travelintimes.htmlspecialchars (value) + '</td></tr>';
+			});
+			html += '</table>';
+			return html;
+		},
+		
+		
+		// Function to make data entity-safe
+		htmlspecialchars: function (string)
+		{
+			if (typeof string !== 'string') {return string;}
+			return string.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 		}
 	}
 	
