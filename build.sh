@@ -172,6 +172,15 @@ ndjson-reduce < "${SCRIPTDIRECTORY}/${buildDirectory}/filtered.ndjson" | ndjson-
 geojson-precision -p 4 "${SCRIPTDIRECTORY}/${buildDirectory}/filtered.geojson" "${SCRIPTDIRECTORY}/${buildDirectory}/filtered-p4.geojson"
 cp -p "${SCRIPTDIRECTORY}/${buildDirectory}/filtered-p4.geojson" "${softwareRoot}/travelintimes/htdocs/geojson/${strategy}.geojson"
 
+# Create an MVT tileset of the network, trimming the attributes down in the process, and clearing any existing version
+# Note that directory paths are not put into the tippecanoe command, as this avoids revealing them in the metadata.json file
+# See: https://github.com/felt/tippecanoe
+osmtogeojson "${SCRIPTDIRECTORY}/${buildDirectory}/merged.osm" > "${SCRIPTDIRECTORY}/${buildDirectory}/merged.geojson"
+cd "${SCRIPTDIRECTORY}/${buildDirectory}/"
+tippecanoe --no-progress-indicator -l network -n "${strategy}" -N "${strategy}" -y highway -y name --output-to-directory="${strategy}" --force --attribution='Campop' --detect-shared-borders --generate-ids merged.geojson
+rm -rf           "${softwareRoot}/travelintimes/htdocs/networks/${strategy}"
+mv "${strategy}" "${softwareRoot}/travelintimes/htdocs/networks/${strategy}"
+cd -
 
 exit
 
