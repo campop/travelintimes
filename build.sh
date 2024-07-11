@@ -149,29 +149,6 @@ ln -s "${SCRIPTDIRECTORY}/${buildDirectory}" "${symlink}"
 sudo /bin/systemctl restart travelintimes-osrm@"${port}"
 echo "Running sudo /bin/systemctl restart travelintimes-osrm@${port}"
 
-# Generate a GeoJSON file of the network
-osmtogeojson "${SCRIPTDIRECTORY}/${buildDirectory}/merged.osm" > "${SCRIPTDIRECTORY}/${buildDirectory}/merged.geojson"
-# Filter unwanted features using ndjson-cat; see: https://github.com/mbostock/ndjson-cli and https://medium.com/@mbostock/command-line-cartography-part-2-c3a82c5c0f3
-#   Reformat file to newline-delimited JSON; see: http://www.roblabs.com/ndjson/
-ndjson-cat "${SCRIPTDIRECTORY}/${buildDirectory}/merged.geojson" | ndjson-split 'd.features' > "${SCRIPTDIRECTORY}/${buildDirectory}/merged.ndjson"
-#   Filter unwanted properties file
-ndjson-filter 'delete d.id, true' < "${SCRIPTDIRECTORY}/${buildDirectory}/merged.ndjson" \
-	| ndjson-filter 'delete d.properties.id, true' \
-	| ndjson-filter 'delete d.properties.ID, true' \
-	| ndjson-filter 'delete d.properties.OBJECTID, true' \
-	| ndjson-filter 'delete d.properties.timestamp, true' \
-	| ndjson-filter 'delete d.properties.version, true' \
-	| ndjson-filter 'delete d.properties.Shape_Leng, true' \
-	| ndjson-filter 'delete d.properties.Type, true' \
-	| ndjson-filter 'delete d.properties.Mode, true' \
-	| ndjson-filter 'delete d.properties.Name, true' \
-	| ndjson-filter 'delete d.properties.Shape_Le_2, true' \
-	> "${SCRIPTDIRECTORY}/${buildDirectory}/filtered.ndjson"
-#   Convert back to GeoJSON
-ndjson-reduce < "${SCRIPTDIRECTORY}/${buildDirectory}/filtered.ndjson" | ndjson-map '{type: "FeatureCollection", features: d}' > "${SCRIPTDIRECTORY}/${buildDirectory}/filtered.geojson"
-geojson-precision -p 4 "${SCRIPTDIRECTORY}/${buildDirectory}/filtered.geojson" "${SCRIPTDIRECTORY}/${buildDirectory}/filtered-p4.geojson"
-cp -p "${SCRIPTDIRECTORY}/${buildDirectory}/filtered-p4.geojson" "${softwareRoot}/travelintimes/htdocs/geojson/${strategy}.geojson"
-
 # Create an MVT tileset of the network, trimming the attributes down in the process, and clearing any existing version
 # Note that directory paths are not put into the tippecanoe command, as this avoids revealing them in the metadata.json file
 # See: https://github.com/felt/tippecanoe
