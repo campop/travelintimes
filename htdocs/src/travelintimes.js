@@ -77,7 +77,7 @@ const travelintimes = (function () {
 		},
 		
 		// Max zoom
-		maxZoomToSegment: 14,
+		maxZoomToSegment: 13,
 		
 		// Mapbox API key
 		mapboxApiKey: 'YOUR_MAPBOX_API_KEY',
