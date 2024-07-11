@@ -144,9 +144,30 @@ const travelintimes = (function () {
 				lineColour: 'brown',
 				gpx: false,
 				attribution: new Date().getFullYear().toString() + ' routing using OpenStreetMap data',
-				isochroneUrl: false
+				isochroneUrl: false,
+				external: true
 			}
 		],
+		
+		// Highway types
+		highwayTypes: {
+			'primary': {
+				label: 'Main road',
+				colour: '#cd6155'
+			},
+			'secondary': {
+				label: 'Secondary road',
+				colour: '#e59866'
+			},
+			'tertiary_link': {
+				label: 'Ferry',
+				colour: 'lightblue'
+			},
+			'trunk': {
+				label: 'Railway',
+				colour: '#666'
+			},
+		},
 		
 		// Travellable hours per day
 		travellableHoursPerDay: 8,
@@ -211,6 +232,9 @@ const travelintimes = (function () {
 			
 			// Add routing
 			travelintimes.routing ();
+			
+			// Add network overlay
+			travelintimes.networkOverlay ();
 			
 			// Add isochrones
 			travelintimes.isochrones ();
@@ -574,6 +598,105 @@ const travelintimes = (function () {
 		},
 		
 		
+		// Function to add network overlays
+		networkOverlay: function ()
+		{
+			// Assemble highway type colours, flattening key/value pairs to [key,value,key,value,...] array, for use in styling
+			const coloursList = [];
+			Object.entries (_settings.highwayTypes).forEach (function ([highwayType, attributes]) {
+				coloursList.push (highwayType);
+				coloursList.push (attributes.colour);
+			});
+			
+			// Define function to load the overlay
+			function loadOverlay (selectedStrategy)
+			{
+				// Hide any existing network layer
+				Object.entries (_settings.strategies).forEach (function ([index, strategy]) {
+					const id = 'network-' + strategy.id;
+					if (_map.getLayer (id)) {
+						_map.setLayoutProperty (id, 'visibility', 'none');
+					}
+				});
+				
+				// Take no action to load data if strategy is from external data, i.e. no network overlay
+				const selectedStrategyIndex = _strategiesIndexes[selectedStrategy];
+				const selectedStrategyAttributes = _settings.strategies[selectedStrategyIndex];
+				if (selectedStrategyAttributes.external) {return;}
+				
+				// Load the source, if not already loaded
+				const id = 'network-' + selectedStrategy;
+				if (!_map.getSource (id)) {
+					_map.addSource (id, {
+						type: 'vector',
+						tiles: [window.location.protocol + '//' + window.location.hostname + '/networks/' + selectedStrategy + '/{z}/{x}/{y}.pbf']
+					});
+				}
+				
+				// Load the layer (and popup handler), if not already loaded
+				if (!_map.getLayer (id)) {
+					_map.addLayer (
+						{
+							id: id,
+							type: 'line',
+							source: id,
+							'source-layer': 'network',
+							layout: {
+								'line-join': 'round',
+								'line-cap': 'round'
+							},
+							paint: {
+								'line-color': [
+									'match', ['get', 'highway'],
+									...coloursList,
+									'gray'
+								],
+								'line-width': {
+									'base': 1,
+									'stops': [
+										[0, 1],
+										[6, 1],
+										[8, 2],
+										[10, 4],
+										[12, 12]
+									]
+								}
+							},
+							visibility: 'none'
+						}
+					);
+					
+					// Define popup HTML renderer
+					const popupHtml = function (feature) {
+						let popupHtml = '<strong>' + travelintimes.htmlspecialchars (travelintimes.ucfirst (feature.properties.name)) + '</strong><br />';
+						popupHtml += '<em>' + travelintimes.htmlspecialchars (_settings.highwayTypes[feature.properties.highway].label) + '</em>';
+						return popupHtml;
+					};
+					
+					// Add hover popups
+					travelintimes.hoverPopups (id, popupHtml);
+				}
+				
+				// Show the layer
+				_map.setLayoutProperty (id, 'visibility', 'visible');
+			};
+			
+			// Run when map ready
+			_map.on ('load', function () {
+				
+				// Show inital at first load
+				loadOverlay (_settings.defaultStrategy);
+				
+				// Change on strategy option click
+				document.getElementById ('map').addEventListener ('click', function (event) {
+					if (event.target.closest ('ul#strategies li')) {	// Late-binding, as the UI is created dynamically after load
+						loadOverlay (routing.getSelectedStrategy ());
+					}
+				});
+			});
+		},
+		
+		
 		// Function to add isochrone display; see: https://github.com/urbica/galton and demo at https://galton.urbica.co/
 		isochrones: function ()
 		{
@@ -771,7 +894,7 @@ const travelintimes = (function () {
 		{
 			var html = '<table class="lines">';
 			Object.entries (data).forEach (function ([key, value]) {
-				html += '<tr><td>' + travelintimes.htmlspecialchars (key) + '</td><td>' + travelintimes.htmlspecialchars (value) + '</td></tr>';
+				html += '<tr><td>' + key + ':</td><td>' + value + '</td></tr>';
 			});
 			html += '</table>';
 			return html;
