@@ -166,6 +166,7 @@ const travelintimes = (function () {
 	// Internal class properties
 	let _map = null;
 	const _styles = {};
+	let _strategiesIndexes = null;
 	
 	
 	return {
@@ -177,6 +178,9 @@ const travelintimes = (function () {
 			Object.entries (config).forEach (function ([key, value]) {
 				_settings[key] = value;
 			});
+			
+			// Load an index of strategies, e.g. {roman: 0, year1680: 1, ...}
+			_strategiesIndexes = travelintimes.loadStrategiesIndexes ();
 			
 			// Load styles
 			travelintimes.getStyles ();
@@ -364,14 +368,6 @@ const travelintimes = (function () {
 			const body = document.getElementsByTagName ('body')[0];
 			const myEvent = new Event ('style-changed', {'bubbles': true});
 			body.dispatchEvent (myEvent);
-		},
-		
-		
-		// Function to make first character upper-case; see: https://stackoverflow.com/a/1026087/180733
-		ucfirst: function (string)
-		{
-			if (typeof string !== 'string') {return string;}
-			return string.charAt(0).toUpperCase() + string.slice(1);
 		},
 		
 		
@@ -605,9 +601,6 @@ const travelintimes = (function () {
 			isochronesHtml += legendHtml;
 			document.getElementById ('isochrones').innerHTML = isochronesHtml;
 			
-			// Load route indexes
-			const strategiesIndexes = travelintimes.loadRouteIndexes ();
-			
 			// Set waypoint variable for tracking
 			let startPoint = false;
 			
@@ -627,7 +620,7 @@ const travelintimes = (function () {
 					
 					// Get the currently-selected strategy from the routing module
 					const selectedStrategy = routing.getSelectedStrategy ();
-					const selectedStrategyIndex = strategiesIndexes[selectedStrategy];
+					const selectedStrategyIndex = _strategiesIndexes[selectedStrategy];
 					
 					// Get the start point, or end
 					const waypoints = routing.getWaypoints ();
@@ -760,7 +753,7 @@ const travelintimes = (function () {
 		
 		
 		// Function to create an index of strategies
-		loadRouteIndexes: function ()
+		loadStrategiesIndexes: function ()
 		{
 			// Map from strategyId => index
 			const strategiesIndexes = {};
@@ -790,6 +783,14 @@ const travelintimes = (function () {
 		{
 			if (typeof string !== 'string') {return string;}
 			return string.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		},
+		
+		
+		// Function to make first character upper-case; see: https://stackoverflow.com/a/1026087/180733
+		ucfirst: function (string)
+		{
+			if (typeof string !== 'string') {return string;}
+			return string.charAt(0).toUpperCase() + string.slice(1);
 		}
 	}
 	
