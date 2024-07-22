@@ -686,7 +686,9 @@ const travelintimes = (function () {
 			};
 			
 			// Delegate to separate class
-			routing.initialise (routingUiConfig, _map, false, false);
+			_map.on ('load', function () {	// When ready
+				routing.initialise (routingUiConfig, _map, false, false);
+			});
 		},
 		
 		
