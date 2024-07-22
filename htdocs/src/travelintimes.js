@@ -28,7 +28,7 @@ const travelintimes = (function () {
 		// NB If using only third-party sources, a Mapbox API key is not needed: see: https://github.com/mapbox/mapbox-gl-native/issues/2996#issuecomment-155483811
 		defaultStyle: 'bartholomew',
 		tileUrls: {
-			'bartholomew': {
+			bartholomew: {
 				tiles: 'https://geo.nls.uk/mapdata2/bartholomew/great_britain/{z}/{x}/{y}.png',	// E.g. https://geo.nls.uk/mapdata2/bartholomew/great_britain/12/2021/1353.png
 				maxZoom: 15,
 				attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>',
@@ -36,7 +36,7 @@ const travelintimes = (function () {
 				tileSize: 256,
 				label: 'NLS - Bartholomew Half Inch, 1897-1907'
 			},
-			'os1inch': {
+			os1inch: {
 				tiles: 'https://geo.nls.uk/maps/os/1inch_2nd_ed/{z}/{x}/{y}.png',	// E.g. https://geo.nls.uk/maps/os/1inch_2nd_ed/15/16395/10793.png
 				maxZoom: 15,
 				attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>',
@@ -45,32 +45,32 @@ const travelintimes = (function () {
 				tileSize: 256,
 				label: 'NLS - OS One Inch, 1885-1900'
 			},
-			'osopendata': {
+			osopendata: {
 				tiles: 'https://{s}.os.openstreetmap.org/sv/{z}/{x}/{y}.png',	// E.g. https://a.os.openstreetmap.org/sv/18/128676/81699.png
 				maxZoom: 19,
 				attribution: 'Contains Ordnance Survey data &copy; Crown copyright and database right 2010',
 				tileSize: 256,
 				label: 'OS Open Data (modern)'
 			},
-			'mapnik': {
+			mapnik: {
 				tiles: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',	// E.g. https://a.tile.openstreetmap.org/16/32752/21788.png
 				maxZoom: 19,
 				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 				tileSize: 256,
 				label: 'OpenStreetMap style (modern)'
 			},
-			"opencyclemap": {
+			opencyclemap: {
 				tiles: 'https://{s}.tile.cyclestreets.net/opencyclemap/{z}/{x}/{y}.png',
 				maxZoom: 22,
 				attribution: 'Maps © <a href="https://www.thunderforest.com/">Thunderforest</a>, Data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
 				tileSize: 256,
 				label: 'OpenCycleMap (modern)'
 			},
-			"streets": {
+			streets: {
 				vectorTiles: 'mapbox://styles/mapbox/streets-v11',
 				label: 'Streets (modern)',
 			},
-			"satellite": {
+			satellite: {
 				vectorTiles: 'mapbox://styles/mapbox/satellite-v9',
 				label: 'Satellite',
 			},
