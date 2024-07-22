@@ -212,8 +212,8 @@ const travelintimes = (function () {
 			// Add a geolocation control
 			travelintimes.geolocation ();
 			
-			// Add layer switching
-			travelintimes.layerSwitcher ();
+			// Add basemap switching
+			travelintimes.basemapSwitcher ();
 			
 			// Add placenames overlay
 			travelintimes.placenamesOverlay ();
@@ -409,11 +409,11 @@ const travelintimes = (function () {
 		},
 		
 		
-		// Function to add layer switching
+		// Function to add basemap layer switching
 		// https://www.mapbox.com/mapbox-gl-js/example/setstyle/
 		// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
 		// Would be nice to use https://github.com/el/style-switcher but this is ES6, and lacks hover and event firing support
-		layerSwitcher: function ()
+		basemapSwitcher: function ()
 		{
 			// Add layer switcher UI
 			this.createControl ('layerswitcher', 'bottom-left');
