@@ -186,6 +186,7 @@ const travelintimes = (function () {
 	// Internal class properties
 	let _map = null;
 	const _styles = {};
+	let _basemap = _settings.defaultStyle;
 	let _strategiesIndexes = null;
 	
 	
@@ -243,16 +244,23 @@ const travelintimes = (function () {
 		// Create map; see: https://www.mapbox.com/mapbox-gl-js/example/simple-map/
 		createMap: function ()
 		{
-			// Determine initial centre/zoom location, based on the hash if present, else the settings location
-			const initialPosition = (travelintimes.parseMapHash () || _settings.defaultLocation);
+			// Assemble default map state from default location and basemap style
+			let defaultMapState = _settings.defaultLocation;
+			defaultMapState.basemap = _settings.defaultStyle;
+			
+			// Determine initial centre/zoom/basemap location, based on the hash if present, else use the settings location
+			const initialMapState = (travelintimes.parseMapHash () || defaultMapState);
+			
+			// Set the basemap state
+			_basemap = initialMapState.basemap;
 			
 			// Create map, specifying the access token
 			mapboxgl.accessToken = _settings.mapboxApiKey;
 			_map = new mapboxgl.Map ({
 				container: 'map',
-				style: _styles[_settings.defaultStyle],
-				center: [initialPosition.longitude, initialPosition.latitude],
-				zoom: initialPosition.zoom,
+				style: _styles[_basemap],
+				center: [initialMapState.longitude, initialMapState.latitude],
+				zoom: initialMapState.zoom,
 				maxZoom: _settings.maxZoom,
 				hash: false		// Manage with manageMapHash instead, so that the basemap can be included
 			});
@@ -276,28 +284,10 @@ const travelintimes = (function () {
 		// Based on the native implementation at: https://github.com/maplibre/maplibre-gl-js/blob/main/src/ui/hash.ts#L11
 		manageMapHash: function (map)
 		{
-			// Function to determine the map hash
-			function mapHash (map)
-			{
-				// Assemble the map hash from the map position
-				const center = map.getCenter ();
-				const zoom = Math.round (map.getZoom () * 100) / 100;
-				// derived from equation: 512px * 2^z / 360 / 10^d < 0.5px
-				const precision = Math.ceil ((zoom * Math.LN2 + Math.log (512 / 360 / 0.5)) / Math.LN10);
-				const m = Math.pow (10, precision);
-				const lng = Math.round (center.lng * m) / m;
-				const lat = Math.round (center.lat * m) / m;
-				const mapHash = `#${zoom}/${lat}/${lng}`;
-				
-				// Update the hash state in the browser URL and history
-				const location = window.location.href.replace (/(#.+)?$/, mapHash);
-				window.history.replaceState (window.history.state, null, location);
-			}
-			
 			// In initial state and after moving the map, set the hash in the URL
-			mapHash (map);
+			travelintimes.setMapHash (map, _basemap);
 			map.on ('moveend', function () {
-				mapHash (map);
+				travelintimes.setMapHash (map, _basemap);
 			});
 			
 			// Function to determine the map state
@@ -315,19 +305,46 @@ const travelintimes = (function () {
 		},
 		
 		
-		// Function to parse a map hash location to center and zoom components
+		// Function to set the map hash
+		setMapHash: function (map, basemap)
+		{
+			// Assemble the map hash from the map position
+			const center = map.getCenter ();
+			const zoom = Math.round (map.getZoom () * 100) / 100;
+			// derived from equation: 512px * 2^z / 360 / 10^d < 0.5px
+			const precision = Math.ceil ((zoom * Math.LN2 + Math.log (512 / 360 / 0.5)) / Math.LN10);
+			const m = Math.pow (10, precision);
+			const lng = Math.round (center.lng * m) / m;
+			const lat = Math.round (center.lat * m) / m;
+			const mapHash = `#${zoom}/${lat}/${lng}/${basemap}`;
+			
+			// Update the hash state in the browser URL and history
+			const location = window.location.href.replace (/(#.+)?$/, mapHash);
+			window.history.replaceState (window.history.state, null, location);
+		},
+		
+		
+		// Function to parse a map hash to lon/lat, zoom, and basemap components
 		parseMapHash: function ()
 		{
 			// Extract the hash and split by /
 			const mapHash = window.location.hash.replace (new RegExp ('^#'), '');
 			const parts = mapHash.split ('/');
 			
+			// Validate basemap if present
+			if (parts[3]) {
+				if (!_styles.hasOwnProperty (parts[3])) {
+					return false;
+				}
+			}
+			
 			// If three parts, parse out
-			if (parts.length == 3) {
+			if (parts.length == 4) {
 				return {
 					longitude: parts[2],
 					latitude: parts[1],
-					zoom: parts[0]
+					zoom: parts[0],
+					basemap: parts[3]
 				};
 			}
 			
@@ -421,7 +438,7 @@ const travelintimes = (function () {
 			let layerSwitcherHtml = '<ul>';
 			Object.entries (_styles).forEach (function ([styleId, style]) {
 				const name = (_settings.tileUrls[styleId].label ? _settings.tileUrls[styleId].label : travelintimes.ucfirst (styleId));
-				layerSwitcherHtml += '<li><input id="' + styleId + '" type="radio" name="layerswitcher" value="' + styleId + '"' + (styleId == _settings.defaultStyle ? ' checked="checked"' : '') + '><label for="' + styleId + '"> ' + name + '</label></li>';
+				layerSwitcherHtml += '<li><input id="' + styleId + '" type="radio" name="layerswitcher" value="' + styleId + '"' + (styleId == _basemap ? ' checked="checked"' : '') + '><label for="' + styleId + '"> ' + name + '</label></li>';
 			});
 			layerSwitcherHtml += '</ul>';
 			document.getElementById ('layerswitcher').innerHTML = layerSwitcherHtml;
@@ -430,12 +447,17 @@ const travelintimes = (function () {
 			const layerList = document.getElementById ('layerswitcher');
 			const inputs = layerList.getElementsByTagName ('input');
 			function switchLayer (layer) {
-				const layerId = layer.target.id;
-				const style = _styles[layerId];
+				const _basemap = layer.target.id;
+				const style = _styles[_basemap];
+				
+				// Set the URL hash
+				travelintimes.setMapHash (_map, _basemap);
+				
+				// Change the style
 				_map.setStyle (style);
 				
 				// Set the background colour if required
-				travelintimes.setMapBackgroundColour (_settings.tileUrls[layerId]);
+				travelintimes.setMapBackgroundColour (_settings.tileUrls[_basemap]);
 				
 				// Fire an event; see: https://javascript.info/dispatch-events
 				travelintimes.styleChanged ();
