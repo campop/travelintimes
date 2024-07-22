@@ -29,7 +29,7 @@ const travelintimes = (function () {
 		defaultStyle: 'bartholomew',
 		tileUrls: {
 			bartholomew: {
-				tiles: 'https://geo.nls.uk/mapdata2/bartholomew/great_britain/{z}/{x}/{y}.png',	// E.g. https://geo.nls.uk/mapdata2/bartholomew/great_britain/12/2021/1353.png
+				tiles: '/tiles/bartholomew/{z}/{x}/{y}.png',	// E.g. https://geo.nls.uk/mapdata2/bartholomew/great_britain/12/2021/1353.png
 				maxZoom: 15,
 				attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>',
 				backgroundColour: '#a2c3ba',
@@ -37,7 +37,7 @@ const travelintimes = (function () {
 				label: 'NLS - Bartholomew Half Inch, 1897-1907'
 			},
 			osquarterinch: {
-				tiles: 'https://geo.nls.uk/maps/os/quarter-inch-first-hills/{z}/{x}/{y}.png',	// E.g. https://geo.nls.uk/maps/os/quarter-inch-first-hills/12/2046/1348.png
+				tiles: '/tiles/osquarterinch/{z}/{x}/{y}.png',	// E.g. https://geo.nls.uk/maps/os/quarter-inch-first-hills/12/2046/1348.png
 				maxZoom: 15,
 				attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>',
 				backgroundColour: '#f0f1e4',
@@ -45,21 +45,21 @@ const travelintimes = (function () {
 				label: 'OS Quarter Inch, 1st ed. Hills, 1899-06'
 			},
 			osopendata: {
-				tiles: 'https://{s}.os.openstreetmap.org/sv/{z}/{x}/{y}.png',	// E.g. https://a.os.openstreetmap.org/sv/18/128676/81699.png
+				tiles: '/tiles/osopendata/{z}/{x}/{y}.png',	// E.g. https://a.os.openstreetmap.org/sv/18/128676/81699.png
 				maxZoom: 19,
 				attribution: 'Contains Ordnance Survey data &copy; Crown copyright and database right 2010',
 				tileSize: 256,
 				label: 'OS Open Data (modern)'
 			},
 			mapnik: {
-				tiles: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',	// E.g. https://a.tile.openstreetmap.org/16/32752/21788.png
+				tiles: '/tiles/mapnik/{z}/{x}/{y}.png',	// E.g. https://a.tile.openstreetmap.org/16/32752/21788.png
 				maxZoom: 19,
 				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 				tileSize: 256,
 				label: 'OpenStreetMap style (modern)'
 			},
 			opencyclemap: {
-				tiles: 'https://{s}.tile.cyclestreets.net/opencyclemap/{z}/{x}/{y}.png',
+				tiles: '/tiles/opencyclemap/{z}/{x}/{y}.png',
 				maxZoom: 22,
 				attribution: 'Maps © <a href="https://www.thunderforest.com/">Thunderforest</a>, Data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
 				tileSize: 256,
@@ -539,9 +539,7 @@ const travelintimes = (function () {
 				source: {
 					type: "raster",
 					tiles: [
-						'https://cartodb-basemaps-a.global.ssl.fastly.net/light_only_labels/{z}/{x}/{y}.png',
-						'https://cartodb-basemaps-b.global.ssl.fastly.net/light_only_labels/{z}/{x}/{y}.png',
-						'https://cartodb-basemaps-c.global.ssl.fastly.net/light_only_labels/{z}/{x}/{y}.png',
+						'/tiles/light_only_labels/{z}/{x}/{y}.png',
 					],
 					tileSize: 256,	// NB Mapbox GL default is 512
 					attribution: '&copy; OpenStreetMap, &copy; CartoDB'
