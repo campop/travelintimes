@@ -677,6 +677,7 @@ const travelintimes = (function () {
 				multiplexedStrategies: _settings.multiplexedStrategies,
 				strategies: _settings.strategies,
 				showAllRoutes: false,
+				distanceUnit: 'miles',
 				maxZoomToSegment: _settings.maxZoomToSegment,
 				createPlanningControls: true,
 				showToolBox: false,
