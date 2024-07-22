@@ -244,16 +244,22 @@ const travelintimes = (function () {
 		// Create map; see: https://www.mapbox.com/mapbox-gl-js/example/simple-map/
 		createMap: function ()
 		{
+			// Determine initial centre/zoom location, based on the hash if present, else the settings location
+			const initialPosition = (travelintimes.parseMapHash () || _settings.defaultLocation);
+			
 			// Create map, specifying the access token
 			mapboxgl.accessToken = _settings.mapboxApiKey;
 			_map = new mapboxgl.Map ({
 				container: 'map',
 				style: _styles[_settings.defaultStyle],
-				center: [_settings.defaultLocation.longitude, _settings.defaultLocation.latitude],
-				zoom: _settings.defaultLocation.zoom,
+				center: [initialPosition.longitude, initialPosition.latitude],
+				zoom: initialPosition.zoom,
 				maxZoom: _settings.maxZoom,
-				hash: true
+				hash: false		// Manage with manageMapHash instead, so that the basemap can be included
 			});
+			
+			// Manage hash manually, to include basemap
+			travelintimes.manageMapHash (_map);
 			
 			// Set a class corresponding to the map tile layer, so that the background can be styled with CSS
 			travelintimes.setMapBackgroundColour (_settings.tileUrls[_settings.defaultStyle]);
@@ -263,6 +269,71 @@ const travelintimes = (function () {
 			
 			// Add scale; see: https://stackoverflow.com/a/42510295/180733
 			_map.addControl (new mapboxgl.ScaleControl ());
+		},
+		
+		
+		// Function to manage the map hash manually; this is a minimal implementation covering only what we need
+		// Covers zoon,lat,lon; no support for bearing or pitch
+		// Based on the native implementation at: https://github.com/maplibre/maplibre-gl-js/blob/main/src/ui/hash.ts#L11
+		manageMapHash: function (map)
+		{
+			// Function to determine the map hash
+			function mapHash (map)
+			{
+				// Assemble the map hash from the map position
+				const center = map.getCenter ();
+				const zoom = Math.round (map.getZoom () * 100) / 100;
+				// derived from equation: 512px * 2^z / 360 / 10^d < 0.5px
+				const precision = Math.ceil ((zoom * Math.LN2 + Math.log (512 / 360 / 0.5)) / Math.LN10);
+				const m = Math.pow (10, precision);
+				const lng = Math.round (center.lng * m) / m;
+				const lat = Math.round (center.lat * m) / m;
+				const mapHash = `#${zoom}/${lat}/${lng}`;
+				
+				// Update the hash state in the browser URL and history
+				const location = window.location.href.replace (/(#.+)?$/, mapHash);
+				window.history.replaceState (window.history.state, null, location);
+			}
+			
+			// In initial state and after moving the map, set the hash in the URL
+			mapHash (map);
+			map.on ('moveend', function () {
+				mapHash (map);
+			});
+			
+			// Function to determine the map state
+			function setLocationFromHash (map) {
+				const location = travelintimes.parseMapHash ();
+				if (location) {
+					map.jumpTo (location);
+				}
+			}
+			
+			// On hash change, set the map location; initial is set in map initialisation for efficiency
+			addEventListener ('hashchange', function () {
+				setLocationFromHash (map);
+			});
+		},
+		
+		
+		// Function to parse a map hash location to center and zoom components
+		parseMapHash: function ()
+		{
+			// Extract the hash and split by /
+			const mapHash = window.location.hash.replace (new RegExp ('^#'), '');
+			const parts = mapHash.split ('/');
+			
+			// If three parts, parse out
+			if (parts.length == 3) {
+				return {
+					longitude: parts[2],
+					latitude: parts[1],
+					zoom: parts[0]
+				};
+			}
+			
+			// Else return false
+			return false;
 		},
 		
 		
