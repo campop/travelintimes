@@ -310,7 +310,7 @@ const travelintimes = (function () {
 			}
 			
 			// On hash change, set the map location; initial is set in map initialisation for efficiency
-			addEventListener ('hashchange', function () {
+			window.addEventListener ('hashchange', function () {
 				setLocationFromHash (map);
 			});
 		},
