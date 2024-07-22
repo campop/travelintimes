@@ -442,7 +442,7 @@ const travelintimes = (function () {
 				travelintimes.styleChanged ();
 			};
 			for (let i = 0; i < inputs.length; i++) {
-				inputs[i].onclick = switchLayer;
+				inputs[i].addEventListener ('click', switchLayer);
 			}
 		},
 		
