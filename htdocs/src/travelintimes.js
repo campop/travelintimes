@@ -414,6 +414,9 @@ const travelintimes = (function () {
 		{
 			// Create a tracking control
 			const geolocate = new mapboxgl.GeolocateControl({
+				fitBoundsOptions: {
+					maxZoom: _settings.maxZoomToSegment
+				},
 				positionOptions: {
 					enableHighAccuracy: true
 				},
