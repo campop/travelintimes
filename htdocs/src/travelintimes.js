@@ -36,14 +36,13 @@ const travelintimes = (function () {
 				tileSize: 256,
 				label: 'NLS - Bartholomew Half Inch, 1897-1907'
 			},
-			os1inch: {
-				tiles: 'https://geo.nls.uk/maps/os/1inch_2nd_ed/{z}/{x}/{y}.png',	// E.g. https://geo.nls.uk/maps/os/1inch_2nd_ed/15/16395/10793.png
+			osquarterinch: {
+				tiles: 'https://geo.nls.uk/maps/os/quarter-inch-first-hills/{z}/{x}/{y}.png',	// E.g. https://geo.nls.uk/maps/os/quarter-inch-first-hills/12/2046/1348.png
 				maxZoom: 15,
 				attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>',
 				backgroundColour: '#f0f1e4',
-				key: '/images/mapkeys/os1inch.jpg',
 				tileSize: 256,
-				label: 'NLS - OS One Inch, 1885-1900'
+				label: 'OS Quarter Inch, 1st ed. Hills, 1899-06'
 			},
 			osopendata: {
 				tiles: 'https://{s}.os.openstreetmap.org/sv/{z}/{x}/{y}.png',	// E.g. https://a.os.openstreetmap.org/sv/18/128676/81699.png
