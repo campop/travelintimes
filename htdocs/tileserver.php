@@ -41,7 +41,6 @@ $localPath = './tiles/' . $tileset . strtr ('/{z}/{x}/{y}.png', $replacements);
 
 # Retrieve the tile from upstream if it is does not exist in the cache
 if (!file_exists ($localPath)) {
-	ini_set ('display_errors', true);
 	# Attempt to get the URL
 	$options = array ('http' => array ('user_agent' => 'Travel in Times tile proxy cache - www.travelintimes.org'));
 	$tile = file_get_contents ($url, false, stream_context_create ($options));
