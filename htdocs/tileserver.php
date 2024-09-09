@@ -43,7 +43,12 @@ $localPath = './tiles/' . $tileset . strtr ('/{z}/{x}/{y}.png', $replacements);
 if (!file_exists ($localPath)) {
 	# Attempt to get the URL
 	$options = array ('http' => array ('user_agent' => 'Travel in Times tile proxy cache - www.travelintimes.org'));
-	$tile = file_get_contents ($url, false, stream_context_create ($options));
+	if (!$tile = @file_get_contents ($url, false, stream_context_create ($options))) {		// @ used as tile may not exist, causing 404, which is then handled in subsequent line
+		$error = error_get_last ();
+		if (!substr_count ($error['message'], '404 Not Found')) {
+			error_log ($error['message']);
+		}
+	}
 	
 	# Log upstream retrieval (debug)
 	//file_put_contents ('./tiles/log.txt', $url . "\n", FILE_APPEND);
